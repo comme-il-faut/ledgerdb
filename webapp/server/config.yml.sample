@@ -1,0 +1,10 @@
+logging:
+  level: INFO
+  loggers:
+    ledgerdb: DEBUG
+
+database:
+  driver: org.postgresql.Driver
+  url: jdbc:postgresql:ledgerdb
+  username: ledgerdb_user
+  password: ************
