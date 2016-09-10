@@ -1,24 +1,27 @@
 import React from 'react';
 
-class AccountType extends React.Component {
+class Account extends React.Component {
   render() {
     return (
       <tr>
-        <td>{this.props.account_type.account_type}</td>
-        <td>{this.props.account_type.description}</td>
+        <td>{this.props.account.account_id}</td>
+        <td>{this.props.account.account_type}</td>
+        <td>{this.props.account.name}</td>
+        <td>{this.props.account.cash}</td>
+        <td>{this.props.account.active}</td>
       </tr>
     );
   }
 }
 
-class AccountTypes extends React.Component {
+class Accounts extends React.Component {
   constructor(props) {
     super(props);
     this.state = { data: [] };
     this.componentDidMount = this.componentDidMount.bind(this);
   }
   componentDidMount() {
-    fetch('api/account_type/')
+    fetch('api/account/')
       .then((resp) => {
         return resp.json();
       })
@@ -28,11 +31,11 @@ class AccountTypes extends React.Component {
   }
   render() {
     var rows = [];
-    this.state.data.forEach(function(account_type) {
+    this.state.data.forEach(function(account) {
       rows.push(
-        <AccountType
-          key={account_type.account_type}
-          account_type={account_type}
+        <Account
+          key={account.account_id}
+          account={account}
         />
       );
     });
@@ -40,8 +43,11 @@ class AccountTypes extends React.Component {
       <table className="data">
         <thead>
           <tr>
-            <th>Account Type</th>
-            <th>Description</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Cash</th>
+            <th>Active</th>
           </tr>
         </thead>
         <tbody>{rows}</tbody>
@@ -51,4 +57,4 @@ class AccountTypes extends React.Component {
   }
 }
 
-export default AccountTypes;
+export default Accounts;
