@@ -11,13 +11,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import ledgerdb.server.DbConfig;
 
-@Path(value = "/account_type")
+@Path(value = "/account")
 @Produces(MediaType.APPLICATION_JSON)
-public class AccountTypeResource {
+public class AccountResource {
 
     private final DbConfig dbConfig;
     
-    public AccountTypeResource(DbConfig dbConfig) {
+    public AccountResource(DbConfig dbConfig) {
         this.dbConfig = dbConfig;
     }
     
@@ -26,7 +26,7 @@ public class AccountTypeResource {
         
         try (Connection con = dbConfig.getConnection();
                 Statement st = con.createStatement()) {
-            ResultSet rs = st.executeQuery("select * from account_type order by mask");
+            ResultSet rs = st.executeQuery("select * from account order by account_id");
             return JsonUtils.format(rs);
         }
     }
