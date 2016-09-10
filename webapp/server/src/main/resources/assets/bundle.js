@@ -58,24 +58,19 @@
 
 	var _AccountTypes2 = _interopRequireDefault(_AccountTypes);
 
+	var _Accounts = __webpack_require__(170);
+
+	var _Accounts2 = _interopRequireDefault(_Accounts);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	//var data = [{"account_type":"A","mask":1000,"description":"Asset","sign":1},{"account_type":"L","mask":2000,"description":"Liability","sign":-1},{"account_type":"E","mask":3000,"description":"Equity","sign":-1},{"account_type":"I","mask":4000,"description":"Income","sign":-1},{"account_type":"X","mask":5000,"description":"Expense","sign":1}];
-
-	_reactDom2.default.render(
-	//<AccountTypes account_types={data}/>,
-	_react2.default.createElement(_AccountTypes2.default, null), document.getElementById('app'));
-
-	/*
-	import Hello from './modules/Test.jsx';
-
-	//console.log('Hello World!');
-
-	ReactDOM.render(
-	  <Hello foo="12356"/>,
-	  document.getElementById('app')
-	);
-	*/
+	_reactDom2.default.render(_react2.default.createElement(
+	  'div',
+	  null,
+	  _react2.default.createElement(_AccountTypes2.default, null),
+	  _react2.default.createElement('br', null),
+	  _react2.default.createElement(_Accounts2.default, null)
+	), document.getElementById('app'));
 
 /***/ },
 /* 1 */
@@ -20444,7 +20439,7 @@
 	    value: function componentDidMount() {
 	      var _this3 = this;
 
-	      fetch('http://localhost:8080/application/api/account_type/').then(function (resp) {
+	      fetch('api/account_type/').then(function (resp) {
 	        return resp.json();
 	      }).then(function (data) {
 	        _this3.setState({ data: data });
@@ -20495,6 +20490,163 @@
 	}(_react2.default.Component);
 
 	exports.default = AccountTypes;
+
+/***/ },
+/* 169 */,
+/* 170 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Account = function (_React$Component) {
+	  _inherits(Account, _React$Component);
+
+	  function Account() {
+	    _classCallCheck(this, Account);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Account).apply(this, arguments));
+	  }
+
+	  _createClass(Account, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'tr',
+	        null,
+	        _react2.default.createElement(
+	          'td',
+	          null,
+	          this.props.account.account_id
+	        ),
+	        _react2.default.createElement(
+	          'td',
+	          null,
+	          this.props.account.account_type
+	        ),
+	        _react2.default.createElement(
+	          'td',
+	          null,
+	          this.props.account.name
+	        ),
+	        _react2.default.createElement(
+	          'td',
+	          null,
+	          this.props.account.cash
+	        ),
+	        _react2.default.createElement(
+	          'td',
+	          null,
+	          this.props.account.active
+	        )
+	      );
+	    }
+	  }]);
+
+	  return Account;
+	}(_react2.default.Component);
+
+	var Accounts = function (_React$Component2) {
+	  _inherits(Accounts, _React$Component2);
+
+	  function Accounts(props) {
+	    _classCallCheck(this, Accounts);
+
+	    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Accounts).call(this, props));
+
+	    _this2.state = { data: [] };
+	    _this2.componentDidMount = _this2.componentDidMount.bind(_this2);
+	    return _this2;
+	  }
+
+	  _createClass(Accounts, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var _this3 = this;
+
+	      fetch('api/account/').then(function (resp) {
+	        return resp.json();
+	      }).then(function (data) {
+	        _this3.setState({ data: data });
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var rows = [];
+	      this.state.data.forEach(function (account) {
+	        rows.push(_react2.default.createElement(Account, {
+	          key: account.account_id,
+	          account: account
+	        }));
+	      });
+	      return _react2.default.createElement(
+	        'table',
+	        { className: 'data' },
+	        _react2.default.createElement(
+	          'thead',
+	          null,
+	          _react2.default.createElement(
+	            'tr',
+	            null,
+	            _react2.default.createElement(
+	              'th',
+	              null,
+	              'Account'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              null,
+	              'Type'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              null,
+	              'Name'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              null,
+	              'Cash'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              null,
+	              'Active'
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
+	        )
+	      );
+	      //console.log("state: %o", this.state);
+	    }
+	  }]);
+
+	  return Accounts;
+	}(_react2.default.Component);
+
+	exports.default = Accounts;
 
 /***/ }
 /******/ ]);
