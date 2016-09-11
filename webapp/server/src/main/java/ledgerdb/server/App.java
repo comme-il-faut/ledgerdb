@@ -6,6 +6,7 @@ import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import ledgerdb.server.resource.AccountResource;
+import ledgerdb.server.resource.Printenv;
 
 public class App extends Application<AppConfig> {
 
@@ -27,6 +28,7 @@ public class App extends Application<AppConfig> {
     public void run(AppConfig config, Environment env) {
         env.jersey().register(new AccountTypeResource(config.getDbConnection()));
         env.jersey().register(new AccountResource(config.getDbConnection()));
+        env.jersey().register(new Printenv());
     }
 
 }
