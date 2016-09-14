@@ -9,7 +9,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import ledgerdb.server.DbConfig;
+import ledgerdb.server.config.DbConfig;
 
 @Path(value = "/account")
 @Produces(MediaType.APPLICATION_JSON)

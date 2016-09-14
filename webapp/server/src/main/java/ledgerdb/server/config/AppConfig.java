@@ -1,24 +1,38 @@
-package ledgerdb.server;
+package ledgerdb.server.config;
 
 import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.Valid;
-import org.hibernate.validator.constraints.*;
 import javax.validation.constraints.*;
 
 public class AppConfig extends Configuration {
     
-    @Valid
     @NotNull
+    @Valid
+    private AuthConfig auth = new AuthConfig();
+
+    @NotNull
+    @Valid
     private DbConfig database = new DbConfig();
+
+    @JsonProperty("auth")
+    public AuthConfig getAuth() {
+        return auth;
+    }
+
+    @JsonProperty("auth")
+    public void setAuth(AuthConfig auth) {
+        this.auth = auth;
+    }
     
     @JsonProperty("database")
-    public DbConfig getDbConnection() {
+    public DbConfig getDbConfig() {
         return database;
     }
     
     @JsonProperty("database")
-    public void setDbConnection(DbConfig database) {
+    public void setDbConfig(DbConfig database) {
         this.database = database;
     }
+    
 }

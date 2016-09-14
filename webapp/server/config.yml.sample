@@ -1,10 +1,22 @@
-logging:
-  level: INFO
-  loggers:
-    ledgerdb: DEBUG
+auth:
+  realm: LedgerDB
 
 database:
   driver: org.postgresql.Driver
   url: jdbc:postgresql:ledgerdb
   username: ledgerdb_user
   password: ************
+
+logging:
+  level: INFO
+  loggers:
+    ledgerdb: DEBUG
+
+server:
+  type: simple
+  rootPath: /api/
+  applicationContextPath: /application
+  adminContextPath: /admin
+  connector:
+    type: http
+    port: 8080

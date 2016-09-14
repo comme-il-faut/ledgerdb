@@ -1,4 +1,4 @@
-package ledgerdb.server;
+package ledgerdb.server.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.sql.Connection;

@@ -1,12 +1,17 @@
 package ledgerdb.server;
 
-import ledgerdb.server.resource.AccountTypeResource;
+import ledgerdb.server.config.AppConfig;
+import ledgerdb.server.auth.AppAuthenticator;
+import ledgerdb.server.auth.AppAuthorizer;
+import ledgerdb.server.auth.User;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthValueFactoryProvider;
+import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import ledgerdb.server.resource.AccountResource;
-import ledgerdb.server.resource.Printenv;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 public class App extends Application<AppConfig> {
 
@@ -26,9 +31,17 @@ public class App extends Application<AppConfig> {
 
     @Override
     public void run(AppConfig config, Environment env) {
-        env.jersey().register(new AccountTypeResource(config.getDbConnection()));
-        env.jersey().register(new AccountResource(config.getDbConnection()));
-        env.jersey().register(new Printenv());
+        env.healthChecks().register("db", new DbHealthCheck());
+        
+        env.jersey().register(new AuthDynamicFeature(new BasicCredentialAuthFilter.Builder<User>()
+                .setAuthenticator(new AppAuthenticator(config.getDbConfig()))
+                .setAuthorizer(new AppAuthorizer())
+                .setRealm(config.getAuth().getRealm())
+                .buildAuthFilter()));
+        env.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
+        env.jersey().register(RolesAllowedDynamicFeature.class);
+        
+        env.jersey().packages(getClass().getPackage().getName() + ".resource");
     }
 
 }

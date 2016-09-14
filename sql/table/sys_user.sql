@@ -3,6 +3,8 @@ CREATE TABLE sys_user (
   user_name     VARCHAR(32) NOT NULL,
   full_name     VARCHAR(128) NOT NULL,
 
+  pw            CHAR(60), -- bcrypt hash
+
   CONSTRAINT sys_user_pk PRIMARY KEY (user_id),
   CONSTRAINT sys_user_uq_un UNIQUE (user_name)
 );
