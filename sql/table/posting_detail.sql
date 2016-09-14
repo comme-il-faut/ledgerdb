@@ -15,4 +15,4 @@ CREATE TABLE posting_detail (
   CONSTRAINT posting_detail_ck_a CHECK (amount <> 0)
 );
 
-ALTER TABLE posting OWNER TO ledgerdb;
+ALTER TABLE posting_detail OWNER TO ledgerdb;
