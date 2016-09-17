@@ -1,4 +1,4 @@
-package ledgerdb.server.resource;
+package ledgerdb.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

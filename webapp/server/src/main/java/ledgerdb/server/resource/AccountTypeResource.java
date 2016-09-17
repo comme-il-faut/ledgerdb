@@ -1,10 +1,12 @@
 package ledgerdb.server.resource;
 
+import ledgerdb.server.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -17,6 +19,7 @@ public class AccountTypeResource {
 
     private final DbConfig dbConfig;
     
+    @Inject
     public AccountTypeResource(DbConfig dbConfig) {
         this.dbConfig = dbConfig;
     }

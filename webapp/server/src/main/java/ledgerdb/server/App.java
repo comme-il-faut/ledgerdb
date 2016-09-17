@@ -1,5 +1,8 @@
 package ledgerdb.server;
 
+import com.google.common.reflect.ClassPath;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import ledgerdb.server.config.AppConfig;
 import ledgerdb.server.auth.AppAuthenticator;
 import ledgerdb.server.auth.AppAuthorizer;
@@ -11,6 +14,7 @@ import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import java.io.IOException;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 public class App extends Application<AppConfig> {
@@ -30,9 +34,9 @@ public class App extends Application<AppConfig> {
     }
 
     @Override
-    public void run(AppConfig config, Environment env) {
+    public void run(AppConfig config, Environment env) throws IOException {
         env.healthChecks().register("db", new DbHealthCheck());
-        
+
         env.jersey().register(new AuthDynamicFeature(new BasicCredentialAuthFilter.Builder<User>()
                 .setAuthenticator(new AppAuthenticator(config.getDbConfig()))
                 .setAuthorizer(new AppAuthorizer())
@@ -40,8 +44,14 @@ public class App extends Application<AppConfig> {
                 .buildAuthFilter()));
         env.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
         env.jersey().register(RolesAllowedDynamicFeature.class);
-        
-        env.jersey().packages(getClass().getPackage().getName() + ".resource");
+
+        Injector injector = Guice.createInjector(new AppModule(config));
+        ClassPath cp = ClassPath.from(ClassLoader.getSystemClassLoader());
+        String packageName = getClass().getPackage().getName() + ".resource";
+        for (ClassPath.ClassInfo ci : cp.getTopLevelClassesRecursive(packageName)) {
+            Object resource = injector.getInstance(ci.load());
+            env.jersey().register(resource);
+        }
     }
 
 }
