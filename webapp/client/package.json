@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "react": "^15.1.0",
-    "react-dom": "^15.1.0"
+    "react-dom": "^15.1.0",
+    "react-router": "^2.8.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

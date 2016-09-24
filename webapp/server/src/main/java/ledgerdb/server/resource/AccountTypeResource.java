@@ -26,8 +26,7 @@ public class AccountTypeResource {
     
     @GET
     public String getAccountTypes() throws SQLException, JsonProcessingException {
-        
-        try (Connection con = dbConfig.getConnection();
+            try (Connection con = dbConfig.getConnection();
                 Statement st = con.createStatement()) {
             ResultSet rs = st.executeQuery("select * from account_type order by mask");
             return JsonUtils.format(rs);

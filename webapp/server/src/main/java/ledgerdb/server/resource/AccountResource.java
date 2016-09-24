@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import ledgerdb.server.config.DbConfig;
 
 @Path(value = "/account")
+@PermitAll
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountResource {
 

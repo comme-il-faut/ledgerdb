@@ -14,19 +14,36 @@ class AccountType extends React.Component {
 class AccountTypes extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { data: [] };
+    this.state = { data: [], err: null };
     this.componentDidMount = this.componentDidMount.bind(this);
   }
   componentDidMount() {
+    document.title = "LedgerDB - Account Types";
     fetch('api/account_type/')
-      .then((resp) => {
-        return resp.json();
+      .then(res => {
+        if (res.ok) {
+          res.json().then(json => {
+            this.setState({ data: json, err: null });
+          });
+        } else {
+          throw Error(res.statusText);
+        }
       })
-      .then((data) => {
-        this.setState({ data: data });
+      .catch(err => {
+        this.setState({ data: [], err: err });
       });
   }
   render() {
+    if (this.state.err) {
+      return (
+        <div className="alert alert-danger">
+          <strong>Oh snap!</strong> {this.state.err.toString()}
+        </div>
+      );
+    }
+    if (this.state.data.length == 0) {
+      return null;
+    }
     var rows = [];
     this.state.data.forEach(function(account_type) {
       rows.push(
@@ -37,7 +54,7 @@ class AccountTypes extends React.Component {
       );
     });
     return (
-      <table className="data">
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>Account Type</th>
@@ -47,7 +64,6 @@ class AccountTypes extends React.Component {
         <tbody>{rows}</tbody>
       </table>
     );
-    //console.log("state: %o", this.state);
   }
 }
 

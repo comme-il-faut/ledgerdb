@@ -1,8 +1,5 @@
 package ledgerdb.server;
 
-import com.google.common.reflect.ClassPath;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import ledgerdb.server.config.AppConfig;
 import ledgerdb.server.auth.AppAuthenticator;
 import ledgerdb.server.auth.AppAuthorizer;
@@ -45,13 +42,9 @@ public class App extends Application<AppConfig> {
         env.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
         env.jersey().register(RolesAllowedDynamicFeature.class);
 
-        Injector injector = Guice.createInjector(new AppModule(config));
-        ClassPath cp = ClassPath.from(ClassLoader.getSystemClassLoader());
-        String packageName = getClass().getPackage().getName() + ".resource";
-        for (ClassPath.ClassInfo ci : cp.getTopLevelClassesRecursive(packageName)) {
-            Object resource = injector.getInstance(ci.load());
-            env.jersey().register(resource);
-        }
+        Resources.createResources(config).forEach(resource ->
+                env.jersey().register(resource));
     }
+    
 
 }
