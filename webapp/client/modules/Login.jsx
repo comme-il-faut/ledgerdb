@@ -25,6 +25,9 @@ class Login extends React.Component {
       .then(res => {
         if (res.ok) {
           this.setState({ err: null, running: false });
+          if (document.getElementById('inputRemember').checked) {
+            localStorage.setItem('auth', auth);
+          }
           this.props.app.setAuth(auth);
         } else {
           throw Error(res.statusText);
@@ -75,13 +78,11 @@ class Login extends React.Component {
             placeholder="Password"
             onChange={this.handleChange.bind(this, 'pass')}
             />
-          {/*
           <div className="checkbox">
             <label>
-              <input type="checkbox" value="remember-me"/> Remember me
+              <input type="checkbox" id="inputRemember" value="remember-me"/> Remember me
             </label>
           </div>
-          */}
           {this.renderButton()}
         </form>
       </div>

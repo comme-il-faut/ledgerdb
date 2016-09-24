@@ -88,21 +88,31 @@
 
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(App).call(this, props));
 
-	    _this.state = { auth: null, err: null };
+	    var auth = localStorage.getItem('auth');
+	    if (auth) {
+	      sessionStorage.auth = auth;
+	    }
+	    _this.state = { auth: auth, err: null };
+	    _this.handleLogOut = _this.handleLogOut.bind(_this);
 	    return _this;
 	  }
 
 	  _createClass(App, [{
+	    key: 'setAuth',
+	    value: function setAuth(auth) {
+	      sessionStorage.auth = auth;
+	      this.setState({ auth: auth });
+	    }
+	  }, {
+	    key: 'handleLogOut',
+	    value: function handleLogOut() {
+	      localStorage.removeItem('auth');
+	      this.setState({ auth: null });
+	    }
+	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      document.title = "LedgerDB";
-	      if (!this.state.auth) {}
-	    }
-	  }, {
-	    key: 'setAuth',
-	    value: function setAuth(auth) {
-	      //console.log("state: %o", this.state);
-	      this.setState({ auth: auth });
 	    }
 	  }, {
 	    key: 'render',
@@ -155,6 +165,19 @@
 	                    _reactRouter.Link,
 	                    { to: '/accounts' },
 	                    'Accounts'
+	                  )
+	                )
+	              ),
+	              _react2.default.createElement(
+	                'ul',
+	                { className: 'nav navbar-nav navbar-right' },
+	                _react2.default.createElement(
+	                  'li',
+	                  null,
+	                  _react2.default.createElement(
+	                    'a',
+	                    { href: '#', onClick: this.handleLogOut },
+	                    'Log Out'
 	                  )
 	                )
 	              )
@@ -26600,7 +26623,10 @@
 	      var _this3 = this;
 
 	      document.title = "LedgerDB - Accounts";
-	      fetch('api/account/').then(function (res) {
+	      fetch('api/account/', {
+	        method: 'get',
+	        headers: { 'Authorization': 'Basic ' + sessionStorage.auth }
+	      }).then(function (res) {
 	        if (res.ok) {
 	          res.json().then(function (json) {
 	            _this3.setState({ data: json, err: null });
@@ -26746,6 +26772,9 @@
 	      }).then(function (res) {
 	        if (res.ok) {
 	          _this2.setState({ err: null, running: false });
+	          if (document.getElementById('inputRemember').checked) {
+	            localStorage.setItem('auth', auth);
+	          }
 	          _this2.props.app.setAuth(auth);
 	        } else {
 	          throw Error(res.statusText);
@@ -26815,6 +26844,16 @@
 	            placeholder: 'Password',
 	            onChange: this.handleChange.bind(this, 'pass')
 	          }),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'checkbox' },
+	            _react2.default.createElement(
+	              'label',
+	              null,
+	              _react2.default.createElement('input', { type: 'checkbox', id: 'inputRemember', value: 'remember-me' }),
+	              ' Remember me'
+	            )
+	          ),
 	          this.renderButton()
 	        )
 	      );

@@ -11,18 +11,26 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { auth: null, err: null };
+    var auth = localStorage.getItem('auth');
+    if (auth) {
+      sessionStorage.auth = auth;
+    }
+    this.state = { auth: auth, err: null };
+    this.handleLogOut = this.handleLogOut.bind(this);
+  }
+
+  setAuth(auth) {
+    sessionStorage.auth = auth;
+    this.setState({ auth: auth });
+  }
+
+  handleLogOut() {
+    localStorage.removeItem('auth');
+    this.setState({ auth: null });
   }
 
   componentDidMount() {
     document.title = "LedgerDB";
-    if (!this.state.auth) {
-    }
-  }
-
-  setAuth(auth) {
-    //console.log("state: %o", this.state);
-    this.setState({ auth: auth });
   }
 
   render() {
@@ -56,11 +64,12 @@ class App extends React.Component {
               <li><Link to="/account_types">Account Types</Link></li>
               <li><Link to="/accounts">Accounts</Link></li>
             </ul>
-            {/*
             <ul className="nav navbar-nav navbar-right">
+              <li><a href="#" onClick={this.handleLogOut}>Log Out</a></li>
+            {/*
 <li><a href="#"><span className="glyphicon glyphicon-user"></span></a></li>
-            </ul>
             */}
+            </ul>
           </div>
           </div>
         </nav>

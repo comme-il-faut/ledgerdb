@@ -15,14 +15,19 @@ class Account extends React.Component {
 }
 
 class Accounts extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = { data: [], err: null };
     this.componentDidMount = this.componentDidMount.bind(this);
   }
+
   componentDidMount() {
     document.title = "LedgerDB - Accounts";
-    fetch('api/account/')
+    fetch('api/account/', {
+      method: 'get',
+      headers: { 'Authorization': 'Basic ' + sessionStorage.auth }
+    })
       .then(res => {
         if (res.ok) {
           res.json().then(json => {
@@ -36,6 +41,7 @@ class Accounts extends React.Component {
         this.setState({ data: [], err: err });
       });
   }
+
   render() {
     if (this.state.err) {
       return (
@@ -71,6 +77,7 @@ class Accounts extends React.Component {
       </table>
     );
   }
+
 }
 
 export default Accounts;
