@@ -5,14 +5,14 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/comme-il-faut/ledgerdb.git"
+    "url": "git+https://github.com/typeractive/ledgerdb.git"
   },
   "author": "Alexander Anderson",
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/comme-il-faut/ledgerdb/issues"
+    "url": "https://github.com/typeractive/ledgerdb/issues"
   },
-  "homepage": "https://github.com/comme-il-faut/ledgerdb#readme",
+  "homepage": "https://github.com/typeractive/ledgerdb#readme",
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.9.1",
@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "react": "^15.1.0",
-    "react-bootstrap": "^0.30.3",
     "react-dom": "^15.1.0",
     "react-router": "^2.8.1"
   },
