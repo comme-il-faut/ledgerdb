@@ -1,12 +1,19 @@
 /*
 html, div, span, body, form, button, select, option {
-  font: 15px "Roboto",sans-serif;
+  font: 15px "Roboto","Helvetica Neue",sans-serif;
 }
 */
 
-#app > .container {
+body {
   padding-top: 70px;
+  font: 15px "Roboto","Helvetica Neue",sans-serif;
 }
+
+/*
+.panel {
+  max-width: 330px;
+}
+*/
 
 .form-signin {
   max-width: 330px;
@@ -22,6 +29,11 @@ html, div, span, body, form, button, select, option {
   padding: 10px;
   font-size: 16px;
 }
-.form-signin .checkbox {
+.form-signin .checkbox,
+.form-group label {
   font-weight: normal;
+}
+.form-signin-heading,
+.navbar-brand:hover > i {
+  color: #4caf50;
 }

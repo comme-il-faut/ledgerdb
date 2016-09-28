@@ -26,7 +26,7 @@ class Accounts extends React.Component {
     document.title = "LedgerDB - Accounts";
     fetch('api/account/', {
       method: 'get',
-      headers: { 'Authorization': 'Basic ' + sessionStorage.auth }
+      headers: { 'Authorization': sessionStorage.token }
     })
       .then(res => {
         if (res.ok) {
@@ -53,7 +53,7 @@ class Accounts extends React.Component {
     if (this.state.data.length == 0) {
       return null;
     }
-    var rows = [];
+    let rows = [];
     this.state.data.forEach(function(account) {
       rows.push(
         <Account
@@ -63,7 +63,7 @@ class Accounts extends React.Component {
       );
     });
     return (
-      <table className="table table-striped">
+      <table className="table table-striped table-condensed">
         <thead>
           <tr>
             <th>Account</th>

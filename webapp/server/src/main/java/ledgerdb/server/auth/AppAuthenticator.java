@@ -42,4 +42,14 @@ public class AppAuthenticator implements Authenticator<BasicCredentials, User> {
         }
     }
 
+    public void update(String username, String password) throws SQLException {
+        final String sql = "update sys_user set pw = ? where user_name = ?";
+        try (Connection con = dbConfig.getConnection();
+                PreparedStatement st = con.prepareStatement(sql)) {
+            String pw = BCrypt.hashpw(password, BCrypt.gensalt());
+            st.setString(1, pw);
+            st.setString(2, username);
+            st.executeUpdate();
+        }
+    }
 }

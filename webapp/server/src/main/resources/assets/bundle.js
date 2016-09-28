@@ -72,6 +72,10 @@
 
 	var _Login2 = _interopRequireDefault(_Login);
 
+	var _Profile = __webpack_require__(238);
+
+	var _Profile2 = _interopRequireDefault(_Profile);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -90,7 +94,10 @@
 
 	    var auth = localStorage.getItem('auth');
 	    if (auth) {
-	      sessionStorage.auth = auth;
+	      if (typeof auth === 'string') auth = JSON.parse(auth);
+	      sessionStorage.token = auth.token;
+	      sessionStorage.user = auth.user;
+	      auth.verified = false;
 	    }
 	    _this.state = { auth: auth, err: null };
 	    _this.handleLogOut = _this.handleLogOut.bind(_this);
@@ -99,24 +106,62 @@
 
 	  _createClass(App, [{
 	    key: 'setAuth',
-	    value: function setAuth(auth) {
-	      sessionStorage.auth = auth;
+	    value: function setAuth(auth, remember) {
+	      if (remember) localStorage.setItem('auth', JSON.stringify(auth));
+	      sessionStorage.token = auth.token;
+	      sessionStorage.user = auth.user;
+	      auth.verified = true;
 	      this.setState({ auth: auth });
 	    }
 	  }, {
 	    key: 'handleLogOut',
-	    value: function handleLogOut() {
+	    value: function handleLogOut(e) {
+	      e.preventDefault();
 	      localStorage.removeItem('auth');
 	      this.setState({ auth: null });
 	    }
 	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
+	      var _this2 = this;
+
 	      document.title = "LedgerDB";
+	      if (this.state.auth && !this.state.auth.verified) {
+	        fetch('api/login', {
+	          method: 'get',
+	          headers: { 'Authorization': this.state.auth.token }
+	        }).then(function (res) {
+	          if (res.ok) {
+	            _this2.state.auth.verified = true;
+	            _this2.setState({ auth: _this2.state.auth });
+	          } else {
+	            throw Error(res.statusText);
+	          }
+	        }).catch(function (err) {
+	          _this2.setState({ auth: null, err: err });
+	        });
+	      }
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      if (this.state.auth && !this.state.auth.verified) {
+	        return _react2.default.createElement(
+	          'div',
+	          { className: 'container' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'text-center' },
+	            _react2.default.createElement(
+	              'p',
+	              null,
+	              _react2.default.createElement('i', { className: 'fa fa-circle-o-notch fa-spin' }),
+	              ' Logging in...'
+	            )
+	          )
+	        );
+	      }
+
 	      if (!this.state.auth) {
 	        return _react2.default.createElement(
 	          'div',
@@ -132,23 +177,37 @@
 	          { className: 'navbar navbar-default navbar-fixed-top' },
 	          _react2.default.createElement(
 	            'div',
-	            { className: 'container-fluid' },
-	            _react2.default.createElement('div', { className: 'navbar-header' }),
+	            { className: 'container' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'navbar-header' },
+	              _react2.default.createElement(
+	                'button',
+	                { type: 'button',
+	                  className: 'navbar-toggle collapsed',
+	                  'data-toggle': 'collapse',
+	                  'data-target': '#navbar' },
+	                _react2.default.createElement(
+	                  'span',
+	                  { className: 'sr-only' },
+	                  'Toggle navigation'
+	                ),
+	                _react2.default.createElement('span', { className: 'icon-bar' }),
+	                _react2.default.createElement('span', { className: 'icon-bar' }),
+	                _react2.default.createElement('span', { className: 'icon-bar' })
+	              ),
+	              _react2.default.createElement(
+	                _reactRouter.Link,
+	                { to: '/', className: 'navbar-brand' },
+	                _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' })
+	              )
+	            ),
 	            _react2.default.createElement(
 	              'div',
 	              { id: 'navbar', className: 'navbar-collapse collapse' },
 	              _react2.default.createElement(
 	                'ul',
 	                { className: 'nav navbar-nav' },
-	                _react2.default.createElement(
-	                  'li',
-	                  null,
-	                  _react2.default.createElement(
-	                    _reactRouter.Link,
-	                    { to: '/' },
-	                    'Overview'
-	                  )
-	                ),
 	                _react2.default.createElement(
 	                  'li',
 	                  null,
@@ -173,11 +232,42 @@
 	                { className: 'nav navbar-nav navbar-right' },
 	                _react2.default.createElement(
 	                  'li',
-	                  null,
+	                  { className: 'dropdown' },
 	                  _react2.default.createElement(
 	                    'a',
-	                    { href: '#', onClick: this.handleLogOut },
-	                    'Log Out'
+	                    { href: '#', className: 'dropdown-toggle', 'data-toggle': 'dropdown', role: 'button',
+	                      'aria-haspopup': 'true', 'aria-expanded': 'false' },
+	                    _react2.default.createElement('span', { className: 'glyphicon glyphicon-user', 'aria-hidden': 'true' }),
+	                    ' ',
+	                    _react2.default.createElement('span', { className: 'caret' })
+	                  ),
+	                  _react2.default.createElement(
+	                    'ul',
+	                    { className: 'dropdown-menu' },
+	                    _react2.default.createElement(
+	                      'li',
+	                      { className: 'dropdown-header' },
+	                      this.state.auth.user
+	                    ),
+	                    _react2.default.createElement(
+	                      'li',
+	                      null,
+	                      _react2.default.createElement(
+	                        _reactRouter.Link,
+	                        { to: '/profile' },
+	                        'Profile'
+	                      )
+	                    ),
+	                    _react2.default.createElement('li', { role: 'separator', className: 'divider' }),
+	                    _react2.default.createElement(
+	                      'li',
+	                      null,
+	                      _react2.default.createElement(
+	                        'a',
+	                        { href: '#', onClick: this.handleLogOut },
+	                        'Log Out'
+	                      )
+	                    )
 	                  )
 	                )
 	              )
@@ -200,8 +290,9 @@
 	  _react2.default.createElement(
 	    _reactRouter.Route,
 	    { path: '/', component: App },
-	    _react2.default.createElement(_reactRouter.Route, { path: '/account_types', component: _AccountTypes2.default }),
-	    _react2.default.createElement(_reactRouter.Route, { path: '/accounts', component: _Accounts2.default })
+	    _react2.default.createElement(_reactRouter.Route, { path: 'account_types', component: _AccountTypes2.default }),
+	    _react2.default.createElement(_reactRouter.Route, { path: 'accounts', component: _Accounts2.default }),
+	    _react2.default.createElement(_reactRouter.Route, { path: 'profile', component: _Profile2.default })
 	  )
 	), document.getElementById('app'));
 
@@ -26625,7 +26716,7 @@
 	      document.title = "LedgerDB - Accounts";
 	      fetch('api/account/', {
 	        method: 'get',
-	        headers: { 'Authorization': 'Basic ' + sessionStorage.auth }
+	        headers: { 'Authorization': sessionStorage.token }
 	      }).then(function (res) {
 	        if (res.ok) {
 	          res.json().then(function (json) {
@@ -26666,7 +26757,7 @@
 	      });
 	      return _react2.default.createElement(
 	        'table',
-	        { className: 'table table-striped' },
+	        { className: 'table table-striped table-condensed' },
 	        _react2.default.createElement(
 	          'thead',
 	          null,
@@ -26764,18 +26855,17 @@
 	      e.preventDefault();
 	      this.setState({ running: true });
 
-	      var auth = btoa(this.state.user + ':' + this.state.pass);
+	      var token = 'Basic ' + btoa(this.state.user + ':' + this.state.pass);
 
 	      fetch('api/login', {
 	        method: 'get',
-	        headers: { 'Authorization': 'Basic ' + auth }
+	        headers: { 'Authorization': token }
 	      }).then(function (res) {
 	        if (res.ok) {
 	          _this2.setState({ err: null, running: false });
-	          if (document.getElementById('inputRemember').checked) {
-	            localStorage.setItem('auth', auth);
-	          }
-	          _this2.props.app.setAuth(auth);
+	          var auth = { user: _this2.state.user, token: token };
+	          var remember = document.getElementById('inputRemember').checked;
+	          _this2.props.app.setAuth(auth, remember);
 	        } else {
 	          throw Error(res.statusText);
 	        }
@@ -26793,20 +26883,21 @@
 	  }, {
 	    key: 'renderButton',
 	    value: function renderButton() {
-	      //var disabled = !this.state.user && !this.state.running;
-	      var disabled = this.state.running ? true : false;
-	      var text = this.state.running ? "Logging in..." : "Log in";
-	      return _react2.default.createElement(
+	      if (this.state.running) return _react2.default.createElement(
 	        'button',
-	        { className: 'btn btn-lg btn-primary btn-block', type: 'submit',
-	          disabled: disabled },
-	        text
+	        { className: 'btn btn-lg btn-primary btn-block disabled', type: 'submit', disabled: true },
+	        _react2.default.createElement('i', { className: 'fa fa-circle-o-notch fa-spin' }),
+	        ' Loggin in...'
+	      );else return _react2.default.createElement(
+	        'button',
+	        { className: 'btn btn-lg btn-primary btn-block', type: 'submit' },
+	        'Log in'
 	      );
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var err;
+	      var err = void 0;
 	      if (this.state.err) {
 	        err = _react2.default.createElement(
 	          'div',
@@ -26823,7 +26914,7 @@
 	          _react2.default.createElement(
 	            'h2',
 	            { className: 'form-signin-heading' },
-	            'Log in'
+	            _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' })
 	          ),
 	          err,
 	          _react2.default.createElement(
@@ -26864,6 +26955,301 @@
 	}(_react2.default.Component);
 
 	exports.default = Login;
+
+/***/ },
+/* 238 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _ChangePassword = __webpack_require__(239);
+
+	var _ChangePassword2 = _interopRequireDefault(_ChangePassword);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Profile = function (_React$Component) {
+	  _inherits(Profile, _React$Component);
+
+	  function Profile(props) {
+	    _classCallCheck(this, Profile);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Profile).call(this, props));
+	  }
+
+	  _createClass(Profile, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'row' },
+	        _react2.default.createElement(_ChangePassword2.default, null)
+	      );
+	    }
+	  }]);
+
+	  return Profile;
+	}(_react2.default.Component);
+
+	exports.default = Profile;
+
+/***/ },
+/* 239 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var PasswordChange = function (_React$Component) {
+	  _inherits(PasswordChange, _React$Component);
+
+	  function PasswordChange(props) {
+	    _classCallCheck(this, PasswordChange);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PasswordChange).call(this, props));
+
+	    _this.state = { oldpw: '', newpw: '', newpw2: '', running: false, result: null };
+	    _this.handleSubmit = _this.handleSubmit.bind(_this);
+	    return _this;
+	  }
+
+	  _createClass(PasswordChange, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'panel panel-default pull-left' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'panel-heading' },
+	          _react2.default.createElement(
+	            'h3',
+	            { className: 'panel-title' },
+	            'Change Password'
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'panel-body' },
+	          _react2.default.createElement(
+	            'form',
+	            { onSubmit: this.handleSubmit },
+	            this.renderTextInput('oldpw', 'Old Password'),
+	            this.renderTextInput('newpw', 'New Password'),
+	            this.renderTextInput('newpw2', 'Confirm New Password'),
+	            this.renderButton()
+	          )
+	        ),
+	        this.renderMessage()
+	      );
+	    }
+	  }, {
+	    key: 'renderTextInput',
+	    value: function renderTextInput(id, label) {
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'form-group' },
+	        _react2.default.createElement(
+	          'label',
+	          { htmlFor: id },
+	          label
+	        ),
+	        _react2.default.createElement('input', { type: 'password', className: 'form-control', id: id, ref: id, key: id,
+	          placeholder: label,
+	          onChange: this.handleChange.bind(this, id)
+	        })
+	      );
+	    }
+	  }, {
+	    key: 'renderButton',
+	    value: function renderButton() {
+	      if (this.state.running) return _react2.default.createElement(
+	        'button',
+	        { className: 'btn btn-primary btn-block disabled', type: 'submit', disabled: true },
+	        _react2.default.createElement('i', { className: 'fa fa-circle-o-notch fa-spin' }),
+	        ' Change Password'
+	      );else return _react2.default.createElement(
+	        'button',
+	        { className: 'btn btn-primary btn-block', type: 'submit' },
+	        'Change Password'
+	      );
+	    }
+	  }, {
+	    key: 'renderMessage',
+	    value: function renderMessage() {
+	      if (!this.state.result) return null;
+
+	      var title = void 0,
+	          body = void 0;
+	      if (this.state.result instanceof Error) {
+	        title = _react2.default.createElement(
+	          'h4',
+	          { className: 'modal-title text-danger' },
+	          _react2.default.createElement('i', { className: 'fa fa-exclamation-circle', 'aria-hidden': 'true' }),
+	          ' Error'
+	        );
+	        body = _react2.default.createElement(
+	          'p',
+	          null,
+	          this.state.result.message
+	        );
+	      } else {
+	        title = _react2.default.createElement(
+	          'h4',
+	          { className: 'modal-title text-success' },
+	          _react2.default.createElement('i', { className: 'fa fa-check-circle', 'aria-hidden': 'true' }),
+	          ' Great Success'
+	        );
+	        body = _react2.default.createElement(
+	          'p',
+	          null,
+	          this.state.result
+	        );
+	      }
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'modal fade', tabindex: '-1', role: 'dialog' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'modal-dialog modal-sm', role: 'document' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'modal-content' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'modal-header' },
+	              _react2.default.createElement(
+	                'button',
+	                { className: 'close', 'aria-label': 'Close', 'data-dismiss': 'modal', type: 'button' },
+	                _react2.default.createElement(
+	                  'span',
+	                  { 'aria-hidden': 'true' },
+	                  '×'
+	                )
+	              ),
+	              title
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'modal-body' },
+	              body
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'modal-footer' },
+	              _react2.default.createElement(
+	                'button',
+	                { type: 'button', className: 'btn btn-default', 'data-dismiss': 'modal' },
+	                'Close'
+	              )
+	            )
+	          )
+	        )
+	      );
+	    }
+	  }, {
+	    key: 'handleChange',
+	    value: function handleChange(field, e) {
+	      var state = this.state;
+	      state[field] = e.target.value;
+	      this.setState(state);
+	    }
+	  }, {
+	    key: 'handleSubmit',
+	    value: function handleSubmit(e) {
+	      var _this2 = this;
+
+	      e.preventDefault();
+	      this.setState({ running: true });
+
+	      if (this.state.newpw != this.state.newpw2) {
+	        this.setState({
+	          running: false,
+	          result: new Error("Please retype and confirm your new password.")
+	        });
+	        return;
+	      }
+	      if (this.state.oldpw == this.state.newpw) {
+	        this.setState({
+	          running: false,
+	          result: new Error("New and old passwords cannot be same.")
+	        });
+	        return;
+	      }
+
+	      var setError = function setError(err) {
+	        _this2.setState({ running: false, result: err });
+	      };
+
+	      fetch('api/chpasswd', {
+	        method: 'post',
+	        headers: { 'Authorization': sessionStorage.token },
+	        body: JSON.stringify({ oldpw: this.state.oldpw, newpw: this.state.newpw })
+	      }).then(function (res) {
+	        if (res.ok) {
+	          var result = "Your password has been changed successfully.";
+	          sessionStorage.token = 'Basic ' + btoa(sessionStorage.user + ':' + _this2.state.newpw);
+	          $('input:password').val('');
+	          _this2.setState({ oldpw: '', newpw: '', newpw2: '', running: false, result: result });
+	        } else {
+	          res.text().then(function (text) {
+	            if (text) throw new Error(text);else throw new Error(res.statusText);
+	          }).catch(function (err) {
+	            return setError(err);
+	          });
+	        }
+	      }).catch(function (err) {
+	        return setError(err);
+	      });
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      if (this.state.result) {
+	        this.state.result = null;
+	        $('.modal').modal('show');
+	      }
+	    }
+	  }]);
+
+	  return PasswordChange;
+	}(_react2.default.Component);
+
+	exports.default = PasswordChange;
 
 /***/ }
 /******/ ]);

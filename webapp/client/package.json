@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "react": "^15.1.0",
+    "react-bootstrap": "^0.30.3",
     "react-dom": "^15.1.0",
     "react-router": "^2.8.1"
   },

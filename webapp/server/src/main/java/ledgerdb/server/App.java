@@ -32,18 +32,22 @@ public class App extends Application<AppConfig> {
 
     @Override
     public void run(AppConfig config, Environment env) throws IOException {
-        env.healthChecks().register("db", new DbHealthCheck());
+        ComponentFactory cf = new ComponentFactory(config);
 
         env.jersey().register(new AuthDynamicFeature(new BasicCredentialAuthFilter.Builder<User>()
-                .setAuthenticator(new AppAuthenticator(config.getDbConfig()))
-                .setAuthorizer(new AppAuthorizer())
+                .setAuthenticator(cf.getAppAuthenticator())
+                .setAuthorizer(cf.getAppAuthorizer())
                 .setRealm(config.getAuth().getRealm())
                 .buildAuthFilter()));
         env.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
         env.jersey().register(RolesAllowedDynamicFeature.class);
+        
+        env.jersey().register(AppExceptionMapper.class);
 
-        Resources.createResources(config).forEach(resource ->
+        cf.createResources().forEach(resource ->
                 env.jersey().register(resource));
+        
+        env.healthChecks().register("db", new DbHealthCheck());
     }
     
 

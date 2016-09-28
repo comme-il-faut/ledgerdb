@@ -16,19 +16,18 @@ class Login extends React.Component {
     e.preventDefault();
     this.setState({ running: true });
 
-    var auth = btoa(this.state.user + ':' + this.state.pass);
+    let token = 'Basic ' + btoa(this.state.user + ':' + this.state.pass);
 
     fetch('api/login', {
       method: 'get',
-      headers: { 'Authorization': 'Basic ' + auth }
+      headers: { 'Authorization': token }
     })
       .then(res => {
         if (res.ok) {
           this.setState({ err: null, running: false });
-          if (document.getElementById('inputRemember').checked) {
-            localStorage.setItem('auth', auth);
-          }
-          this.props.app.setAuth(auth);
+          let auth = { user: this.state.user, token: token };
+          let remember = document.getElementById('inputRemember').checked;
+          this.props.app.setAuth(auth, remember);
         } else {
           throw Error(res.statusText);
         }
@@ -39,23 +38,26 @@ class Login extends React.Component {
   }
 
   handleChange(field, e) {
-    var state = this.state;
+    let state = this.state;
     state[field] = e.target.value;
     this.setState(state);
   }
 
   renderButton() {
-    //var disabled = !this.state.user && !this.state.running;
-    var disabled = this.state.running ? true : false;
-    var text = this.state.running ? "Logging in..." : "Log in";
-    return (
-      <button className="btn btn-lg btn-primary btn-block" type="submit"
-        disabled={disabled}>{text}</button>
-    );
+    if (this.state.running)
+      return (
+        <button className="btn btn-lg btn-primary btn-block disabled" type="submit" disabled>
+          <i className="fa fa-circle-o-notch fa-spin"></i> Loggin in...
+        </button>
+      );
+    else
+      return (
+        <button className="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+      );
   }
 
   render() {
-    var err;
+    let err;
     if (this.state.err) {
       err = (
         <div className="alert alert-danger">
@@ -66,7 +68,9 @@ class Login extends React.Component {
     return (
       <div className="container">
         <form onSubmit={this.handleSubmit} className="form-signin">
-          <h2 className="form-signin-heading">Log in</h2>
+          <h2 className="form-signin-heading">
+            <i className="fa fa-bar-chart" aria-hidden="true"></i>
+          </h2>
           {err}
           <label for="inputUser" className="sr-only">Username</label>
           <input type="text" id="inputUser" className="form-control"

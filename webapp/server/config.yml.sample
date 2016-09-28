@@ -15,8 +15,9 @@ logging:
 server:
   type: simple
   rootPath: /api/
-  applicationContextPath: /application
+  applicationContextPath: /app
   adminContextPath: /admin
   connector:
     type: http
     port: 8080
+  registerDefaultExceptionMappers: false
