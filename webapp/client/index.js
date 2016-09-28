@@ -34,7 +34,7 @@ class App extends React.Component {
   }
 
   handleLogOut(e) {
-    e.preventDefault();
+    //e.preventDefault();
     localStorage.removeItem('auth');
     this.setState({ auth: null });
   }
@@ -113,7 +113,7 @@ class App extends React.Component {
                   <li className="dropdown-header">{this.state.auth.user}</li>
                   <li><Link to="/profile">Profile</Link></li>
                   <li role="separator" className="divider"></li>
-                  <li><a href="#" onClick={this.handleLogOut}>Log Out</a></li>
+                  <li><Link to="/" onClick={this.handleLogOut}>Log Out</Link></li>
                 </ul>
               </li>
             </ul>

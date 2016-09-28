@@ -7,6 +7,10 @@ class Profile extends React.Component {
     super(props);
   }
 
+  componentDidMount() {
+    document.title = "LedgerDB - Profile";
+  }
+
   render() {
     return (
       <div className="row">

@@ -116,7 +116,7 @@
 	  }, {
 	    key: 'handleLogOut',
 	    value: function handleLogOut(e) {
-	      e.preventDefault();
+	      //e.preventDefault();
 	      localStorage.removeItem('auth');
 	      this.setState({ auth: null });
 	    }
@@ -263,8 +263,8 @@
 	                      'li',
 	                      null,
 	                      _react2.default.createElement(
-	                        'a',
-	                        { href: '#', onClick: this.handleLogOut },
+	                        _reactRouter.Link,
+	                        { to: '/', onClick: this.handleLogOut },
 	                        'Log Out'
 	                      )
 	                    )
@@ -26837,7 +26837,7 @@
 
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Login).call(this, props));
 
-	    _this.state = { err: null, running: false, user: '', pass: '' };
+	    _this.state = { running: false, err: null, user: '', pass: '' };
 	    _this.handleSubmit = _this.handleSubmit.bind(_this);
 	    return _this;
 	  }
@@ -26853,7 +26853,7 @@
 	      var _this2 = this;
 
 	      e.preventDefault();
-	      this.setState({ running: true });
+	      this.setState({ running: true, err: null });
 
 	      var token = 'Basic ' + btoa(this.state.user + ':' + this.state.pass);
 
@@ -26862,7 +26862,7 @@
 	        headers: { 'Authorization': token }
 	      }).then(function (res) {
 	        if (res.ok) {
-	          _this2.setState({ err: null, running: false });
+	          _this2.setState({ running: false, err: null });
 	          var auth = { user: _this2.state.user, token: token };
 	          var remember = document.getElementById('inputRemember').checked;
 	          _this2.props.app.setAuth(auth, remember);
@@ -26870,7 +26870,7 @@
 	          throw Error(res.statusText);
 	        }
 	      }).catch(function (err) {
-	        _this2.setState({ err: err, running: false });
+	        _this2.setState({ running: false, err: err });
 	      });
 	    }
 	  }, {
@@ -26897,11 +26897,24 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      var _this3 = this;
+
 	      var err = void 0;
 	      if (this.state.err) {
 	        err = _react2.default.createElement(
 	          'div',
-	          { className: 'alert alert-danger' },
+	          { className: 'alert alert-danger alert-dismissable', role: 'alert' },
+	          _react2.default.createElement(
+	            'button',
+	            { type: 'button', className: 'close', 'aria-label': 'Close', onClick: function onClick() {
+	                return _this3.setState({ err: null });
+	              } },
+	            _react2.default.createElement(
+	              'span',
+	              { 'aria-hidden': 'true' },
+	              '×'
+	            )
+	          ),
 	          this.state.err.message
 	        );
 	      }
@@ -26916,7 +26929,6 @@
 	            { className: 'form-signin-heading' },
 	            _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' })
 	          ),
-	          err,
 	          _react2.default.createElement(
 	            'label',
 	            { 'for': 'inputUser', className: 'sr-only' },
@@ -26945,7 +26957,12 @@
 	              ' Remember me'
 	            )
 	          ),
-	          this.renderButton()
+	          _react2.default.createElement(
+	            'p',
+	            null,
+	            this.renderButton()
+	          ),
+	          err
 	        )
 	      );
 	    }
@@ -26994,6 +27011,11 @@
 	  }
 
 	  _createClass(Profile, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      document.title = "LedgerDB - Profile";
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(

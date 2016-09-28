@@ -4,7 +4,7 @@ class Login extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = { err: null, running: false, user: '', pass: '' };
+    this.state = { running: false, err: null, user: '', pass: '' };
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -14,7 +14,7 @@ class Login extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    this.setState({ running: true });
+    this.setState({ running: true, err: null });
 
     let token = 'Basic ' + btoa(this.state.user + ':' + this.state.pass);
 
@@ -24,7 +24,7 @@ class Login extends React.Component {
     })
       .then(res => {
         if (res.ok) {
-          this.setState({ err: null, running: false });
+          this.setState({ running: false, err: null });
           let auth = { user: this.state.user, token: token };
           let remember = document.getElementById('inputRemember').checked;
           this.props.app.setAuth(auth, remember);
@@ -33,7 +33,7 @@ class Login extends React.Component {
         }
       })
       .catch(err => {
-        this.setState({ err: err, running: false });
+        this.setState({ running: false, err: err });
       });
   }
 
@@ -60,7 +60,10 @@ class Login extends React.Component {
     let err;
     if (this.state.err) {
       err = (
-        <div className="alert alert-danger">
+        <div className="alert alert-danger alert-dismissable" role="alert">
+          <button type="button" className="close" aria-label="Close" onClick={()=>this.setState({err:null})}>
+            <span aria-hidden="true">&times;</span>
+          </button>
           {this.state.err.message}
         </div>
       );
@@ -71,7 +74,6 @@ class Login extends React.Component {
           <h2 className="form-signin-heading">
             <i className="fa fa-bar-chart" aria-hidden="true"></i>
           </h2>
-          {err}
           <label for="inputUser" className="sr-only">Username</label>
           <input type="text" id="inputUser" className="form-control"
             placeholder="Username" required autofocus
@@ -87,7 +89,8 @@ class Login extends React.Component {
               <input type="checkbox" id="inputRemember" value="remember-me"/> Remember me
             </label>
           </div>
-          {this.renderButton()}
+          <p>{this.renderButton()}</p>
+          {err}
         </form>
       </div>
     );
