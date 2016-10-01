@@ -53,15 +53,7 @@ class Accounts extends React.Component {
     if (this.state.data.length == 0) {
       return null;
     }
-    let rows = [];
-    this.state.data.forEach(function(account) {
-      rows.push(
-        <Account
-          key={account.account_id}
-          account={account}
-        />
-      );
-    });
+
     return (
       <table className="table table-striped table-condensed">
         <thead>
@@ -73,7 +65,14 @@ class Accounts extends React.Component {
             <th>Active</th>
           </tr>
         </thead>
-        <tbody>{rows}</tbody>
+        <tbody>
+          {this.state.data.map((account) => (
+            <Account
+              key={account.account_id}
+              account={account}
+            />
+          ))}
+        </tbody>
       </table>
     );
   }
