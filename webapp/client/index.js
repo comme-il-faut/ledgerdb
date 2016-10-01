@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, Link, useRouterHistory } from 'react-router';
+import { Router, Route, IndexRoute, Link, useRouterHistory } from 'react-router';
 import { createHashHistory } from 'history';
 
-import AccountTypes from './modules/AccountTypes.jsx'
-import Accounts from './modules/Accounts.jsx'
+import Admin from './modules/Admin.jsx'
+import Dashboard from './modules/Dashboard.jsx'
 import Login from './modules/Login.jsx'
+import Post from './modules/Post.jsx'
+import Postings from './modules/Postings.jsx'
 import Profile from './modules/Profile.jsx'
 
 class App extends React.Component {
@@ -36,6 +38,7 @@ class App extends React.Component {
   handleLogOut(e) {
     //e.preventDefault();
     localStorage.removeItem('auth');
+    sessionStorage.clear();
     this.setState({ auth: null });
   }
 
@@ -80,6 +83,7 @@ class App extends React.Component {
         </div>
       );
     }
+
     return (
       <div className="container">
         <nav className="navbar navbar-default navbar-fixed-top">
@@ -100,8 +104,9 @@ class App extends React.Component {
           </div>
           <div id="navbar" className="navbar-collapse collapse">
             <ul className="nav navbar-nav">
-              <li><Link to="/account_types">Account Types</Link></li>
-              <li><Link to="/accounts">Accounts</Link></li>
+              <li><Link to="/post">Post</Link></li>
+              <li><Link to="/postings">Postings</Link></li>
+              <li><Link to="/admin">Admin</Link></li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
               <li className="dropdown">
@@ -132,9 +137,12 @@ const appHistory = useRouterHistory(createHashHistory)({ queryKey: false })
 ReactDOM.render(
   <Router history={appHistory}>
     <Route path="/" component={App}>
-      {/* <IndexRoute component={Dashboard} /> */}
-      <Route path="account_types" component={AccountTypes}/>
-      <Route path="accounts" component={Accounts}/>
+      <IndexRoute component={Dashboard}/>
+
+      <Route path="post" component={Post}/>
+      <Route path="postings" component={Postings}/>
+      <Route path="admin" component={Admin}/>
+
       <Route path="profile" component={Profile}/>
     </Route>
   </Router>,
