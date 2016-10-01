@@ -47,12 +47,14 @@ class Login extends React.Component {
     if (this.state.running)
       return (
         <button className="btn btn-lg btn-primary btn-block disabled" type="submit" disabled>
-          <i className="fa fa-circle-o-notch fa-spin"></i> Loggin in...
+          <i className="fa fa-circle-o-notch fa-spin"></i> Logging in...
         </button>
       );
     else
       return (
-        <button className="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+        <button className="btn btn-lg btn-primary btn-block" type="submit">
+          <i className="fa fa-key" aria-hidden="true"></i> Log in
+        </button>
       );
   }
 
