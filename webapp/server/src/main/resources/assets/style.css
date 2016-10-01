@@ -31,3 +31,20 @@ body {
 .navbar-brand:hover > i {
   color: #4caf50;
 }
+
+
+
+.transition-fade-enter {
+  opacity: 0.01;
+}
+.transition-fade-enter.transition-fade-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+.transition-fade-leave {
+  opacity: 1;
+}
+.transition-fade-leave.transition-fade-leave-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, Link, useRouterHistory } from 'react-router';
 import { createHashHistory } from 'history';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import Admin from './modules/Admin.jsx'
 import Dashboard from './modules/Dashboard.jsx'
@@ -96,7 +97,7 @@ class App extends React.Component {
               <span className="sr-only">Toggle navigation</span>
               <span className="icon-bar"></span>
               <span className="icon-bar"></span>
-              <span className="icon-bar"></span>                        
+              <span className="icon-bar"></span>
             </button>
             <Link to="/" className="navbar-brand">
               <i className="fa fa-bar-chart" aria-hidden="true"></i>
@@ -125,7 +126,14 @@ class App extends React.Component {
           </div>
           </div>
         </nav>
-        {this.props.children}
+        <ReactCSSTransitionGroup
+          component="div"
+          transitionName="transition-fade"
+          transitionEnterTimeout={500}
+          transitionLeave={false}
+        >
+        {React.cloneElement(this.props.children, { key: this.props.location.pathname })}
+        </ReactCSSTransitionGroup>
       </div>
     )
   }
