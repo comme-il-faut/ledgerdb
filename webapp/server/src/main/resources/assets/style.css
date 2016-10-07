@@ -33,6 +33,13 @@ body {
 }
 
 
+.form-horizontal {
+  max-width: 600px;
+}
+.form-horizontal select {
+  width: 99%;
+}
+
 
 .transition-fade-enter {
   opacity: 0.01;
@@ -47,4 +54,22 @@ body {
 .transition-fade-leave.transition-fade-leave-active {
   opacity: 0.01;
   transition: opacity 300ms ease-in;
+}
+
+
+
+.pika-table abbr {
+  border-bottom: none !important;
+  text-decoration: none !important;
+}
+.pika-single {
+  font-family: inherit !important;
+}
+
+form input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.pull-left {
+  margin-left: 7px;
 }
