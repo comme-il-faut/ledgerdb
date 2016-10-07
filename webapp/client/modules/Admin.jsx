@@ -15,10 +15,18 @@ class Admin extends React.Component {
   render() {
     return (
       <div>
-        <h2>Accounts</h2>
-        <Accounts/>
-        <h2>Account Types</h2>
-        <AccountTypes/>
+        <div className="panel panel-default pull-left">
+          <div className="panel-heading">
+            <h4>Account Types</h4>
+          </div>
+          <AccountTypes/>
+        </div>
+        <div className="panel panel-default pull-left">
+          <div className="panel-heading">
+            <h4>Accounts</h4>
+          </div>
+          <Accounts/>
+        </div>
       </div>
     );
   }
