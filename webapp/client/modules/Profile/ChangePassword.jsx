@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Message from '../Message.jsx';
+
 class PasswordChange extends React.Component {
   constructor(props) {
     super(props);
@@ -21,7 +23,8 @@ class PasswordChange extends React.Component {
             {this.renderButton()}
           </form>
         </div>
-        {this.renderMessage()}
+        {/* this.renderMessage() */}
+        <Message message={this.state.result}/>
       </div>
     );
   }
@@ -77,7 +80,7 @@ class PasswordChange extends React.Component {
     }
 
     return (
-      <div className="modal fade" tabindex="-1" role="dialog">
+      <div className="modal fade" tabIndex="-1" role="dialog">
         <div className="modal-dialog modal-sm" role="document">
           <div className="modal-content">
             <div className="modal-header">
@@ -153,7 +156,6 @@ class PasswordChange extends React.Component {
   componentDidUpdate() {
     if (this.state.result) {
       this.state.result = null;
-      $('.modal').modal('show');
     }
   }
 
