@@ -73,3 +73,7 @@ form input[type=number] {
 .pull-left {
   margin-left: 7px;
 }
+
+.modal-body {
+  word-wrap: break-word;
+}
