@@ -1,8 +1,6 @@
 package ledgerdb.server;
 
 import ledgerdb.server.config.AppConfig;
-import ledgerdb.server.auth.AppAuthenticator;
-import ledgerdb.server.auth.AppAuthorizer;
 import ledgerdb.server.auth.User;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -12,6 +10,7 @@ import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import java.io.IOException;
+import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 public class App extends Application<AppConfig> {
@@ -43,6 +42,7 @@ public class App extends Application<AppConfig> {
         env.jersey().register(RolesAllowedDynamicFeature.class);
         
         env.jersey().register(AppExceptionMapper.class);
+        env.jersey().property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
 
         cf.createResources().forEach(resource ->
                 env.jersey().register(resource));
