@@ -80,11 +80,11 @@
 
 	var _Post2 = _interopRequireDefault(_Post);
 
-	var _Postings = __webpack_require__(360);
+	var _Postings = __webpack_require__(361);
 
 	var _Postings2 = _interopRequireDefault(_Postings);
 
-	var _Profile = __webpack_require__(361);
+	var _Profile = __webpack_require__(362);
 
 	var _Profile2 = _interopRequireDefault(_Profile);
 
@@ -29095,6 +29095,14 @@
 
 	var _pikaday2 = _interopRequireDefault(_pikaday);
 
+	var _moment = __webpack_require__(253);
+
+	var _moment2 = _interopRequireDefault(_moment);
+
+	var _Message = __webpack_require__(360);
+
+	var _Message2 = _interopRequireDefault(_Message);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -29103,7 +29111,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var DATE_FORMAT = "M/D/YYYY";
+	var DATE_FORMAT_MDY = "M/D/YYYY";
 
 	var Post = function (_React$Component) {
 	  _inherits(Post, _React$Component);
@@ -29113,7 +29121,13 @@
 
 	    var _this = _possibleConstructorReturn(this, (Post.__proto__ || Object.getPrototypeOf(Post)).call(this, props));
 
-	    _this.state = { accounts: [], err: null, valid: {}, input: {} };
+	    _this.state = { accounts: [], valid: {}, input: {}, message: null };
+
+	    var inputs = ['date', 'cr', 'dr', 'amount', 'description'];
+	    for (var i = 0; i < inputs.length; i++) {
+	      _this.state.input[inputs[i]] = "";
+	    }
+
 	    _this.handleChange = _this.handleChange.bind(_this);
 	    _this.handleSubmit = _this.handleSubmit.bind(_this);
 	    return _this;
@@ -29126,13 +29140,13 @@
 
 	      document.title = "LedgerDB - Post";
 
-	      //$('.form-control').change(this.handleChange);
-
 	      this.pikaday = new _pikaday2.default({
 	        field: document.getElementById('date'),
-	        format: DATE_FORMAT,
+	        format: DATE_FORMAT_MDY,
 	        firstDay: 1,
-	        onSelect: this.handleChangeDate.bind(this)
+	        onSelect: function onSelect() {
+	          return _this2.setInput("date", _this2.pikaday.toString());
+	        }
 	      });
 
 	      fetch('api/account/all', {
@@ -29147,10 +29161,10 @@
 	          });
 	        }
 	      }).then(function (json) {
-	        _this2.setState({ accounts: json, err: null });
+	        _this2.setState({ accounts: json });
 	      }).catch(function (err) {
 	        console.log("Error has occurred: %o", err);
-	        _this2.setState({ accounts: [], err: err });
+	        _this2.setState({ accounts: [], message: err });
 	      });
 	    }
 	  }, {
@@ -29159,21 +29173,45 @@
 	      this.pikaday.destroy();
 	    }
 	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      if (this.state.message) {
+	        this.state.message = null;
+	      }
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      return _react2.default.createElement(
 	        'form',
 	        { className: 'form-horizontal', onSubmit: this.handleSubmit },
-	        this.renderFormGroup("date", "Date", _react2.default.createElement('input', {
-	          type: 'date',
-	          className: 'form-control',
-	          id: 'date',
-	          placeholder: DATE_FORMAT,
-	          value: this.state.input.date,
-	          onChange: this.handleChange
-	        })),
-	        this.renderFormGroup("cr", "From Account", this.renderSelect("cr")),
-	        this.renderFormGroup("dr", "To Account", this.renderSelect("dr")),
+	        this.renderFormGroup("date", "Date", _react2.default.createElement(
+	          'div',
+	          { className: 'input-group' },
+	          _react2.default.createElement('input', {
+	            type: 'date',
+	            className: 'form-control',
+	            id: 'date',
+	            placeholder: DATE_FORMAT_MDY,
+	            value: this.state.input.date,
+	            onChange: this.handleChange
+	          }),
+	          _react2.default.createElement(
+	            'span',
+	            { className: 'input-group-btn' },
+	            _react2.default.createElement(
+	              'button',
+	              {
+	                className: 'btn btn-default',
+	                type: 'button',
+	                onClick: this.handleClick.bind(this, 'today')
+	              },
+	              _react2.default.createElement('i', { className: 'fa fa-calendar-check-o', 'aria-hidden': 'true' })
+	            )
+	          )
+	        )),
+	        this.renderFormGroup("cr", "From", this.renderSelect("cr")),
+	        this.renderFormGroup("dr", "To", this.renderSelect("dr")),
 	        this.renderFormGroup("amount", "Amount", _react2.default.createElement(
 	          'div',
 	          { className: 'input-group' },
@@ -29192,6 +29230,13 @@
 	            onChange: this.handleChange
 	          })
 	        )),
+	        this.renderFormGroup("description", "Description", _react2.default.createElement('input', {
+	          type: 'text',
+	          className: 'form-control',
+	          id: 'description',
+	          value: this.state.input.description,
+	          onChange: this.handleChange
+	        })),
 	        _react2.default.createElement(
 	          'div',
 	          { className: 'form-group' },
@@ -29201,16 +29246,23 @@
 	            _react2.default.createElement(
 	              'button',
 	              { type: 'submit', className: 'btn btn-primary btn-lg' },
-	              'Post'
+	              _react2.default.createElement('i', { className: 'fa fa-plus', 'aria-hidden': 'true' }),
+	              ' Post'
 	            ),
 	            ' ',
 	            _react2.default.createElement(
 	              'button',
-	              { onClick: this.handleClear.bind(this), className: 'btn btn-default' },
-	              'Clear'
+	              {
+	                type: 'reset',
+	                onClick: this.handleClick.bind(this, 'clear'),
+	                className: 'btn btn-default'
+	              },
+	              _react2.default.createElement('i', { className: 'fa fa-eraser', 'aria-hidden': 'true' }),
+	              ' Clear'
 	            )
 	          )
-	        )
+	        ),
+	        _react2.default.createElement(_Message2.default, { message: this.state.message })
 	      );
 	    }
 	  }, {
@@ -29285,16 +29337,16 @@
 	      );
 	    }
 	  }, {
-	    key: 'handleChangeDate',
-	    value: function handleChangeDate(a, b, c) {
-	      this.handleChange({ target: { id: "date", value: $('#date').val() } });
+	    key: 'setInput',
+	    value: function setInput(id, value) {
+	      var input = this.state.input;
+	      input[id] = value;
+	      this.setState({ valid: {}, input: input });
 	    }
 	  }, {
 	    key: 'handleChange',
 	    value: function handleChange(e) {
-	      var input = this.state.input;
-	      input[e.target.id] = e.target.value;
-	      this.setState({ valid: {}, input: input });
+	      this.setInput(e.target.id, e.target.value);
 
 	      if (e.target.id == "date") {
 	        var value = e.target.value;
@@ -29305,30 +29357,69 @@
 	      }
 	    }
 	  }, {
-	    key: 'handleClear',
-	    value: function handleClear(e) {
+	    key: 'handleClick',
+	    value: function handleClick(action, e) {
+	      var _this3 = this;
+
 	      e.preventDefault();
-	      var input = this.state.input;
-	      Object.keys(input).forEach(function (id) {
-	        return input[id] = "";
-	      });
-	      this.setState({ valid: {}, input: input });
+	      if (action == "today") {
+	        var m = (0, _moment2.default)();
+	        this.setInput('date', m.format(DATE_FORMAT_MDY));
+	        this.pikaday.setMoment(m, true); // do not trigger onSelect
+	      }
+	      if (action == "clear") {
+	        (function () {
+	          var input = _this3.state.input;
+	          Object.keys(input).forEach(function (id) {
+	            return input[id] = "";
+	          });
+	          _this3.setState({ valid: {}, input: input });
+	        })();
+	      }
 	    }
 	  }, {
 	    key: 'handleSubmit',
 	    value: function handleSubmit(e) {
+	      var _this4 = this;
+
 	      e.preventDefault();
 
-	      var valid = this.state.valid;
-	      valid.date = !isNaN(Date.parse($("#date").val()));
-	      valid.cr = !!$('#cr').val();
-	      valid.dr = !!$('#dr').val();
-	      valid.amount = !!$("#amount").val() && /^(\d+(,\d\d\d)*)?(\.\d+)?$/.test($("#amount").val());
-	      this.setState({ valid: valid });
+	      var input = Object.assign({}, this.state.input);
+	      var m = (0, _moment2.default)(input.date, DATE_FORMAT_MDY, true); // use strict parsing
 
+	      var valid = this.state.valid;
+	      valid.date = m.isValid();
+	      valid.cr = !!input.cr;
+	      valid.dr = !!input.dr;
+	      valid.amount = !!input.amount && /^(\d+(,\d\d\d)*)?(\.\d+)?$/.test(input.amount);
+	      this.setState({ valid: valid });
 	      if (!Object.keys(valid).every(function (id) {
 	        return valid[id];
-	      })) return false;
+	      })) return;
+
+	      input.date = m.format('YYYY-MM-DD');
+
+	      fetch('api/posting', {
+	        method: 'post',
+	        headers: {
+	          'Authorization': sessionStorage.token,
+	          'Content-type': 'application/json'
+	        },
+	        body: JSON.stringify(input)
+	      }).then(function (res) {
+	        if (res.ok) {
+	          return res.json();
+	        } else {
+	          return res.text().then(function (text) {
+	            throw new Error(text ? text : res.statusText);
+	          });
+	        }
+	      }).then(function (json) {
+	        //console.log("Post-OK");
+	        _this4.setState({ message: "OK" });
+	      }).catch(function (err) {
+	        _this4.setState({ message: err });
+	      });
 	    }
 	  }]);
 
@@ -44844,6 +44935,133 @@
 /* 360 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Message = function (_React$Component) {
+	  _inherits(Message, _React$Component);
+
+	  function Message(props) {
+	    _classCallCheck(this, Message);
+
+	    return _possibleConstructorReturn(this, (Message.__proto__ || Object.getPrototypeOf(Message)).call(this, props));
+	  }
+
+	  _createClass(Message, [{
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      if (this.props.message) {
+	        $('.modal').modal('show');
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var message = this.props.message;
+	      if (!message) return null;
+
+	      var title = void 0,
+	          body = void 0;
+	      if (message instanceof Error) {
+	        title = _react2.default.createElement(
+	          'h4',
+	          { className: 'modal-title text-danger' },
+	          _react2.default.createElement('i', { className: 'fa fa-exclamation-circle', 'aria-hidden': 'true' }),
+	          ' Error'
+	        );
+	        body = _react2.default.createElement(
+	          'p',
+	          null,
+	          message.message
+	        );
+	      } else {
+	        title = _react2.default.createElement(
+	          'h4',
+	          { className: 'modal-title text-success' },
+	          _react2.default.createElement('i', { className: 'fa fa-check-circle', 'aria-hidden': 'true' }),
+	          ' Great Success'
+	        );
+	        body = _react2.default.createElement(
+	          'p',
+	          null,
+	          message
+	        );
+	      }
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'modal fade', tabIndex: '-1', role: 'dialog' },
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'modal-dialog', role: 'document' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'modal-content' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'modal-header' },
+	              _react2.default.createElement(
+	                'button',
+	                { className: 'close', 'aria-label': 'Close', 'data-dismiss': 'modal', type: 'button' },
+	                _react2.default.createElement(
+	                  'span',
+	                  { 'aria-hidden': 'true' },
+	                  '\xD7'
+	                )
+	              ),
+	              title
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'modal-body' },
+	              body
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'modal-footer' },
+	              _react2.default.createElement(
+	                'button',
+	                { type: 'button', className: 'btn btn-default', 'data-dismiss': 'modal' },
+	                'Close'
+	              )
+	            )
+	          )
+	        )
+	      );
+	    }
+	  }]);
+
+	  return Message;
+	}(_react2.default.Component);
+
+	Message.propTypes = {
+	  message: _react2.default.PropTypes.any, // string or Error
+	  dismiss: _react2.default.PropTypes.func
+	};
+
+	exports.default = Message;
+
+/***/ },
+/* 361 */
+/***/ function(module, exports, __webpack_require__) {
+
 	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
@@ -44895,7 +45113,7 @@
 	exports.default = Postings;
 
 /***/ },
-/* 361 */
+/* 362 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44910,7 +45128,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _ChangePassword = __webpack_require__(362);
+	var _ChangePassword = __webpack_require__(363);
 
 	var _ChangePassword2 = _interopRequireDefault(_ChangePassword);
 
@@ -44953,7 +45171,7 @@
 	exports.default = Profile;
 
 /***/ },
-/* 362 */
+/* 363 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44967,6 +45185,10 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	var _Message = __webpack_require__(360);
+
+	var _Message2 = _interopRequireDefault(_Message);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -45016,7 +45238,7 @@
 	            this.renderButton()
 	          )
 	        ),
-	        this.renderMessage()
+	        _react2.default.createElement(_Message2.default, { message: this.state.result })
 	      );
 	    }
 	  }, {
@@ -45085,7 +45307,7 @@
 
 	      return _react2.default.createElement(
 	        'div',
-	        { className: 'modal fade', tabindex: '-1', role: 'dialog' },
+	        { className: 'modal fade', tabIndex: '-1', role: 'dialog' },
 	        _react2.default.createElement(
 	          'div',
 	          { className: 'modal-dialog modal-sm', role: 'document' },
@@ -45184,7 +45406,6 @@
 	    value: function componentDidUpdate() {
 	      if (this.state.result) {
 	        this.state.result = null;
-	        $('.modal').modal('show');
 	      }
 	    }
 	  }]);
