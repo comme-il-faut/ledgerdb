@@ -28,7 +28,7 @@ class Message extends React.Component {
     } else {
       title = (
         <h4 className="modal-title text-success">
-          <i className="fa fa-check-circle" aria-hidden="true"></i> Great Success
+          <i className="fa fa-check-circle" aria-hidden="true"></i> Great success!
         </h4>
       );
       body = (

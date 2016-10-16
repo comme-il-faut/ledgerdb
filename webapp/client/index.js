@@ -105,16 +105,35 @@ class App extends React.Component {
           </div>
           <div id="navbar" className="navbar-collapse collapse">
             <ul className="nav navbar-nav">
-              <li><Link to="/post">Post</Link></li>
-              <li><Link to="/postings">Postings</Link></li>
-              <li><Link to="/admin">Admin</Link></li>
+              <li>
+                <Link to="/post">
+                  <i className="fa fa-plus" aria-hidden="true"></i> Post
+                </Link>
+              </li>
+              <li>
+                <Link to="/postings">
+                  <i className="fa fa-search" aria-hidden="true"></i> Postings
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin">
+                  <i className="fa fa-cog" aria-hidden="true"></i> Admin
+                </Link>
+              </li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
               <li className="dropdown">
-                <a href="#" className="dropdown-toggle" data-toggle="dropdown" role="button"
-                  aria-haspopup="true" aria-expanded="false">
-                  <span className="glyphicon glyphicon-user" aria-hidden="true"></span> <span className="caret"></span>
-                  </a>
+                <a href="#"
+                  className="dropdown-toggle"
+                  data-toggle="dropdown"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <i className="fa fa-user" aria-hidden="true"></i>
+                  {" Profile "}
+                  <span className="caret"></span>
+                </a>
                 <ul className="dropdown-menu">
                   <li className="dropdown-header">{this.state.auth.user}</li>
                   <li><Link to="/profile">Profile</Link></li>
