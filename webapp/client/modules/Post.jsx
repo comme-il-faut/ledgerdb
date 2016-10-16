@@ -9,7 +9,13 @@ const DATE_FORMAT_MDY = "M/D/YYYY";
 class Post extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { accounts: [], valid: {}, input: {}, message: null };
+    this.state = {
+      accounts: [],
+      valid: {},
+      input: {},
+      running: false,
+      message: null
+    };
 
     let inputs = [ 'date', 'cr', 'dr', 'amount', 'description' ];
     for (let i = 0; i < inputs.length; i++) {
@@ -113,7 +119,10 @@ class Post extends React.Component {
         ))}
         <div className="form-group">
           <div className="col-sm-offset-3 col-sm-9">
-            <button type="submit" className="btn btn-primary btn-lg">
+            <button
+              type="submit"
+              className={"btn btn-primary btn-lg" + (this.state.running ? " disabled" : "")}
+            >
               <i className="fa fa-plus" aria-hidden="true"></i> Post
             </button>
             {' '}
@@ -232,6 +241,8 @@ class Post extends React.Component {
 
     input.date = m.format('YYYY-MM-DD');
 
+    this.setState({ running: true });
+
     fetch('api/posting', {
       method: 'post',
       headers: {
@@ -251,10 +262,10 @@ class Post extends React.Component {
       })
       .then(json => {
         //console.log("Post-OK");
-        this.setState({ message: "OK" });
+        this.setState({ running: false, message: "OK" });
       })
       .catch(err => {
-        this.setState({ message: err });
+        this.setState({ running: false, message: err });
       });
   }
 
