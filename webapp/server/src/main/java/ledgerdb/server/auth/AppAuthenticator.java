@@ -21,26 +21,28 @@ public class AppAuthenticator implements Authenticator<BasicCredentials, User> {
 
     @Override
     public Optional<User> authenticate(BasicCredentials c) throws AuthenticationException {
-        final String sql = "select pw from sys_user where user_name = ?";
+        final String sql = "select user_id, pw from sys_user where user_name = ?";
         try (Connection con = dbConfig.getConnection();
                 PreparedStatement st = con.prepareStatement(sql)) {
             st.setString(1, c.getUsername());
             ResultSet rs = st.executeQuery();
-            boolean ok = false;
             if (rs.next()) {
-                String pw = rs.getString(1);
+                int id = rs.getInt(1);
+                String pw = rs.getString(2);
+                
+                boolean ok = false;
                 if (pw == null && (c.getPassword() == null || c.getPassword().isEmpty()))
                     ok = true;
                 if (pw != null && c.getPassword() != null)
                     ok = BCrypt.checkpw(c.getPassword(), pw);
+                if (ok)
+                    return Optional.of(new User(id, c.getUsername()));
             }
-            return ok
-                    ? Optional.of(new User(c.getUsername()))
-                    : Optional.empty();
         } catch (SQLException e) {
             throw new AuthenticationException(e);
         }
-    }
+        return Optional.empty();
+}
 
     public void update(String username, String password) throws SQLException {
         final String sql = "update sys_user set pw = ? where user_name = ?";
