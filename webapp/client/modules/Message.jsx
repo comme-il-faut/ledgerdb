@@ -60,8 +60,7 @@ class Message extends React.Component {
 }
 
 Message.propTypes = {
-  message: React.PropTypes.any, // string or Error
-  dismiss: React.PropTypes.func
+  message: React.PropTypes.any // string or Error
 };
 
 export default Message;
