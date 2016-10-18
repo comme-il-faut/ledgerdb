@@ -228,7 +228,8 @@
 	                  _react2.default.createElement(
 	                    _reactRouter.Link,
 	                    { to: '/post' },
-	                    'Post'
+	                    _react2.default.createElement('i', { className: 'fa fa-plus', 'aria-hidden': 'true' }),
+	                    ' Post'
 	                  )
 	                ),
 	                _react2.default.createElement(
@@ -237,7 +238,8 @@
 	                  _react2.default.createElement(
 	                    _reactRouter.Link,
 	                    { to: '/postings' },
-	                    'Postings'
+	                    _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
+	                    ' Postings'
 	                  )
 	                ),
 	                _react2.default.createElement(
@@ -246,7 +248,8 @@
 	                  _react2.default.createElement(
 	                    _reactRouter.Link,
 	                    { to: '/admin' },
-	                    'Admin'
+	                    _react2.default.createElement('i', { className: 'fa fa-cog', 'aria-hidden': 'true' }),
+	                    ' Admin'
 	                  )
 	                )
 	              ),
@@ -258,10 +261,15 @@
 	                  { className: 'dropdown' },
 	                  _react2.default.createElement(
 	                    'a',
-	                    { href: '#', className: 'dropdown-toggle', 'data-toggle': 'dropdown', role: 'button',
-	                      'aria-haspopup': 'true', 'aria-expanded': 'false' },
-	                    _react2.default.createElement('span', { className: 'glyphicon glyphicon-user', 'aria-hidden': 'true' }),
-	                    ' ',
+	                    { href: '#',
+	                      className: 'dropdown-toggle',
+	                      'data-toggle': 'dropdown',
+	                      role: 'button',
+	                      'aria-haspopup': 'true',
+	                      'aria-expanded': 'false'
+	                    },
+	                    _react2.default.createElement('i', { className: 'fa fa-user', 'aria-hidden': 'true' }),
+	                    " Profile ",
 	                    _react2.default.createElement('span', { className: 'caret' })
 	                  ),
 	                  _react2.default.createElement(
@@ -29121,7 +29129,13 @@
 
 	    var _this = _possibleConstructorReturn(this, (Post.__proto__ || Object.getPrototypeOf(Post)).call(this, props));
 
-	    _this.state = { accounts: [], valid: {}, input: {}, message: null };
+	    _this.state = {
+	      accounts: [],
+	      valid: {},
+	      input: {},
+	      running: false,
+	      message: null
+	    };
 
 	    var inputs = ['date', 'cr', 'dr', 'amount', 'description'];
 	    for (var i = 0; i < inputs.length; i++) {
@@ -29245,7 +29259,10 @@
 	            { className: 'col-sm-offset-3 col-sm-9' },
 	            _react2.default.createElement(
 	              'button',
-	              { type: 'submit', className: 'btn btn-primary btn-lg' },
+	              {
+	                type: 'submit',
+	                className: "btn btn-primary btn-lg" + (this.state.running ? " disabled" : "")
+	              },
 	              _react2.default.createElement('i', { className: 'fa fa-plus', 'aria-hidden': 'true' }),
 	              ' Post'
 	            ),
@@ -29399,6 +29416,8 @@
 
 	      input.date = m.format('YYYY-MM-DD');
 
+	      this.setState({ running: true });
+
 	      fetch('api/posting', {
 	        method: 'post',
 	        headers: {
@@ -29416,9 +29435,9 @@
 	        }
 	      }).then(function (json) {
 	        //console.log("Post-OK");
-	        _this4.setState({ message: "OK" });
+	        _this4.setState({ running: false, message: "OK" });
 	      }).catch(function (err) {
-	        _this4.setState({ message: err });
+	        _this4.setState({ running: false, message: err });
 	      });
 	    }
 	  }]);
@@ -44996,7 +45015,7 @@
 	          'h4',
 	          { className: 'modal-title text-success' },
 	          _react2.default.createElement('i', { className: 'fa fa-check-circle', 'aria-hidden': 'true' }),
-	          ' Great Success'
+	          ' Great success!'
 	        );
 	        body = _react2.default.createElement(
 	          'p',
@@ -45052,8 +45071,7 @@
 	}(_react2.default.Component);
 
 	Message.propTypes = {
-	  message: _react2.default.PropTypes.any, // string or Error
-	  dismiss: _react2.default.PropTypes.func
+	  message: _react2.default.PropTypes.any // string or Error
 	};
 
 	exports.default = Message;
@@ -45062,7 +45080,7 @@
 /* 361 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -45088,22 +45106,153 @@
 	  function Postings(props) {
 	    _classCallCheck(this, Postings);
 
-	    return _possibleConstructorReturn(this, (Postings.__proto__ || Object.getPrototypeOf(Postings)).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (Postings.__proto__ || Object.getPrototypeOf(Postings)).call(this, props));
+
+	    _this.state = {
+	      postings: [],
+	      message: null
+	    };
+	    return _this;
 	  }
 
 	  _createClass(Postings, [{
-	    key: "componentDidMount",
+	    key: 'componentDidMount',
 	    value: function componentDidMount() {
+	      var _this2 = this;
+
 	      document.title = "LedgerDB - Postings";
+
+	      fetch('api/posting', {
+	        method: 'get',
+	        headers: { 'Authorization': sessionStorage.token }
+	      }).then(function (res) {
+	        if (res.ok) {
+	          return res.json();
+	        } else {
+	          return res.text().then(function (text) {
+	            throw new Error(text ? text : res.statusText);
+	          });
+	        }
+	      }).then(function (json) {
+	        _this2.setState({ postings: json });
+	      }).catch(function (err) {
+	        console.log("Error has occurred: %o", err);
+	        _this2.setState({ postings: [], message: err });
+	      });
 	    }
 	  }, {
-	    key: "render",
+	    key: 'render',
 	    value: function render() {
+	      var _this3 = this;
+
+	      if (!this.state.postings.length) return null;
+
+	      var entries = [],
+	          entry = [];
+
+	      this.state.postings.forEach(function (posting) {
+	        if (entry.length && entry[0].posting_header_id != posting.posting_header_id) {
+	          entries.push(entry);
+	          entry = [];
+	        }
+	        entry.push(posting);
+	      });
+	      entries.push(entry);
+
+	      var rows = [];
+	      entries.forEach(function (entry) {
+	        rows.push(_react2.default.createElement(
+	          'tr',
+	          { key: entry[0].posting_header_id },
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            entry[0].posting_date
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            entry.map(function (posting) {
+	              return _this3.renderSpan(posting, posting.account_name);
+	            })
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap text-right' },
+	            entry.map(function (posting) {
+	              return _this3.renderSpan(posting, _this3.renderAmount(posting.amount));
+	            })
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            null,
+	            entry[0].description
+	          )
+	        ));
+	      });
+
 	      return _react2.default.createElement(
-	        "h2",
+	        'div',
 	        null,
-	        "Postings"
+	        _react2.default.createElement(
+	          'table',
+	          { className: 'table table-striped table-condensed' },
+	          _react2.default.createElement(
+	            'thead',
+	            null,
+	            _react2.default.createElement(
+	              'tr',
+	              null,
+	              _react2.default.createElement(
+	                'th',
+	                { className: 'col-md-1' },
+	                'Date'
+	              ),
+	              _react2.default.createElement(
+	                'th',
+	                { className: 'col-md-2' },
+	                'Account'
+	              ),
+	              _react2.default.createElement(
+	                'th',
+	                { className: 'col-md-1 text-right' },
+	                'Amount'
+	              ),
+	              _react2.default.createElement(
+	                'th',
+	                { className: 'col-md-8' },
+	                'Description'
+	              )
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'tbody',
+	            null,
+	            rows
+	          )
+	        )
 	      );
+	    }
+	  }, {
+	    key: 'renderSpan',
+	    value: function renderSpan(posting, content) {
+	      var props = { key: posting.posting_detail_id };
+	      if (posting.amount > 0) props.className = 'number-positive';
+	      if (posting.amount < 0) props.className = 'number-negative';
+	      return _react2.default.createElement(
+	        'span',
+	        props,
+	        content,
+	        _react2.default.createElement('br', null)
+	      );
+	    }
+	  }, {
+	    key: 'renderAmount',
+	    value: function renderAmount(amount) {
+	      if (amount == 0) return "-";
+	      var s = amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+	      if (s.startsWith("-")) s = "(" + s.substring(1) + ")";
+	      return s;
 	    }
 	  }]);
 
