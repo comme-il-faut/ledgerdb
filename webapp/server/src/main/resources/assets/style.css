@@ -77,3 +77,7 @@ form input[type=number] {
 .modal-body {
   word-wrap: break-word;
 }
+
+
+.number-negative { color: #d44950; }
+.number-positive { color: #4950d4; }
