@@ -27,10 +27,18 @@ body {
 .form-group label {
   font-weight: normal;
 }
-.form-signin-heading,
-.navbar-brand:hover > i {
+.form-signin-heading {
+  font-family: "Yanone Kaffeesatz";
   color: #4caf50;
+  text-transform: uppercase;
 }
+
+nav .navbar-brand {
+  font-family: "Yanone Kaffeesatz";
+  font-size: 21px;
+  text-transform: uppercase;
+}
+nav.navbar a:hover { color: #4caf50 !important; }
 
 
 .form-horizontal {
@@ -81,3 +89,6 @@ form input[type=number] {
 
 .number-negative { color: #d44950; }
 .number-positive { color: #4950d4; }
+
+.indent-left { padding-left: 2em; }
+.indent-right { padding-right: 2em; }
