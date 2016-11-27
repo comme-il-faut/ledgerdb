@@ -10,6 +10,7 @@ import Login from './modules/Login.jsx'
 import Post from './modules/Post.jsx'
 import Postings from './modules/Postings.jsx'
 import Profile from './modules/Profile.jsx'
+import Reconciliation from './modules/Reconciliation.jsx'
 
 class App extends React.Component {
 
@@ -100,11 +101,11 @@ class App extends React.Component {
               <span className="icon-bar"></span>
             </button>
             <Link to="/" className="navbar-brand">
-              <i className="fa fa-bar-chart" aria-hidden="true"></i>
+              <i className="fa fa-bar-chart" aria-hidden="true"></i> LedgerDB
             </Link>
           </div>
           <div id="navbar" className="navbar-collapse collapse">
-            <ul className="nav navbar-nav">
+            <ul className="nav navbar-nav navbar-left">
               <li>
                 <Link to="/post">
                   <i className="fa fa-plus" aria-hidden="true"></i> Post
@@ -116,12 +117,17 @@ class App extends React.Component {
                 </Link>
               </li>
               <li>
-                <Link to="/admin">
-                  <i className="fa fa-cog" aria-hidden="true"></i> Admin
+                <Link to="/recon">
+                  <i className="fa fa-handshake-o" aria-hidden="true"></i> Reconciliation
                 </Link>
               </li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
+              <li>
+                <Link to="/admin">
+                  <i className="fa fa-lock" aria-hidden="true"></i> Administration
+                </Link>
+              </li>
               <li className="dropdown">
                 <a href="#"
                   className="dropdown-toggle"
@@ -168,8 +174,9 @@ ReactDOM.render(
 
       <Route path="post" component={Post}/>
       <Route path="postings" component={Postings}/>
-      <Route path="admin" component={Admin}/>
+      <Route path="recon" component={Reconciliation}/>
 
+      <Route path="admin" component={Admin}/>
       <Route path="profile" component={Profile}/>
     </Route>
   </Router>,
