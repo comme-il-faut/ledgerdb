@@ -3,7 +3,6 @@ CREATE TABLE posting_detail (
   posting_header_id INTEGER       NOT NULL,
   account_id        INTEGER       NOT NULL,
   amount            DECIMAL(12,2) NOT NULL, -- debit positive, credit negative
-  --statement_id      INTEGER,
 
   CONSTRAINT posting_detail_pk PRIMARY KEY (posting_detail_id),
   CONSTRAINT posting_detail_fk_ph FOREIGN KEY (posting_header_id)
