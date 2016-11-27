@@ -74,7 +74,7 @@ class Login extends React.Component {
       <div className="container">
         <form onSubmit={this.handleSubmit} className="form-signin">
           <h2 className="form-signin-heading">
-            <i className="fa fa-bar-chart" aria-hidden="true"></i>
+            <i className="fa fa-bar-chart" aria-hidden="true"></i> LedgerDB
           </h2>
           <label for="inputUser" className="sr-only">Username</label>
           <input type="text" id="inputUser" className="form-control"
