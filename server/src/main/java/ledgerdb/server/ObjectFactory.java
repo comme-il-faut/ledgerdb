@@ -8,19 +8,21 @@ import java.io.IOException;
 import java.util.stream.Stream;
 import ledgerdb.server.auth.AppAuthenticator;
 import ledgerdb.server.auth.AppAuthorizer;
-import ledgerdb.server.config.AppConfig;
-import ledgerdb.server.config.DbConfig;
+import org.hibernate.SessionFactory;
 
-public class ComponentFactory extends AbstractModule {
+public class ObjectFactory extends AbstractModule {
 
     private final AppConfig config;
-    
+    private final SessionFactory sf;
+
     private final AppAuthenticator authenticator;
     private final AppAuthorizer authorizer;
 
-    public ComponentFactory(AppConfig config) {
+    public ObjectFactory(AppConfig config, SessionFactory sf) {
         this.config = config;
-        this.authenticator = new AppAuthenticator(config.getDbConfig());
+        this.sf = sf;
+        
+        this.authenticator = new AppAuthenticator(sf);
         this.authorizer = new AppAuthorizer();
     }
     
@@ -34,7 +36,8 @@ public class ComponentFactory extends AbstractModule {
     @Override
     protected void configure() {
         bind(AppConfig.class).toInstance(config);
-        bind(DbConfig.class).toInstance(config.getDbConfig());
+        
+        bind(SessionFactory.class).toInstance(sf);
         
         bind(AppAuthenticator.class).toInstance(authenticator);
         bind(AppAuthorizer.class).toInstance(authorizer);
@@ -42,10 +45,15 @@ public class ComponentFactory extends AbstractModule {
     
     public Stream<Object> createResources() throws IOException {
         Injector injector = Guice.createInjector(this);
-        ClassPath cp = ClassPath.from(ClassLoader.getSystemClassLoader());
-        String packageName = getClass().getPackage().getName() + ".resource";
-        return cp.getTopLevelClassesRecursive(packageName).stream().map(ci ->
-                injector.getInstance(ci.load()));
+        return getClasses("resource")
+                .map(c -> injector.getInstance(c));
     }
 
+    public static Stream<Class<?>> getClasses(String subpackage) throws IOException {
+        ClassPath cp = ClassPath.from(ClassLoader.getSystemClassLoader());
+        String packageName = ObjectFactory.class.getPackage().getName() + "." + subpackage;
+        return cp.getTopLevelClassesRecursive(packageName)
+                .stream()
+                .map(ci -> ci.load());
+    }
 }

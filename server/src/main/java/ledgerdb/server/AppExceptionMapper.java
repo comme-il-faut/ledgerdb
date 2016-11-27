@@ -14,7 +14,7 @@ public class AppExceptionMapper implements ExceptionMapper<Exception> {
     
     @Override
     public Response toResponse(Exception e) {
-        LOG.warn("Exception occurred: " + e.toString(), e);
+        //LOG.warn("Exception occurred: " + e.toString(), e);
         
         String message;
         if (e instanceof AppException)

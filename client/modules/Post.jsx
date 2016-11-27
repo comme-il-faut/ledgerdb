@@ -10,7 +10,8 @@ class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      accounts: [],
+      account_type: [],
+      account: [],
       valid: {},
       input: {},
       running: false,
@@ -36,26 +37,33 @@ class Post extends React.Component {
       onSelect: () => this.setInput("date", this.pikaday.toString())
     });
 
-    fetch('api/account/all', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
+    let resources = ["account_type", "account"];
+    resources.forEach(resource => {
+      fetch('api/' + resource, {
+        method: 'get',
+        headers: { 'Authorization': sessionStorage.token }
       })
-      .then(json => {
-        this.setState({ accounts: json });
-      })
-      .catch(err => {
-        console.log("Error has occurred: %o", err);
-        this.setState({ accounts: [], message: err });
-      });
+        .then(res => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            return res.text().then(text => {
+              throw new Error(text ? text : res.statusText);
+            });
+          }
+        })
+        .then(json => {
+          let state = {};
+          state[resource] = json;
+          this.setState(state);
+        })
+        .catch(err => {
+          console.log("Error has occurred: %o", err);
+          let state = { message: err };
+          state[resource] = [];
+          this.setState(state);
+        });
+    });
   }
 
   componentWillUnmount() {
@@ -154,17 +162,6 @@ class Post extends React.Component {
   }
 
   renderSelect(id) {
-    let optgroups = [], optgroup;
-    this.state.accounts.forEach((account) => {
-      if (optgroup && optgroup[0].account_type != account.account_type) {
-        optgroups.push(optgroup);
-        optgroup = null;
-      }
-      if (!optgroup) optgroup = [];
-      optgroup.push(account);
-    });
-    if (optgroup)
-      optgroups.push(optgroup);
     return (
       <select
         className="form-control"
@@ -173,19 +170,21 @@ class Post extends React.Component {
         onChange={this.handleChange}
       >
         <option value="" hidden>Choose account...</option>
-        {optgroups.map((optgroup) => (
+        {this.state.account_type.map((account_type) => (
           <optgroup
-            key={optgroup[0].account_type}
-            label={optgroup[0].mask + " - " + optgroup[0].description}
+            key={account_type.account_type}
+            label={account_type.mask + " - " + account_type.description}
           >
-          {optgroup.map((account) => (
-            <option
-              key={account.account_id}
-              value={account.account_id}
-            >
-            {account.account_id} - {account.name}
-            </option>
-          ))}
+          {this.state.account
+            .filter(account => account.account_type == account_type.account_type)
+            .map(account => (
+              <option
+                key={account.account_id}
+                value={account.account_id}
+              >
+              {account.account_id} - {account.name}
+              </option>
+            ))}
           </optgroup>
         ))}
       </select>
@@ -227,7 +226,7 @@ class Post extends React.Component {
   handleSubmit(e) {
     e.preventDefault();
 
-    let input = Object.assign({}, this.state.input);
+    let input = this.state.input;
     let m = moment(input.date, DATE_FORMAT_MDY, true); // use strict parsing
 
     let valid = this.state.valid;
@@ -239,7 +238,14 @@ class Post extends React.Component {
     if (!Object.keys(valid).every(id => valid[id]))
       return;
 
-    input.date = m.format('YYYY-MM-DD');
+    let posting = {
+      posting_date: m.format('YYYY-MM-DD'),
+      description: input.description,
+      details: [
+        { account_id: input.cr, amount: "-" + input.amount },
+        { account_id: input.dr, amount: input.amount }
+      ]
+    };
 
     this.setState({ running: true });
 
@@ -249,7 +255,7 @@ class Post extends React.Component {
         'Authorization': sessionStorage.token,
         'Content-type': 'application/json'
       },
-      body: JSON.stringify(input)
+      body: JSON.stringify(posting)
     })
       .then(res => {
         if (res.ok) {

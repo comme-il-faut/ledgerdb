@@ -56,13 +56,13 @@ class Postings extends React.Component {
         <tr key={entry[0].posting_header_id}>
           <td className="text-nowrap">{entry[0].posting_date}</td>
           <td className="text-nowrap">
-            {entry.map((posting) => this.renderSpan(
+            {entry.map((posting) => this.renderSpan1(
               posting,
               posting.account_name
             ))}
           </td>
           <td className="text-nowrap text-right">
-            {entry.map((posting) => this.renderSpan(
+            {entry.map((posting) => this.renderSpan2(
               posting,
               this.renderAmount(posting.amount)
             ))}
@@ -90,9 +90,20 @@ class Postings extends React.Component {
     );
   }
 
-  renderSpan(posting, content) {
+  renderSpan1(posting, content) {
     let props = { key: posting.posting_detail_id };
-    if (posting.amount > 0) props.className = 'number-positive';
+    if (posting.amount < 0) props.className = 'indent-left';
+    return (
+      <span {...props}>
+        {content}
+        <br/>
+      </span>
+    );
+  }
+
+  renderSpan2(posting, content) {
+    let props = { key: posting.posting_detail_id };
+    if (posting.amount > 0) props.className = 'number-positive indent-right';
     if (posting.amount < 0) props.className = 'number-negative';
     return (
       <span {...props}>

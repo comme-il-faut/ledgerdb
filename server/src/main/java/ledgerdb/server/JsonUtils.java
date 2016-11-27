@@ -12,20 +12,31 @@ import java.util.Map;
 
 public class JsonUtils {
 
-    public static String format(ResultSet rs) throws SQLException, JsonProcessingException {
+    public static String format(ResultSet rs)
+            throws IllegalArgumentException {
+            //throws SQLException, JsonProcessingException {
+            
         List<Map<String, Object>> rows = new ArrayList<>();
         
-        ResultSetMetaData md = rs.getMetaData();
-        int columnCount = md.getColumnCount();
-        while (rs.next()) {
-            Map<String, Object> row = new LinkedHashMap<>();
-            for (int i = 1; i <= columnCount; i++) {
-                row.put(md.getColumnName(i), rs.getObject(i));
+        try {
+            ResultSetMetaData md = rs.getMetaData();
+            int columnCount = md.getColumnCount();
+            while (rs.next()) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    row.put(md.getColumnName(i), rs.getObject(i));
+                }
+                rows.add(row);
             }
-            rows.add(row);
+        } catch (SQLException e) {
+            throw new IllegalArgumentException(e);
         }
-        
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(rows);
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(rows);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

@@ -7,6 +7,7 @@ import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.basic.BasicCredentials;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -17,15 +18,21 @@ import javax.ws.rs.core.MediaType;
 import ledgerdb.server.AppException;
 import ledgerdb.server.auth.AppAuthenticator;
 import ledgerdb.server.auth.User;
+import ledgerdb.server.db.SysUser;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 @Path(value = "/chpasswd")
 @Produces(MediaType.TEXT_PLAIN)
 public class ChangePasswordResource {
 
+    private final SessionFactory sf;
     private final AppAuthenticator authenticator;
     
     @Inject
-    public ChangePasswordResource(AppAuthenticator authenticator) {
+    public ChangePasswordResource(SessionFactory sf, AppAuthenticator authenticator) {
+        this.sf = sf;
         this.authenticator = authenticator;
     }
     
@@ -45,9 +52,18 @@ public class ChangePasswordResource {
         String newpw = json.get("newpw").textValue();
         
         BasicCredentials bc = new BasicCredentials(user.getName(), oldpw);
-        if (!authenticator.authenticate(bc).isPresent())
+        Optional<User> ou = authenticator.authenticate(bc);
+        if (!ou.isPresent())
             throw new AppException("Your old password is incorrect.");
         
-        authenticator.update(user.getName(), newpw);
+        String pw = authenticator.hashpw(newpw);
+        
+        try (Session s = sf.openSession()) {
+            Transaction tx = s.beginTransaction();
+            SysUser u = s.get(SysUser.class, ou.get().getId());
+            u.setPw(pw);
+            s.update(u);
+            tx.commit();
+        }
     }
 }

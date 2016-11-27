@@ -88,6 +88,10 @@
 
 	var _Profile2 = _interopRequireDefault(_Profile);
 
+	var _Reconciliation = __webpack_require__(364);
+
+	var _Reconciliation2 = _interopRequireDefault(_Reconciliation);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -213,7 +217,8 @@
 	              _react2.default.createElement(
 	                _reactRouter.Link,
 	                { to: '/', className: 'navbar-brand' },
-	                _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' })
+	                _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' }),
+	                ' LedgerDB'
 	              )
 	            ),
 	            _react2.default.createElement(
@@ -221,7 +226,7 @@
 	              { id: 'navbar', className: 'navbar-collapse collapse' },
 	              _react2.default.createElement(
 	                'ul',
-	                { className: 'nav navbar-nav' },
+	                { className: 'nav navbar-nav navbar-left' },
 	                _react2.default.createElement(
 	                  'li',
 	                  null,
@@ -247,15 +252,25 @@
 	                  null,
 	                  _react2.default.createElement(
 	                    _reactRouter.Link,
-	                    { to: '/admin' },
-	                    _react2.default.createElement('i', { className: 'fa fa-cog', 'aria-hidden': 'true' }),
-	                    ' Admin'
+	                    { to: '/recon' },
+	                    _react2.default.createElement('i', { className: 'fa fa-handshake-o', 'aria-hidden': 'true' }),
+	                    ' Reconciliation'
 	                  )
 	                )
 	              ),
 	              _react2.default.createElement(
 	                'ul',
 	                { className: 'nav navbar-nav navbar-right' },
+	                _react2.default.createElement(
+	                  'li',
+	                  null,
+	                  _react2.default.createElement(
+	                    _reactRouter.Link,
+	                    { to: '/admin' },
+	                    _react2.default.createElement('i', { className: 'fa fa-lock', 'aria-hidden': 'true' }),
+	                    ' Administration'
+	                  )
+	                ),
 	                _react2.default.createElement(
 	                  'li',
 	                  { className: 'dropdown' },
@@ -333,6 +348,7 @@
 	    _react2.default.createElement(_reactRouter.IndexRoute, { component: _Dashboard2.default }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'post', component: _Post2.default }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'postings', component: _Postings2.default }),
+	    _react2.default.createElement(_reactRouter.Route, { path: 'recon', component: _Reconciliation2.default }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'admin', component: _Admin2.default }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'profile', component: _Profile2.default })
 	  )
@@ -29037,7 +29053,8 @@
 	          _react2.default.createElement(
 	            'h2',
 	            { className: 'form-signin-heading' },
-	            _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' })
+	            _react2.default.createElement('i', { className: 'fa fa-bar-chart', 'aria-hidden': 'true' }),
+	            ' LedgerDB'
 	          ),
 	          _react2.default.createElement(
 	            'label',
@@ -29130,7 +29147,8 @@
 	    var _this = _possibleConstructorReturn(this, (Post.__proto__ || Object.getPrototypeOf(Post)).call(this, props));
 
 	    _this.state = {
-	      accounts: [],
+	      account_type: [],
+	      account: [],
 	      valid: {},
 	      input: {},
 	      running: false,
@@ -29163,22 +29181,29 @@
 	        }
 	      });
 
-	      fetch('api/account/all', {
-	        method: 'get',
-	        headers: { 'Authorization': sessionStorage.token }
-	      }).then(function (res) {
-	        if (res.ok) {
-	          return res.json();
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          });
-	        }
-	      }).then(function (json) {
-	        _this2.setState({ accounts: json });
-	      }).catch(function (err) {
-	        console.log("Error has occurred: %o", err);
-	        _this2.setState({ accounts: [], message: err });
+	      var resources = ["account_type", "account"];
+	      resources.forEach(function (resource) {
+	        fetch('api/' + resource, {
+	          method: 'get',
+	          headers: { 'Authorization': sessionStorage.token }
+	        }).then(function (res) {
+	          if (res.ok) {
+	            return res.json();
+	          } else {
+	            return res.text().then(function (text) {
+	              throw new Error(text ? text : res.statusText);
+	            });
+	          }
+	        }).then(function (json) {
+	          var state = {};
+	          state[resource] = json;
+	          _this2.setState(state);
+	        }).catch(function (err) {
+	          console.log("Error has occurred: %o", err);
+	          var state = { message: err };
+	          state[resource] = [];
+	          _this2.setState(state);
+	        });
 	      });
 	    }
 	  }, {
@@ -29306,17 +29331,8 @@
 	  }, {
 	    key: 'renderSelect',
 	    value: function renderSelect(id) {
-	      var optgroups = [],
-	          optgroup = void 0;
-	      this.state.accounts.forEach(function (account) {
-	        if (optgroup && optgroup[0].account_type != account.account_type) {
-	          optgroups.push(optgroup);
-	          optgroup = null;
-	        }
-	        if (!optgroup) optgroup = [];
-	        optgroup.push(account);
-	      });
-	      if (optgroup) optgroups.push(optgroup);
+	      var _this3 = this;
+
 	      return _react2.default.createElement(
 	        'select',
 	        {
@@ -29330,14 +29346,16 @@
 	          { value: '', hidden: true },
 	          'Choose account...'
 	        ),
-	        optgroups.map(function (optgroup) {
+	        this.state.account_type.map(function (account_type) {
 	          return _react2.default.createElement(
 	            'optgroup',
 	            {
-	              key: optgroup[0].account_type,
-	              label: optgroup[0].mask + " - " + optgroup[0].description
+	              key: account_type.account_type,
+	              label: account_type.mask + " - " + account_type.description
 	            },
-	            optgroup.map(function (account) {
+	            _this3.state.account.filter(function (account) {
+	              return account.account_type == account_type.account_type;
+	            }).map(function (account) {
 	              return _react2.default.createElement(
 	                'option',
 	                {
@@ -29376,7 +29394,7 @@
 	  }, {
 	    key: 'handleClick',
 	    value: function handleClick(action, e) {
-	      var _this3 = this;
+	      var _this4 = this;
 
 	      e.preventDefault();
 	      if (action == "today") {
@@ -29386,22 +29404,22 @@
 	      }
 	      if (action == "clear") {
 	        (function () {
-	          var input = _this3.state.input;
+	          var input = _this4.state.input;
 	          Object.keys(input).forEach(function (id) {
 	            return input[id] = "";
 	          });
-	          _this3.setState({ valid: {}, input: input });
+	          _this4.setState({ valid: {}, input: input });
 	        })();
 	      }
 	    }
 	  }, {
 	    key: 'handleSubmit',
 	    value: function handleSubmit(e) {
-	      var _this4 = this;
+	      var _this5 = this;
 
 	      e.preventDefault();
 
-	      var input = Object.assign({}, this.state.input);
+	      var input = this.state.input;
 	      var m = (0, _moment2.default)(input.date, DATE_FORMAT_MDY, true); // use strict parsing
 
 	      var valid = this.state.valid;
@@ -29414,7 +29432,11 @@
 	        return valid[id];
 	      })) return;
 
-	      input.date = m.format('YYYY-MM-DD');
+	      var posting = {
+	        posting_date: m.format('YYYY-MM-DD'),
+	        description: input.description,
+	        details: [{ account_id: input.cr, amount: "-" + input.amount }, { account_id: input.dr, amount: input.amount }]
+	      };
 
 	      this.setState({ running: true });
 
@@ -29424,7 +29446,7 @@
 	          'Authorization': sessionStorage.token,
 	          'Content-type': 'application/json'
 	        },
-	        body: JSON.stringify(input)
+	        body: JSON.stringify(posting)
 	      }).then(function (res) {
 	        if (res.ok) {
 	          return res.json();
@@ -29435,9 +29457,9 @@
 	        }
 	      }).then(function (json) {
 	        //console.log("Post-OK");
-	        _this4.setState({ running: false, message: "OK" });
+	        _this5.setState({ running: false, message: "OK" });
 	      }).catch(function (err) {
-	        _this4.setState({ running: false, message: err });
+	        _this5.setState({ running: false, message: err });
 	      });
 	    }
 	  }]);
@@ -45173,14 +45195,14 @@
 	            'td',
 	            { className: 'text-nowrap' },
 	            entry.map(function (posting) {
-	              return _this3.renderSpan(posting, posting.account_name);
+	              return _this3.renderSpan1(posting, posting.account_name);
 	            })
 	          ),
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap text-right' },
 	            entry.map(function (posting) {
-	              return _this3.renderSpan(posting, _this3.renderAmount(posting.amount));
+	              return _this3.renderSpan2(posting, _this3.renderAmount(posting.amount));
 	            })
 	          ),
 	          _react2.default.createElement(
@@ -45234,10 +45256,22 @@
 	      );
 	    }
 	  }, {
-	    key: 'renderSpan',
-	    value: function renderSpan(posting, content) {
+	    key: 'renderSpan1',
+	    value: function renderSpan1(posting, content) {
 	      var props = { key: posting.posting_detail_id };
-	      if (posting.amount > 0) props.className = 'number-positive';
+	      if (posting.amount < 0) props.className = 'indent-left';
+	      return _react2.default.createElement(
+	        'span',
+	        props,
+	        content,
+	        _react2.default.createElement('br', null)
+	      );
+	    }
+	  }, {
+	    key: 'renderSpan2',
+	    value: function renderSpan2(posting, content) {
+	      var props = { key: posting.posting_detail_id };
+	      if (posting.amount > 0) props.className = 'number-positive indent-right';
 	      if (posting.amount < 0) props.className = 'number-negative';
 	      return _react2.default.createElement(
 	        'span',
@@ -45563,6 +45597,55 @@
 	}(_react2.default.Component);
 
 	exports.default = PasswordChange;
+
+/***/ },
+/* 364 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Reconciliation = function (_React$Component) {
+	  _inherits(Reconciliation, _React$Component);
+
+	  function Reconciliation(props) {
+	    _classCallCheck(this, Reconciliation);
+
+	    return _possibleConstructorReturn(this, (Reconciliation.__proto__ || Object.getPrototypeOf(Reconciliation)).call(this, props));
+	  }
+
+	  _createClass(Reconciliation, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'h2',
+	        null,
+	        'Test'
+	      );
+	    }
+	  }]);
+
+	  return Reconciliation;
+	}(_react2.default.Component);
+
+	exports.default = Reconciliation;
 
 /***/ }
 /******/ ]);

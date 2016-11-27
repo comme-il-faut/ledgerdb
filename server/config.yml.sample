@@ -2,15 +2,22 @@ auth:
   realm: LedgerDB
 
 database:
-  driver: org.postgresql.Driver
+  driverClass: org.postgresql.Driver
   url: jdbc:postgresql:ledgerdb
-  username: ledgerdb_user
+  user: ledgerdb_user
   password: ************
+  maxWaitForConnection: 5s
+  initialSize: 0
+  minSize: 0
+  maxSize: 10
 
 logging:
   level: INFO
   loggers:
     ledgerdb: DEBUG
+    "org.hibernate": WARN
+    "org.hibernate.SQL": DEBUG
+    "org.hibernate.type.descriptor.sql.BasicBinder": DEBUG
 
 server:
   type: simple
