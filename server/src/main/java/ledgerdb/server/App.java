@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+import org.hibernate.cfg.AvailableSettings;
 
 public class App extends Application<AppConfig> {
 
@@ -39,6 +40,8 @@ public class App extends Application<AppConfig> {
             @Override
             protected void configure(org.hibernate.cfg.Configuration configuration) {
                 configuration.setPhysicalNamingStrategy(new PhysicalNamingStrategy());
+                configuration.setProperty(AvailableSettings.USE_SQL_COMMENTS, "true");
+                configuration.setProperty(AvailableSettings.FORMAT_SQL, "true");
             }
         };
     }
