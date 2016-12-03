@@ -17,7 +17,7 @@ logging:
     ledgerdb: DEBUG
     "org.hibernate": WARN
     "org.hibernate.SQL": DEBUG
-    "org.hibernate.type.descriptor.sql.BasicBinder": DEBUG
+    "org.hibernate.type.descriptor.sql.BasicBinder": TRACE
 
 server:
   type: simple
