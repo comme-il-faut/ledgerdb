@@ -3,7 +3,6 @@ package ledgerdb.server.resource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.dropwizard.auth.Auth;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;

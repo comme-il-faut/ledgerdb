@@ -1,10 +1,6 @@
 package ledgerdb.server.resource;
 
 import io.dropwizard.auth.Auth;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.validation.Valid;
