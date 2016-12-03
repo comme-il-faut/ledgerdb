@@ -11,6 +11,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -23,14 +25,15 @@ public class Statement {
     @Column(name = "statement_id")
     private Integer id;
     
+    @Column(name = "statement_date")
     @Temporal(TemporalType.DATE)
     @NotNull
     @JsonProperty("statement_date")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private Date statementDate;
+    private Date date;
     
     @JsonProperty("account_id")
-    private int accountId; //TODO: class Account @OneToMany
+    private int accountId; //TODO: class Account @OneToMany ???
     
     @NotNull
     private BigDecimal amount;
@@ -46,14 +49,18 @@ public class Statement {
     private String source;
     
     @JsonProperty("posting_detail_id")
-    private int postingDetailId;
+    private Integer postingDetailId;
+    
+    @Transient
+    @Min(1)
+    private int sequence = 1;
 
     public Integer getId() {
         return id;
     }
 
-    public Date getStatementDate() {
-        return statementDate;
+    public Date getDate() {
+        return date;
     }
 
     public int getAccountId() {
@@ -72,8 +79,12 @@ public class Statement {
         return source;
     }
 
-    public int getPostingDetailId() {
+    public Integer getPostingDetailId() {
         return postingDetailId;
+    }
+    
+    public int getSequence() {
+        return sequence;
     }
 
     /*
