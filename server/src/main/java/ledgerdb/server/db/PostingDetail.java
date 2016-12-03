@@ -20,44 +20,27 @@ public class PostingDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "posting_detail_id")
     private Integer id;
+    public Integer getId() { return id; }
     
     @ManyToOne
     @JoinColumn(name = "posting_header_id")
     @NotNull
     @JsonIgnore
     private PostingHeader postingHeader;
-    
-    @JsonProperty("account_id")
-    private int accountId; //TODO: class Account @OneToMany
-    
-    @NotNull
-    private BigDecimal amount;
-    
-    public Integer getId() {
-        return id;
-    }
-    
-    public PostingHeader getPostingHeader() {
-        return postingHeader;
-    }
-    
+    public PostingHeader getPostingHeader() { return postingHeader; }
     public void setPostingHeader(PostingHeader postingHeader) {
         this.postingHeader = postingHeader;
     }
     
-    public int getAccountId() {
-        return accountId;
-    }
-    public void setAccountId(int accountId) {
-        this.accountId = accountId;
-    }
+    @JsonProperty("account_id")
+    private int accountId; //TODO: class Account @OneToMany
+    public int getAccountId() { return accountId; }
+    public void setAccountId(int accountId) { this.accountId = accountId; }
     
-    public BigDecimal getAmount() {
-        return amount;
-    }
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
+    @NotNull
+    private BigDecimal amount;
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
     
     @Override
     public boolean equals(Object o) {

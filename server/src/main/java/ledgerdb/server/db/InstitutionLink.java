@@ -10,21 +10,12 @@ public class InstitutionLink {
     @Id
     @JsonProperty("account_id")
     private Integer accountId;
+    public Integer getAccountId() { return accountId; }
     
     private String institution;
+    public String getInstitution() { return institution; }
     
     private String reference;
+    public String getReference() { return reference; }
 
-    public Integer getAccountId() {
-        return accountId;
-    }
-
-    public String getInstitution() {
-        return institution;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-    
 }

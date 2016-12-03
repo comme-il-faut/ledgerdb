@@ -27,12 +27,17 @@ public class PostingHeader {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "posting_header_id")
     private Integer id;
+    public Integer getId() { return id; }
     
     @Temporal(TemporalType.DATE)
     @NotNull
     @JsonProperty("posting_date")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date postingDate;
+    public Date getPostingDate() { return postingDate; }
+    public void setPostingDate(Date postingDate) {
+        this.postingDate = postingDate;
+    }
     
     @JsonProperty("accountable_user_id")
     private int accountableUserId = 1; //TODO
@@ -40,30 +45,14 @@ public class PostingHeader {
     @Pattern(regexp = "^\\p{Print}{0,128}$")
     @Size(max = 128)
     private String description;
+    public String getDescription() { return description; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
     
     @OneToMany(mappedBy = "postingHeader", cascade = CascadeType.PERSIST)
     @JsonProperty("details")
     private final List<PostingDetail> details = new ArrayList<>();
-    
-    public Integer getId() {
-        return id;
-    }
-    
-    public Date getPostingDate() {
-        return postingDate;
-    }
-    
-    public void setPostingDate(Date postingDate) {
-        this.postingDate = postingDate;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
     
     public void addPostingDetail(PostingDetail postingDetail) {
         details.add(postingDetail);

@@ -13,40 +13,19 @@ public class SysUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Integer id;
+    public int getId() { return id; }
     
     @Column(name = "user_name")
     private String name;
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
     
     @Column(name = "full_name")
     private String fullName;
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
 
     private String pw;
-    
-    public int getId() {
-        return id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getPw() {
-        return pw;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public void setPw(String pw) {
-        this.pw = pw;
-    }
+    public String getPw() { return pw; }
+    public void setPw(String pw) { this.pw = pw; }
 }

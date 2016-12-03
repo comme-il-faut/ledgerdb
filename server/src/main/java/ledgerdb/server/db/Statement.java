@@ -24,6 +24,7 @@ public class Statement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "statement_id")
     private Integer id;
+    public Integer getId() { return id; }
     
     @Column(name = "statement_date")
     @Temporal(TemporalType.DATE)
@@ -31,61 +32,36 @@ public class Statement {
     @JsonProperty("statement_date")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date date;
+    public Date getDate() { return date; }
     
     @JsonProperty("account_id")
     private int accountId; //TODO: class Account @OneToMany ???
+    public int getAccountId() { return accountId; }
     
     @NotNull
     private BigDecimal amount;
+    public BigDecimal getAmount() { return amount; }
     
     @NotNull
     @Pattern(regexp = "^\\p{Print}{0,128}$")
     @Size(max = 128)
     private String description;
+    public String getDescription() { return description; }
     
     @NotNull
     @Pattern(regexp = "^\\w{0,32}$")
     @Size(max = 32)
     private String source;
+    public String getSource() { return source; }
     
     @JsonProperty("posting_detail_id")
     private Integer postingDetailId;
+    public Integer getPostingDetailId() { return postingDetailId; }
     
     @Transient
     @Min(1)
     private int sequence = 1;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public int getAccountId() {
-        return accountId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public Integer getPostingDetailId() {
-        return postingDetailId;
-    }
-    
-    public int getSequence() {
-        return sequence;
-    }
+    public int getSequence() { return sequence; }
 
     /*
     public void setPostingDetailId(int postingDetailId) {
