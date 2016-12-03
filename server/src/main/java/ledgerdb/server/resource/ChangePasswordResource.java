@@ -65,5 +65,7 @@ public class ChangePasswordResource {
             s.update(u);
             tx.commit();
         }
+        
+        authenticator.clearCache(user.getName());
     }
 }
