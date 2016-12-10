@@ -3,9 +3,9 @@ package ledgerdb.server.db;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -14,8 +14,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -29,12 +27,10 @@ public class PostingHeader {
     private Integer id;
     public Integer getId() { return id; }
     
-    @Temporal(TemporalType.DATE)
     @NotNull
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private Date postingDate;
-    public Date getPostingDate() { return postingDate; }
-    public void setPostingDate(Date postingDate) {
+    private LocalDate postingDate;
+    public LocalDate getPostingDate() { return postingDate; }
+    public void setPostingDate(LocalDate postingDate) {
         this.postingDate = postingDate;
     }
     

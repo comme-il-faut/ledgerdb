@@ -20,6 +20,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <mainClass>ledgerdb.server.App</mainClass>
+
+    <dropwizard.version>1.0.4</dropwizard.version>
+    <hibernate.version>5.1.0.Final</hibernate.version>
+
   </properties>
 
   <dependencyManagement>
@@ -27,7 +31,7 @@
       <dependency>
         <groupId>io.dropwizard</groupId>
         <artifactId>dropwizard-bom</artifactId>
-        <version>1.0.4</version>
+        <version>${dropwizard.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -51,6 +55,12 @@
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-hibernate</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-java8</artifactId>
+      <version>${hibernate.version}</version>
     </dependency>
 
     <dependency>

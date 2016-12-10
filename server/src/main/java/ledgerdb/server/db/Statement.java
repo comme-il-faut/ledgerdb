@@ -3,6 +3,7 @@ package ledgerdb.server.db;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,12 +28,10 @@ public class Statement {
     public Integer getId() { return id; }
     
     @Column(name = "statement_date")
-    @Temporal(TemporalType.DATE)
     @NotNull
     @JsonProperty("statementDate")
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
-    private Date date;
-    public Date getDate() { return date; }
+    private LocalDate date;
+    public LocalDate getDate() { return date; }
     
     private int accountId; //TODO: class Account @OneToMany ???
     public int getAccountId() { return accountId; }
@@ -58,7 +57,7 @@ public class Statement {
     
     @Transient
     @Min(1)
-    private int sequence = 1;
+    protected int sequence = 1;
     public int getSequence() { return sequence; }
 
     /*
