@@ -29,12 +29,11 @@ public class Statement {
     @Column(name = "statement_date")
     @Temporal(TemporalType.DATE)
     @NotNull
-    @JsonProperty("statement_date")
+    @JsonProperty("statementDate")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date date;
     public Date getDate() { return date; }
     
-    @JsonProperty("account_id")
     private int accountId; //TODO: class Account @OneToMany ???
     public int getAccountId() { return accountId; }
     
@@ -54,7 +53,6 @@ public class Statement {
     private String source;
     public String getSource() { return source; }
     
-    @JsonProperty("posting_detail_id")
     private Integer postingDetailId;
     public Integer getPostingDetailId() { return postingDetailId; }
     

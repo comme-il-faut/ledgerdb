@@ -1,6 +1,6 @@
 package ledgerdb.server.resource;
 
-import ledgerdb.server.JsonUtils;
+import ledgerdb.server.ResponseFormatter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -31,7 +31,7 @@ public class AccountTypeResource {
                     ResultSet rs = st.executeQuery(
                         "select * from account_type order by mask"
                     );
-                    return JsonUtils.format(rs);
+                    return ResponseFormatter.format(rs);
                 }
             });
         }

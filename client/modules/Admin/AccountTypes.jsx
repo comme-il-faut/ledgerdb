@@ -4,8 +4,8 @@ class AccountType extends React.Component {
   render() {
     return (
       <tr>
-        <td>{this.props.account_type.account_type}</td>
-        <td>{this.props.account_type.description}</td>
+        <td>{this.props.accountType.accountType}</td>
+        <td>{this.props.accountType.description}</td>
       </tr>
     );
   }
@@ -45,11 +45,11 @@ class AccountTypes extends React.Component {
       return null;
     }
     var rows = [];
-    this.state.data.forEach(function(account_type) {
+    this.state.data.forEach(function(accountType) {
       rows.push(
         <AccountType
-          key={account_type.account_type}
-          account_type={account_type}
+          key={accountType.accountType}
+          accountType={accountType}
         />
       );
     });

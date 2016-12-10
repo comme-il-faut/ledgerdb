@@ -10,7 +10,7 @@ class Post extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      account_type: [],
+      accountType: [],
       account: [],
       valid: {},
       input: {},
@@ -39,6 +39,7 @@ class Post extends React.Component {
 
     let resources = ["account_type", "account"];
     resources.forEach(resource => {
+      const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase());
       fetch('api/' + resource, {
         method: 'get',
         headers: { 'Authorization': sessionStorage.token }
@@ -54,13 +55,13 @@ class Post extends React.Component {
         })
         .then(json => {
           let state = {};
-          state[resource] = json;
+          state[key] = json;
           this.setState(state);
         })
         .catch(err => {
           console.log("Error has occurred: %o", err);
           let state = { message: err };
-          state[resource] = [];
+          state[key] = [];
           this.setState(state);
         });
     });
@@ -170,19 +171,19 @@ class Post extends React.Component {
         onChange={this.handleChange}
       >
         <option value="" hidden>Choose account...</option>
-        {this.state.account_type.map((account_type) => (
+        {this.state.accountType.map((accountType) => (
           <optgroup
-            key={account_type.account_type}
-            label={account_type.mask + " - " + account_type.description}
+            key={accountType.accountType}
+            label={accountType.mask + " - " + accountType.description}
           >
           {this.state.account
-            .filter(account => account.account_type == account_type.account_type)
+            .filter(account => account.accountType == accountType.accountType)
             .map(account => (
               <option
-                key={account.account_id}
-                value={account.account_id}
+                key={account.accountId}
+                value={account.accountId}
               >
-              {account.account_id} - {account.name}
+              {account.accountId} - {account.name}
               </option>
             ))}
           </optgroup>
@@ -239,11 +240,11 @@ class Post extends React.Component {
       return;
 
     let posting = {
-      posting_date: m.format('YYYY-MM-DD'),
+      postingDate: m.format('YYYY-MM-DD'),
       description: input.description,
       details: [
-        { account_id: input.cr, amount: "-" + input.amount },
-        { account_id: input.dr, amount: input.amount }
+        { accountId: input.cr, amount: "-" + input.amount },
+        { accountId: input.dr, amount: input.amount }
       ]
     };
 

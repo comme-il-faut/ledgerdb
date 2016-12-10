@@ -16,7 +16,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import ledgerdb.server.JsonUtils;
+import ledgerdb.server.ResponseFormatter;
 import ledgerdb.server.auth.User;
 import ledgerdb.server.db.PostingHeader;
 import org.hibernate.Session;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 public class PostingResource {
     
-    private static final Logger LOG = LoggerFactory.getLogger(PostingResource.class);
+    private static final Logger logger = LoggerFactory.getLogger(PostingResource.class);
 
     private final SessionFactory sf;
     
@@ -40,7 +40,6 @@ public class PostingResource {
     }
     
     @GET
-    //@Path("/")
     public String get() throws SQLException, JsonProcessingException {
         try (Session s = sf.openSession()) {
             return s.doReturningWork(con -> {
@@ -61,14 +60,13 @@ public class PostingResource {
                         + "  sign(amount) desc, \n" // debit/positive first, then credit/negative
                         + "  posting_detail_id \n"
                     );
-                    return JsonUtils.format(rs);
+                    return ResponseFormatter.format(rs);
                 }
             });
         }
     }
     
     @POST
-    //@Path("/")
     public PostingHeader post(
             @Auth User user,
             @NotNull @Valid PostingHeader postingHeader) {
@@ -92,56 +90,6 @@ public class PostingResource {
             tx.commit();
         }
         return postingHeader;
-        
-        //LOG.info("posting = {}", posting.toString());
-        /*
-        try (Connection con = dbConfig.getConnection()) {
-            
-            //TODO check cr/dr accounts exist
-            
-            con.setAutoCommit(false);
-            try (PreparedStatement st1 = con.prepareStatement(
-                        "insert into posting_header " +       
-                        "(posting_date, accountable_user_id, description)" +
-                        "values (?, ?, ?)",
-                        Statement.RETURN_GENERATED_KEYS);
-                PreparedStatement st2 = con.prepareStatement(
-                        "insert into posting_detail " +       
-                        "(posting_header_id, account_id, amount)" +
-                        "values (?, ?, ?)",
-                        Statement.RETURN_GENERATED_KEYS)
-            ) {
-                st1.setDate(1, new java.sql.Date(posting.date.getTime()));
-                st1.setInt(2, user.getId());
-                st1.setString(3, posting.description);
-                st1.executeUpdate();
-                
-                ResultSet rs = st1.getGeneratedKeys();
-                if (!rs.next())
-                    throw new AppException("Failed to generatate posting_header_pk");
-                
-                int id = rs.getInt(1);
-                
-                st2.setInt(1, id);
-                st2.setInt(2, posting.cr);
-                st2.setBigDecimal(3, posting.amount.negate());
-                st2.executeUpdate();
-                
-                st2.setInt(1, id);
-                st2.setInt(2, posting.dr);
-                st2.setBigDecimal(3, posting.amount);
-                st2.executeUpdate();
-                
-                con.commit();
-            } catch (Exception e) {
-                con.rollback();
-                throw e;
-            } finally {
-                con.setAutoCommit(true);
-            }
-            
-        }
-        */
     }
     
 }

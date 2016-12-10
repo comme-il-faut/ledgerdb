@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,7 +23,7 @@ public class PostingDetail {
     private Integer id;
     public Integer getId() { return id; }
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posting_header_id")
     @NotNull
     @JsonIgnore
@@ -32,7 +33,6 @@ public class PostingDetail {
         this.postingHeader = postingHeader;
     }
     
-    @JsonProperty("account_id")
     private int accountId; //TODO: class Account @OneToMany
     public int getAccountId() { return accountId; }
     public void setAccountId(int accountId) { this.accountId = accountId; }

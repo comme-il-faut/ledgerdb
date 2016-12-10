@@ -31,7 +31,6 @@ public class PostingHeader {
     
     @Temporal(TemporalType.DATE)
     @NotNull
-    @JsonProperty("posting_date")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
     private Date postingDate;
     public Date getPostingDate() { return postingDate; }
@@ -39,7 +38,6 @@ public class PostingHeader {
         this.postingDate = postingDate;
     }
     
-    @JsonProperty("accountable_user_id")
     private int accountableUserId = 1; //TODO
     
     @Pattern(regexp = "^\\p{Print}{0,128}$")

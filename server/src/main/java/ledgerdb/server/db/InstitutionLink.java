@@ -8,7 +8,6 @@ import javax.persistence.Id;
 public class InstitutionLink {
 
     @Id
-    @JsonProperty("account_id")
     private Integer accountId;
     public Integer getAccountId() { return accountId; }
     

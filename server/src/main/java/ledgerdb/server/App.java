@@ -39,7 +39,7 @@ public class App extends Application<AppConfig> {
             
             @Override
             protected void configure(org.hibernate.cfg.Configuration configuration) {
-                configuration.setPhysicalNamingStrategy(new PhysicalNamingStrategy());
+                configuration.setPhysicalNamingStrategy(NameMapper.createPhysicalNamingStrategy());
                 configuration.setProperty(AvailableSettings.USE_SQL_COMMENTS, "true");
                 configuration.setProperty(AvailableSettings.FORMAT_SQL, "true");
             }

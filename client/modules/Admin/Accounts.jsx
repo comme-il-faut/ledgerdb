@@ -4,8 +4,8 @@ class Account extends React.Component {
   render() {
     return (
       <tr>
-        <td>{this.props.account.account_id}</td>
-        <td>{this.props.account.account_type}</td>
+        <td>{this.props.account.accountId}</td>
+        <td>{this.props.account.accountType}</td>
         <td>{this.props.account.name}</td>
         <td>{this.props.account.cash}</td>
         <td>{this.props.account.active}</td>
@@ -68,7 +68,7 @@ class Accounts extends React.Component {
         <tbody>
           {this.state.data.map((account) => (
             <Account
-              key={account.account_id}
+              key={account.accountId}
               account={account}
             />
           ))}

@@ -1,6 +1,6 @@
 package ledgerdb.server.resource;
 
-import ledgerdb.server.JsonUtils;
+import ledgerdb.server.ResponseFormatter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +34,7 @@ public class AccountResource {
                     ResultSet rs = st.executeQuery(
                         "select * from account order by account_id"
                     );
-                    return JsonUtils.format(rs);
+                    return ResponseFormatter.format(rs);
                 }
             });
         }

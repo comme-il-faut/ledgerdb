@@ -42,7 +42,7 @@ class Postings extends React.Component {
 
     this.state.postings.forEach((posting) => {
       if (entry.length
-          && entry[0].posting_header_id != posting.posting_header_id) {
+          && entry[0].postingHeaderId != posting.postingHeaderId) {
         entries.push(entry);
         entry = [];
       }
@@ -53,12 +53,12 @@ class Postings extends React.Component {
     let rows = [];
     entries.forEach((entry) => {
       rows.push(
-        <tr key={entry[0].posting_header_id}>
-          <td className="text-nowrap">{entry[0].posting_date}</td>
+        <tr key={entry[0].postingHeaderId}>
+          <td className="text-nowrap">{entry[0].postingDate}</td>
           <td className="text-nowrap">
             {entry.map((posting) => this.renderSpan1(
               posting,
-              posting.account_name
+              posting.accountName
             ))}
           </td>
           <td className="text-nowrap text-right">
@@ -91,7 +91,7 @@ class Postings extends React.Component {
   }
 
   renderSpan1(posting, content) {
-    let props = { key: posting.posting_detail_id };
+    let props = { key: posting.postingDetailId };
     if (posting.amount < 0) props.className = 'indent-left';
     return (
       <span {...props}>
@@ -102,7 +102,7 @@ class Postings extends React.Component {
   }
 
   renderSpan2(posting, content) {
-    let props = { key: posting.posting_detail_id };
+    let props = { key: posting.postingDetailId };
     if (posting.amount > 0) props.className = 'number-positive indent-right';
     if (posting.amount < 0) props.className = 'number-negative';
     return (

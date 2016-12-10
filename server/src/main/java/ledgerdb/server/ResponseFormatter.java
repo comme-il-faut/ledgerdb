@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JsonUtils {
+public class ResponseFormatter {
 
     public static String format(ResultSet rs)
             throws IllegalArgumentException {
@@ -21,10 +21,17 @@ public class JsonUtils {
         try {
             ResultSetMetaData md = rs.getMetaData();
             int columnCount = md.getColumnCount();
+            
+            String[] columnNames = new String[columnCount];
+            for (int i = 1; i <= columnCount; i++) {
+                String s = md.getColumnName(i);
+                columnNames[i - 1] = NameMapper.toLogicalName(s);
+            }
+            
             while (rs.next()) {
                 Map<String, Object> row = new LinkedHashMap<>();
                 for (int i = 1; i <= columnCount; i++) {
-                    row.put(md.getColumnName(i), rs.getObject(i));
+                    row.put(columnNames[i - 1], rs.getObject(i));
                 }
                 rows.add(row);
             }
