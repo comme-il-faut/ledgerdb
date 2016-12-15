@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResponseFormatter {
 
+    private static final Logger logger = LoggerFactory.getLogger(ResponseFormatter.class);
+    
     public static String format(ResultSet rs)
             throws IllegalArgumentException {
             //throws SQLException, JsonProcessingException {
@@ -35,6 +39,7 @@ public class ResponseFormatter {
                 }
                 rows.add(row);
             }
+            logger.debug("Fetched " + rows.size() + " rows from result set");
         } catch (SQLException e) {
             throw new IllegalArgumentException(e);
         }
