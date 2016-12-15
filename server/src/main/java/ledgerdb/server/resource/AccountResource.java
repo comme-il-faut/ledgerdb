@@ -27,7 +27,7 @@ public class AccountResource {
     }
     
     @GET
-    public String getAccounts() throws SQLException, JsonProcessingException {
+    public String getAccounts() {
         try (Session s = sf.openSession()) {
             return s.doReturningWork(con -> {
                 try (Statement st = con.createStatement()) {

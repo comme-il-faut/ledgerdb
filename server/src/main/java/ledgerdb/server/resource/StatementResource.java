@@ -5,6 +5,7 @@ import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -36,6 +37,9 @@ public class StatementResource {
     public String post(
             @Auth User user,
             @NotNull @Valid Statement statement) {
+        
+        if (statement.isPosted())
+            throw new BadRequestException();
         
         try (Session s = sf.openSession()) {
             Transaction tx = s.beginTransaction();

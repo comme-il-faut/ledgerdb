@@ -1,9 +1,7 @@
 package ledgerdb.server.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
-import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -42,6 +40,13 @@ public class PostingDetail {
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     
+    private Integer statementId;
+    public Integer getStatementId() { return statementId; }
+    public void setStatementId(Integer statementId) {
+        this.statementId = statementId;
+    }
+    
+    /*
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -56,4 +61,5 @@ public class PostingDetail {
     public int hashCode() {
         return Objects.hash(this.accountId, this.amount);
     }
+    */
 }

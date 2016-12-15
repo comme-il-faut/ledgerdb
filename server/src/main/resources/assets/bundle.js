@@ -88,7 +88,7 @@
 
 	var _Profile2 = _interopRequireDefault(_Profile);
 
-	var _Reconciliation = __webpack_require__(364);
+	var _Reconciliation = __webpack_require__(366);
 
 	var _Reconciliation2 = _interopRequireDefault(_Reconciliation);
 
@@ -169,12 +169,7 @@
 	          _react2.default.createElement(
 	            'div',
 	            { className: 'text-center' },
-	            _react2.default.createElement(
-	              'p',
-	              null,
-	              _react2.default.createElement('i', { className: 'fa fa-circle-o-notch fa-spin' }),
-	              ' Logging in...'
-	            )
+	            _react2.default.createElement('p', null)
 	          )
 	        );
 	      }
@@ -28575,12 +28570,12 @@
 	        _react2.default.createElement(
 	          'td',
 	          null,
-	          this.props.account_type.account_type
+	          this.props.accountType.accountType
 	        ),
 	        _react2.default.createElement(
 	          'td',
 	          null,
-	          this.props.account_type.description
+	          this.props.accountType.description
 	        )
 	      );
 	    }
@@ -28640,10 +28635,10 @@
 	        return null;
 	      }
 	      var rows = [];
-	      this.state.data.forEach(function (account_type) {
+	      this.state.data.forEach(function (accountType) {
 	        rows.push(_react2.default.createElement(AccountType, {
-	          key: account_type.account_type,
-	          account_type: account_type
+	          key: accountType.accountType,
+	          accountType: accountType
 	        }));
 	      });
 	      return _react2.default.createElement(
@@ -28723,12 +28718,12 @@
 	        _react2.default.createElement(
 	          'td',
 	          null,
-	          this.props.account.account_id
+	          this.props.account.accountId
 	        ),
 	        _react2.default.createElement(
 	          'td',
 	          null,
-	          this.props.account.account_type
+	          this.props.account.accountType
 	        ),
 	        _react2.default.createElement(
 	          'td',
@@ -28847,7 +28842,7 @@
 	          null,
 	          this.state.data.map(function (account) {
 	            return _react2.default.createElement(Account, {
-	              key: account.account_id,
+	              key: account.accountId,
 	              account: account
 	            });
 	          })
@@ -29147,7 +29142,7 @@
 	    var _this = _possibleConstructorReturn(this, (Post.__proto__ || Object.getPrototypeOf(Post)).call(this, props));
 
 	    _this.state = {
-	      account_type: [],
+	      accountType: [],
 	      account: [],
 	      valid: {},
 	      input: {},
@@ -29183,6 +29178,9 @@
 
 	      var resources = ["account_type", "account"];
 	      resources.forEach(function (resource) {
+	        var key = resource.replace(/_[a-z]/g, function (match) {
+	          return match.charAt(1).toUpperCase();
+	        });
 	        fetch('api/' + resource, {
 	          method: 'get',
 	          headers: { 'Authorization': sessionStorage.token }
@@ -29196,12 +29194,12 @@
 	          }
 	        }).then(function (json) {
 	          var state = {};
-	          state[resource] = json;
+	          state[key] = json;
 	          _this2.setState(state);
 	        }).catch(function (err) {
 	          console.log("Error has occurred: %o", err);
 	          var state = { message: err };
-	          state[resource] = [];
+	          state[key] = [];
 	          _this2.setState(state);
 	        });
 	      });
@@ -29346,23 +29344,23 @@
 	          { value: '', hidden: true },
 	          'Choose account...'
 	        ),
-	        this.state.account_type.map(function (account_type) {
+	        this.state.accountType.map(function (accountType) {
 	          return _react2.default.createElement(
 	            'optgroup',
 	            {
-	              key: account_type.account_type,
-	              label: account_type.mask + " - " + account_type.description
+	              key: accountType.accountType,
+	              label: accountType.mask + " - " + accountType.description
 	            },
 	            _this3.state.account.filter(function (account) {
-	              return account.account_type == account_type.account_type;
+	              return account.accountType == accountType.accountType;
 	            }).map(function (account) {
 	              return _react2.default.createElement(
 	                'option',
 	                {
-	                  key: account.account_id,
-	                  value: account.account_id
+	                  key: account.accountId,
+	                  value: account.accountId
 	                },
-	                account.account_id,
+	                account.accountId,
 	                ' - ',
 	                account.name
 	              );
@@ -29433,9 +29431,9 @@
 	      })) return;
 
 	      var posting = {
-	        posting_date: m.format('YYYY-MM-DD'),
+	        postingDate: m.format('YYYY-MM-DD'),
 	        description: input.description,
-	        details: [{ account_id: input.cr, amount: "-" + input.amount }, { account_id: input.dr, amount: input.amount }]
+	        details: [{ accountId: input.cr, amount: "-" + input.amount }, { accountId: input.dr, amount: input.amount }]
 	      };
 
 	      this.setState({ running: true });
@@ -45173,7 +45171,7 @@
 	          entry = [];
 
 	      this.state.postings.forEach(function (posting) {
-	        if (entry.length && entry[0].posting_header_id != posting.posting_header_id) {
+	        if (entry.length && entry[0].postingHeaderId != posting.postingHeaderId) {
 	          entries.push(entry);
 	          entry = [];
 	        }
@@ -45185,17 +45183,17 @@
 	      entries.forEach(function (entry) {
 	        rows.push(_react2.default.createElement(
 	          'tr',
-	          { key: entry[0].posting_header_id },
+	          { key: entry[0].postingHeaderId },
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            entry[0].posting_date
+	            entry[0].postingDate
 	          ),
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
 	            entry.map(function (posting) {
-	              return _this3.renderSpan1(posting, posting.account_name);
+	              return _this3.renderSpan1(posting, posting.accountName);
 	            })
 	          ),
 	          _react2.default.createElement(
@@ -45258,7 +45256,7 @@
 	  }, {
 	    key: 'renderSpan1',
 	    value: function renderSpan1(posting, content) {
-	      var props = { key: posting.posting_detail_id };
+	      var props = { key: posting.postingDetailId };
 	      if (posting.amount < 0) props.className = 'indent-left';
 	      return _react2.default.createElement(
 	        'span',
@@ -45270,7 +45268,7 @@
 	  }, {
 	    key: 'renderSpan2',
 	    value: function renderSpan2(posting, content) {
-	      var props = { key: posting.posting_detail_id };
+	      var props = { key: posting.postingDetailId };
 	      if (posting.amount > 0) props.className = 'number-positive indent-right';
 	      if (posting.amount < 0) props.className = 'number-negative';
 	      return _react2.default.createElement(
@@ -45599,7 +45597,43 @@
 	exports.default = PasswordChange;
 
 /***/ },
-/* 364 */
+/* 364 */,
+/* 365 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.formatAmount = formatAmount;
+	exports.formatDate = formatDate;
+
+	var _moment = __webpack_require__(253);
+
+	var _moment2 = _interopRequireDefault(_moment);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	//const DEFAULT_DATE_FORMAT = "ddd MMM D, YYYY";
+	var DEFAULT_DATE_FORMAT = "D MMM YYYY";
+
+	function formatAmount(amount) {
+	  if (amount == 0) return "-";
+	  var s = amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+	  if (s.startsWith("-")) s = "(" + s.substring(1) + ")";
+	  return s;
+	}
+
+	function formatDate(date) {
+	  var fmt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_DATE_FORMAT;
+
+	  var m = (0, _moment2.default)(date);
+	  return m.format(fmt);
+	}
+
+/***/ },
+/* 366 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45613,6 +45647,16 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
+
+	var _moment = __webpack_require__(253);
+
+	var _moment2 = _interopRequireDefault(_moment);
+
+	var _Message = __webpack_require__(360);
+
+	var _Message2 = _interopRequireDefault(_Message);
+
+	var _Formatters = __webpack_require__(365);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -45628,16 +45672,574 @@
 	  function Reconciliation(props) {
 	    _classCallCheck(this, Reconciliation);
 
-	    return _possibleConstructorReturn(this, (Reconciliation.__proto__ || Object.getPrototypeOf(Reconciliation)).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (Reconciliation.__proto__ || Object.getPrototypeOf(Reconciliation)).call(this, props));
+
+	    _this.state = {
+	      loading: true,
+	      mapped: { p2s: [], s2s: [] },
+	      unmapped: { p: [], s: [] },
+	      message: null
+	    };
+	    return _this;
 	  }
 
 	  _createClass(Reconciliation, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var _this2 = this;
+
+	      document.title = "LedgerDB - Reconciliation";
+
+	      fetch('api/reconciliation', {
+	        method: 'get',
+	        headers: { 'Authorization': sessionStorage.token }
+	      }).then(function (res) {
+	        if (res.ok) {
+	          return res.json();
+	        } else {
+	          return res.text().then(function (text) {
+	            throw new Error(text ? text : res.statusText);
+	          });
+	        }
+	      }).then(function (json) {
+	        var _arr = ['postings', 'statements', 'accounts'];
+
+	        for (var _i = 0; _i < _arr.length; _i++) {
+	          var key = _arr[_i];
+	          var a = json[key];
+	          if (!Array.isArray(a)) throw new Error("Invalid server response");
+	          _this2[key] = json[key];
+	        }
+	        _this2.accounts = {};
+	        json.accounts.forEach(function (a) {
+	          _this2.accounts[a.accountId] = a;
+	        });
+	        _this2.reconcile();
+	      }).catch(function (err) {
+	        console.log("Error has occurred: %o", err);
+	        _this2.setState({ loading: false, message: err });
+	      });
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      if (this.state.message) {
+	        this.state.message = null;
+	      }
+	    }
+	  }, {
+	    key: 'reconcile',
+	    value: function reconcile() {
+	      var _this3 = this;
+
+	      var setP = new Set(this.postings);
+	      var setS = new Set(this.statements);
+
+	      var mapP2S = new Map();
+
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = this.postings[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var p = _step.value;
+	          var _iteratorNormalCompletion2 = true;
+	          var _didIteratorError2 = false;
+	          var _iteratorError2 = undefined;
+
+	          try {
+	            for (var _iterator2 = this.statements[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	              var s = _step2.value;
+
+	              if (!setS.has(s)) continue;
+
+	              if (p.accountId == s.accountId && p.amount == s.amount) {
+
+	                var pd = (0, _moment2.default)(p.postingDate);
+	                var sd = (0, _moment2.default)(s.statementDate);
+	                var days = sd.diff(pd, 'days');
+	                if (!(days >= 0 && days < 5)) continue;
+
+	                if (mapP2S.has(p)) {
+	                  var s0 = mapP2S.get(p);
+	                  if ((0, _moment2.default)(s0.statementDate).isSameOrBefore(sd)) continue;
+	                  setS.add(s0);
+	                }
+	                mapP2S.set(p, s);
+	                setP.delete(p);
+	                setS.delete(s);
+	              }
+	            }
+	          } catch (err) {
+	            _didIteratorError2 = true;
+	            _iteratorError2 = err;
+	          } finally {
+	            try {
+	              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                _iterator2.return();
+	              }
+	            } finally {
+	              if (_didIteratorError2) {
+	                throw _iteratorError2;
+	              }
+	            }
+	          }
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+
+	      var mapS2S = new Map();
+
+	      if (setS.size > 1) {
+	        for (var i = 0; i < this.statements.length - 1; i++) {
+	          var s1 = this.statements[i];
+	          if (!setS.has(s1)) continue;
+	          for (var j = i + 1; j < this.statements.length; j++) {
+	            var s2 = this.statements[j];
+	            if (!setS.has(s2)) continue;
+
+	            if (s1.statementDate == s2.statementDate && s1.amount == -s2.amount && s1.accountId != s2.accountId) {
+
+	              mapS2S.set(s1, s2);
+	              setS.delete(s1);
+	              setS.delete(s2);
+	              break;
+	            }
+	          }
+	        }
+	      }
+
+	      this.setState({
+	        loading: false,
+	        mapped: {
+	          p2s: Array.from(mapP2S.entries()).sort(function (e1, e2) {
+	            return _this3.sortPostings(e1[0], e2[0]);
+	          }),
+	          s2s: Array.from(mapS2S.entries()).sort(function (e1, e2) {
+	            return _this3.sortStatements(e1[0], e2[0]);
+	          })
+	        },
+	        unmapped: {
+	          p: Array.from(setP.values()).sort(this.sortPostings),
+	          s: Array.from(setS.values()).sort(this.sortStatements)
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'sortPostings',
+	    value: function sortPostings(p1, p2) {
+	      return p1.postingDate.localeCompare(p2.postingDate) || p1.accountId - p2.accountId || p1.postingDetailId - p2.postingDetailId;
+	    }
+	  }, {
+	    key: 'sortStatements',
+	    value: function sortStatements(s1, s2) {
+	      return s1.statementDate.localeCompare(s2.statementDate) || s1.accountId - s2.accountId || s1.statementId - s2.statementId;
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
+	      if (this.state.loading) return null; //TODO spinner, or progress message "crunching numbers"
+
 	      return _react2.default.createElement(
-	        'h2',
+	        'div',
 	        null,
-	        'Test'
+	        _react2.default.createElement(
+	          'h3',
+	          null,
+	          'Auto-matched Postings to Statements'
+	        ),
+	        this.renderTableP2S(),
+	        _react2.default.createElement(
+	          'h3',
+	          null,
+	          'Auto-matched Statements'
+	        ),
+	        this.renderTableS2S(),
+	        _react2.default.createElement(
+	          'h3',
+	          null,
+	          'Unmatched Postings'
+	        ),
+	        this.renderTableP(),
+	        _react2.default.createElement(
+	          'h3',
+	          null,
+	          'Unmatched Statements'
+	        ),
+	        this.renderTableS(),
+	        _react2.default.createElement(_Message2.default, { message: this.state.message })
+	      );
+	    }
+	  }, {
+	    key: 'renderTableP2S',
+	    value: function renderTableP2S() {
+	      var _this4 = this;
+
+	      if (!this.state.mapped.p2s) return this.renderAOK();
+
+	      var rows = [];
+
+	      //let accountId;
+	      this.state.mapped.p2s.forEach(function (tuple) {
+	        var p = tuple[0];
+	        var s = tuple[1];
+	        /*
+	        if (p.accountId != accountId) {
+	          accountId = p.accountId;
+	          rows.push(
+	            <tr key={p.accountId}>
+	              <th colSpan="4">
+	                {p.accountId} - {this.accounts[p.accountId].name}
+	              </th>
+	            </tr>
+	          );
+	        }
+	        */
+	        rows.push(_react2.default.createElement(
+	          'tr',
+	          { key: p.postingDetailId },
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            (0, _Formatters.formatDate)(p.postingDate)
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            _this4.accounts[p.accountId].name
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap text-right' },
+	            _react2.default.createElement(
+	              'span',
+	              { className: p.amount < 0 ? "number-negative" : "number-positive" },
+	              (0, _Formatters.formatAmount)(p.amount)
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            null,
+	            p.description,
+	            _react2.default.createElement('br', null),
+	            _react2.default.createElement(
+	              'small',
+	              null,
+	              s.description
+	            )
+	          )
+	        ));
+	      });
+
+	      return _react2.default.createElement(
+	        'table',
+	        { className: 'table table-striped table-condensed' },
+	        _react2.default.createElement(
+	          'thead',
+	          null,
+	          _react2.default.createElement(
+	            'tr',
+	            null,
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-nowrap' },
+	              'Date'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-2 text-nowrap' },
+	              'Account'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-right' },
+	              'Amount'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-8' },
+	              'Description'
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
+	        )
+	      );
+	    }
+	  }, {
+	    key: 'renderTableS2S',
+	    value: function renderTableS2S() {
+	      var _this5 = this;
+
+	      if (!this.state.mapped.s2s) return this.renderAOK();
+
+	      var rows = [];
+	      this.state.mapped.s2s.forEach(function (tuple) {
+	        var s1 = tuple[0].amount > 0 ? tuple[0] : tuple[1];
+	        var s2 = tuple[0].amount > 0 ? tuple[1] : tuple[0];
+	        rows.push(_react2.default.createElement(
+	          'tr',
+	          { key: s1.statementId },
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            (0, _Formatters.formatDate)(s1.statementDate)
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            _react2.default.createElement(
+	              'span',
+	              null,
+	              _this5.accounts[s1.accountId].name
+	            ),
+	            _react2.default.createElement('br', null),
+	            _react2.default.createElement(
+	              'span',
+	              { className: 'indent-left' },
+	              _this5.accounts[s2.accountId].name
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap text-right' },
+	            _react2.default.createElement(
+	              'span',
+	              { className: 'number-positive indent-right' },
+	              (0, _Formatters.formatAmount)(s1.amount)
+	            ),
+	            _react2.default.createElement('br', null),
+	            _react2.default.createElement(
+	              'span',
+	              { className: 'number-negative' },
+	              (0, _Formatters.formatAmount)(s2.amount)
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            null,
+	            s1.description,
+	            _react2.default.createElement('br', null),
+	            s2.description
+	          )
+	        ));
+	      });
+
+	      return _react2.default.createElement(
+	        'table',
+	        { className: 'table table-striped table-condensed' },
+	        _react2.default.createElement(
+	          'thead',
+	          null,
+	          _react2.default.createElement(
+	            'tr',
+	            null,
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-nowrap' },
+	              'Date'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-2 text-nowrap' },
+	              'Account'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-right' },
+	              'Amount'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-8' },
+	              'Description'
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
+	        )
+	      );
+	    }
+	  }, {
+	    key: 'renderTableP',
+	    value: function renderTableP() {
+	      var _this6 = this;
+
+	      if (!this.state.unmapped.p) return this.renderAOK();
+
+	      var rows = [];
+	      this.state.unmapped.p.forEach(function (p) {
+	        rows.push(_react2.default.createElement(
+	          'tr',
+	          { key: p.postingDetailId },
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            (0, _Formatters.formatDate)(p.postingDate)
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            _this6.accounts[p.accountId].name
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap text-right' },
+	            _react2.default.createElement(
+	              'span',
+	              { className: p.amount < 0 ? "number-negative" : "number-positive" },
+	              (0, _Formatters.formatAmount)(p.amount)
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            null,
+	            p.description
+	          )
+	        ));
+	      });
+
+	      return _react2.default.createElement(
+	        'table',
+	        { className: 'table table-striped table-condensed' },
+	        _react2.default.createElement(
+	          'thead',
+	          null,
+	          _react2.default.createElement(
+	            'tr',
+	            null,
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-nowrap' },
+	              'Date'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-2 text-nowrap' },
+	              'Account'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-right' },
+	              'Amount'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-8' },
+	              'Description'
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
+	        )
+	      );
+	    }
+	  }, {
+	    key: 'renderTableS',
+	    value: function renderTableS() {
+	      var _this7 = this;
+
+	      if (!this.state.unmapped.s) return this.renderAOK();
+
+	      var rows = [];
+	      this.state.unmapped.s.forEach(function (s) {
+	        rows.push(_react2.default.createElement(
+	          'tr',
+	          { key: s.statementId },
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            (0, _Formatters.formatDate)(s.statementDate)
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap' },
+	            _this7.accounts[s.accountId].name
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            { className: 'text-nowrap text-right' },
+	            _react2.default.createElement(
+	              'span',
+	              { className: s.amount < 0 ? "number-negative" : "number-positive" },
+	              (0, _Formatters.formatAmount)(s.amount)
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'td',
+	            null,
+	            s.description
+	          )
+	        ));
+	      });
+
+	      return _react2.default.createElement(
+	        'table',
+	        { className: 'table table-striped table-condensed' },
+	        _react2.default.createElement(
+	          'thead',
+	          null,
+	          _react2.default.createElement(
+	            'tr',
+	            null,
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-nowrap' },
+	              'Date'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-2 text-nowrap' },
+	              'Account'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-right' },
+	              'Amount'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-8' },
+	              'Description'
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
+	        )
+	      );
+	    }
+	  }, {
+	    key: 'renderAOK',
+	    value: function renderAOK() {
+	      return _react2.default.createElement(
+	        'p',
+	        null,
+	        'A-OK.'
 	      );
 	    }
 	  }]);

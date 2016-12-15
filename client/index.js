@@ -71,7 +71,9 @@ class App extends React.Component {
         <div className="container">
           <div className="text-center">
             <p>
+            {/*
               <i className="fa fa-circle-o-notch fa-spin"></i> Logging in...
+            */}
             </p>
           </div>
         </div>

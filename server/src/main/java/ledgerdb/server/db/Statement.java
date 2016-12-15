@@ -1,17 +1,13 @@
 package ledgerdb.server.db;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -54,6 +50,10 @@ public class Statement {
     
     private Integer postingDetailId;
     public Integer getPostingDetailId() { return postingDetailId; }
+    
+    @org.hibernate.annotations.Type(type = "yes_no")
+    protected boolean posted = false;
+    public boolean isPosted() { return posted; }
     
     @Transient
     @Min(1)
