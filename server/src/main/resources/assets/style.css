@@ -38,7 +38,22 @@ nav .navbar-brand {
   font-size: 21px;
   text-transform: uppercase;
 }
-nav.navbar a:hover { color: #4caf50 !important; }
+nav.navbar a {
+  border-top: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+}
+nav.navbar a:hover {
+  color: #4caf50 !important;
+}
+.nav > li > a:hover {
+  border-top-color: #f77825; /* orange */
+}
+.nav .open > a,
+.nav .open > a:focus,
+.nav .open > a:hover {
+  border-top-color: #f77825; /* orange */
+  border-bottom-color: transparent;
+}
 
 
 .form-horizontal {
