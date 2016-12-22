@@ -88,7 +88,7 @@
 
 	var _Profile2 = _interopRequireDefault(_Profile);
 
-	var _Reconciliation = __webpack_require__(366);
+	var _Reconciliation = __webpack_require__(364);
 
 	var _Reconciliation2 = _interopRequireDefault(_Reconciliation);
 
@@ -45257,7 +45257,7 @@
 	    key: 'renderSpan1',
 	    value: function renderSpan1(posting, content) {
 	      var props = { key: posting.postingDetailId };
-	      if (posting.amount < 0) props.className = 'indent-left';
+	      if (posting.amount < 0) props.className = 'le-pad-left';
 	      return _react2.default.createElement(
 	        'span',
 	        props,
@@ -45269,8 +45269,8 @@
 	    key: 'renderSpan2',
 	    value: function renderSpan2(posting, content) {
 	      var props = { key: posting.postingDetailId };
-	      if (posting.amount > 0) props.className = 'number-positive indent-right';
-	      if (posting.amount < 0) props.className = 'number-negative';
+	      if (posting.amount > 0) props.className = 'le-num-pos le-pad-right';
+	      if (posting.amount < 0) props.className = 'le-num-neg';
 	      return _react2.default.createElement(
 	        'span',
 	        props,
@@ -45597,43 +45597,7 @@
 	exports.default = PasswordChange;
 
 /***/ },
-/* 364 */,
-/* 365 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.formatAmount = formatAmount;
-	exports.formatDate = formatDate;
-
-	var _moment = __webpack_require__(253);
-
-	var _moment2 = _interopRequireDefault(_moment);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	//const DEFAULT_DATE_FORMAT = "ddd MMM D, YYYY";
-	var DEFAULT_DATE_FORMAT = "D MMM YYYY";
-
-	function formatAmount(amount) {
-	  if (amount == 0) return "-";
-	  var s = amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
-	  if (s.startsWith("-")) s = "(" + s.substring(1) + ")";
-	  return s;
-	}
-
-	function formatDate(date) {
-	  var fmt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_DATE_FORMAT;
-
-	  var m = (0, _moment2.default)(date);
-	  return m.format(fmt);
-	}
-
-/***/ },
-/* 366 */
+/* 364 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45657,6 +45621,10 @@
 	var _Message2 = _interopRequireDefault(_Message);
 
 	var _Formatters = __webpack_require__(365);
+
+	var _TableWithCheckboxes = __webpack_require__(366);
+
+	var _TableWithCheckboxes2 = _interopRequireDefault(_TableWithCheckboxes);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -45849,9 +45817,25 @@
 	      return s1.statementDate.localeCompare(s2.statementDate) || s1.accountId - s2.accountId || s1.statementId - s2.statementId;
 	    }
 	  }, {
+	    key: 'handleSubmitP2S',
+	    value: function handleSubmitP2S(checked) {
+	      console.log("%o", checked);
+	    }
+	  }, {
+	    key: 'handleSubmitS2S',
+	    value: function handleSubmitS2S(checked) {
+	      console.log("%o", checked);
+	    }
+	  }, {
+	    key: 'handleSubmitP',
+	    value: function handleSubmitP(checked) {
+	      console.log("%o", checked);
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
-	      if (this.state.loading) return null; //TODO spinner, or progress message "crunching numbers"
+	      if (this.state.loading) return null;
+	      //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"
 
 	      return _react2.default.createElement(
 	        'div',
@@ -45859,25 +45843,25 @@
 	        _react2.default.createElement(
 	          'h3',
 	          null,
-	          'Auto-matched Postings to Statements'
+	          '1. Auto-matched Postings to Statements'
 	        ),
 	        this.renderTableP2S(),
 	        _react2.default.createElement(
 	          'h3',
 	          null,
-	          'Auto-matched Statements'
+	          '2. Auto-matched Statements'
 	        ),
 	        this.renderTableS2S(),
 	        _react2.default.createElement(
 	          'h3',
 	          null,
-	          'Unmatched Postings'
+	          '3. Unmatched Postings'
 	        ),
 	        this.renderTableP(),
 	        _react2.default.createElement(
 	          'h3',
 	          null,
-	          'Unmatched Statements'
+	          '4. Unmatched Statements'
 	        ),
 	        this.renderTableS(),
 	        _react2.default.createElement(_Message2.default, { message: this.state.message })
@@ -45888,33 +45872,49 @@
 	    value: function renderTableP2S() {
 	      var _this4 = this;
 
-	      if (!this.state.mapped.p2s) return this.renderAOK();
+	      if (!this.state.mapped.p2s.length) return this.renderAOK();
 
-	      var rows = [];
+	      var head = _react2.default.createElement(
+	        'tr',
+	        null,
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'text-nowrap' },
+	          'Date'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'text-nowrap' },
+	          'Account'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'text-right' },
+	          'Amount'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-8' },
+	          'Description'
+	        )
+	      );
 
-	      //let accountId;
-	      this.state.mapped.p2s.forEach(function (tuple) {
-	        var p = tuple[0];
-	        var s = tuple[1];
-	        /*
-	        if (p.accountId != accountId) {
-	          accountId = p.accountId;
-	          rows.push(
-	            <tr key={p.accountId}>
-	              <th colSpan="4">
-	                {p.accountId} - {this.accounts[p.accountId].name}
-	              </th>
-	            </tr>
-	          );
-	        }
-	        */
-	        rows.push(_react2.default.createElement(
+	      var rows = this.state.mapped.p2s.map(function (tuple) {
+	        var p = tuple[0],
+	            s = tuple[1];
+	        return _react2.default.createElement(
 	          'tr',
 	          { key: p.postingDetailId },
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            (0, _Formatters.formatDate)(p.postingDate)
+	            (0, _Formatters.formatDate)(p.postingDate),
+	            _react2.default.createElement('br', null),
+	            p.postingDate != s.statementDate && _react2.default.createElement(
+	              'small',
+	              { className: 'le-pad-left' },
+	              (0, _Formatters.formatDate)(s.statementDate)
+	            )
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -45926,14 +45926,18 @@
 	            { className: 'text-nowrap text-right' },
 	            _react2.default.createElement(
 	              'span',
-	              { className: p.amount < 0 ? "number-negative" : "number-positive" },
+	              { className: p.amount < 0 ? "le-num-neg" : "le-num-pos" },
 	              (0, _Formatters.formatAmount)(p.amount)
 	            )
 	          ),
 	          _react2.default.createElement(
 	            'td',
 	            null,
-	            p.description,
+	            _react2.default.createElement(
+	              'span',
+	              null,
+	              p.description
+	            ),
 	            _react2.default.createElement('br', null),
 	            _react2.default.createElement(
 	              'small',
@@ -45941,59 +45945,51 @@
 	              s.description
 	            )
 	          )
-	        ));
+	        );
 	      });
 
-	      return _react2.default.createElement(
-	        'table',
-	        { className: 'table table-striped table-condensed' },
-	        _react2.default.createElement(
-	          'thead',
-	          null,
-	          _react2.default.createElement(
-	            'tr',
-	            null,
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-nowrap' },
-	              'Date'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-2 text-nowrap' },
-	              'Account'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-right' },
-	              'Amount'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-8' },
-	              'Description'
-	            )
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'tbody',
-	          null,
-	          rows
-	        )
-	      );
+	      return _react2.default.createElement(_TableWithCheckboxes2.default, {
+	        head: head,
+	        rows: rows,
+	        onSubmit: this.handleSubmitP2S
+	      });
 	    }
 	  }, {
 	    key: 'renderTableS2S',
 	    value: function renderTableS2S() {
 	      var _this5 = this;
 
-	      if (!this.state.mapped.s2s) return this.renderAOK();
+	      if (!this.state.mapped.s2s.length) return this.renderAOK();
 
-	      var rows = [];
-	      this.state.mapped.s2s.forEach(function (tuple) {
-	        var s1 = tuple[0].amount > 0 ? tuple[0] : tuple[1];
-	        var s2 = tuple[0].amount > 0 ? tuple[1] : tuple[0];
-	        rows.push(_react2.default.createElement(
+	      var head = _react2.default.createElement(
+	        'tr',
+	        null,
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-1 text-nowrap' },
+	          'Date'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-2 text-nowrap' },
+	          'Account'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-1 text-right' },
+	          'Amount'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-8' },
+	          'Description'
+	        )
+	      );
+
+	      var rows = this.state.mapped.s2s.map(function (tuple) {
+	        var s1 = tuple[0].amount > 0 ? tuple[0] : tuple[1],
+	            s2 = tuple[0].amount > 0 ? tuple[1] : tuple[0];
+	        return _react2.default.createElement(
 	          'tr',
 	          { key: s1.statementId },
 	          _react2.default.createElement(
@@ -46012,7 +46008,7 @@
 	            _react2.default.createElement('br', null),
 	            _react2.default.createElement(
 	              'span',
-	              { className: 'indent-left' },
+	              { className: 'le-pad-left' },
 	              _this5.accounts[s2.accountId].name
 	            )
 	          ),
@@ -46021,13 +46017,13 @@
 	            { className: 'text-nowrap text-right' },
 	            _react2.default.createElement(
 	              'span',
-	              { className: 'number-positive indent-right' },
+	              { className: 'le-num-pos le-pad-right' },
 	              (0, _Formatters.formatAmount)(s1.amount)
 	            ),
 	            _react2.default.createElement('br', null),
 	            _react2.default.createElement(
 	              'span',
-	              { className: 'number-negative' },
+	              { className: 'le-num-neg' },
 	              (0, _Formatters.formatAmount)(s2.amount)
 	            )
 	          ),
@@ -46038,57 +46034,49 @@
 	            _react2.default.createElement('br', null),
 	            s2.description
 	          )
-	        ));
+	        );
 	      });
 
-	      return _react2.default.createElement(
-	        'table',
-	        { className: 'table table-striped table-condensed' },
-	        _react2.default.createElement(
-	          'thead',
-	          null,
-	          _react2.default.createElement(
-	            'tr',
-	            null,
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-nowrap' },
-	              'Date'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-2 text-nowrap' },
-	              'Account'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-right' },
-	              'Amount'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-8' },
-	              'Description'
-	            )
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'tbody',
-	          null,
-	          rows
-	        )
-	      );
+	      return _react2.default.createElement(_TableWithCheckboxes2.default, {
+	        head: head,
+	        rows: rows,
+	        onSubmit: this.handleSubmitS2S
+	      });
 	    }
 	  }, {
 	    key: 'renderTableP',
 	    value: function renderTableP() {
 	      var _this6 = this;
 
-	      if (!this.state.unmapped.p) return this.renderAOK();
+	      if (!this.state.unmapped.p.length) return this.renderAOK();
 
-	      var rows = [];
-	      this.state.unmapped.p.forEach(function (p) {
-	        rows.push(_react2.default.createElement(
+	      var head = _react2.default.createElement(
+	        'tr',
+	        null,
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-1 text-nowrap' },
+	          'Date'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-2 text-nowrap' },
+	          'Account'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-1 text-right' },
+	          'Amount'
+	        ),
+	        _react2.default.createElement(
+	          'th',
+	          { className: 'col-md-8' },
+	          'Description'
+	        )
+	      );
+
+	      var rows = this.state.unmapped.p.map(function (p) {
+	        return _react2.default.createElement(
 	          'tr',
 	          { key: p.postingDetailId },
 	          _react2.default.createElement(
@@ -46106,7 +46094,7 @@
 	            { className: 'text-nowrap text-right' },
 	            _react2.default.createElement(
 	              'span',
-	              { className: p.amount < 0 ? "number-negative" : "number-positive" },
+	              { className: p.amount < 0 ? "le-num-neg" : "le-num-pos" },
 	              (0, _Formatters.formatAmount)(p.amount)
 	            )
 	          ),
@@ -46115,53 +46103,28 @@
 	            null,
 	            p.description
 	          )
-	        ));
+	        );
 	      });
 
-	      return _react2.default.createElement(
-	        'table',
-	        { className: 'table table-striped table-condensed' },
-	        _react2.default.createElement(
-	          'thead',
-	          null,
-	          _react2.default.createElement(
-	            'tr',
-	            null,
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-nowrap' },
-	              'Date'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-2 text-nowrap' },
-	              'Account'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-right' },
-	              'Amount'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-8' },
-	              'Description'
-	            )
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'tbody',
-	          null,
-	          rows
-	        )
+	      var button = _react2.default.createElement(
+	        'button',
+	        { type: 'button', className: 'btn btn-danger btn-lg' },
+	        'Delete'
 	      );
+
+	      return _react2.default.createElement(_TableWithCheckboxes2.default, {
+	        head: head,
+	        rows: rows,
+	        button: button,
+	        onSubmit: this.handleSubmitP
+	      });
 	    }
 	  }, {
 	    key: 'renderTableS',
 	    value: function renderTableS() {
 	      var _this7 = this;
 
-	      if (!this.state.unmapped.s) return this.renderAOK();
+	      if (!this.state.unmapped.s.length) return this.renderAOK();
 
 	      var rows = [];
 	      this.state.unmapped.s.forEach(function (s) {
@@ -46183,7 +46146,7 @@
 	            { className: 'text-nowrap text-right' },
 	            _react2.default.createElement(
 	              'span',
-	              { className: s.amount < 0 ? "number-negative" : "number-positive" },
+	              { className: s.amount < 0 ? "le-num-neg" : "le-num-pos" },
 	              (0, _Formatters.formatAmount)(s.amount)
 	            )
 	          ),
@@ -46248,6 +46211,183 @@
 	}(_react2.default.Component);
 
 	exports.default = Reconciliation;
+
+/***/ },
+/* 365 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.formatAmount = formatAmount;
+	exports.formatDate = formatDate;
+
+	var _moment = __webpack_require__(253);
+
+	var _moment2 = _interopRequireDefault(_moment);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	//const DEFAULT_DATE_FORMAT = "ddd MMM D, YYYY";
+	var DEFAULT_DATE_FORMAT = "D MMM YYYY";
+
+	function formatAmount(amount) {
+	  if (amount == 0) return "-";
+	  var s = amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
+	  if (s.startsWith("-")) s = "(" + s.substring(1) + ")";
+	  return s;
+	}
+
+	function formatDate(date) {
+	  var fmt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_DATE_FORMAT;
+
+	  var m = (0, _moment2.default)(date);
+	  return m.format(fmt);
+	}
+
+/***/ },
+/* 366 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _Formatters = __webpack_require__(365);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var TableWithCheckboxes = function (_React$Component) {
+	  _inherits(TableWithCheckboxes, _React$Component);
+
+	  function TableWithCheckboxes(props) {
+	    _classCallCheck(this, TableWithCheckboxes);
+
+	    var _this = _possibleConstructorReturn(this, (TableWithCheckboxes.__proto__ || Object.getPrototypeOf(TableWithCheckboxes)).call(this, props));
+
+	    _this.state = {
+	      checked: [false].concat(_this.props.rows.map(function (row) {
+	        return false;
+	      }))
+	    };
+	    _this.handleSubmit = _this.handleSubmit.bind(_this);
+	    return _this;
+	  }
+
+	  _createClass(TableWithCheckboxes, [{
+	    key: 'handleChange',
+	    value: function handleChange(i) {
+	      this.setState(function (state) {
+	        var checked = !state.checked[i];
+	        if (i == 0) {
+	          state.checked.fill(checked);
+	        } else {
+	          state.checked[i] = checked;
+	          state.checked[0] = false;
+	        }
+	        return { checked: state.checked };
+	      });
+	    }
+	  }, {
+	    key: 'handleSubmit',
+	    value: function handleSubmit(e) {
+	      e.preventDefault();
+	      this.props.onSubmit(this.state.checked.slice(1));
+	    }
+	  }, {
+	    key: 'renderCheckbox',
+	    value: function renderCheckbox(i) {
+	      return _react2.default.createElement('input', {
+	        type: 'checkbox',
+	        checked: this.state.checked[i],
+	        onChange: this.handleChange.bind(this, i)
+	      });
+	    }
+	  }, {
+	    key: 'renderButton',
+	    value: function renderButton() {
+	      return _react2.default.cloneElement(this.props.button, {
+	        disabled: this.state.checked.every(function (checked) {
+	          return !checked;
+	        }),
+	        onClick: this.handleSubmit
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _this2 = this;
+
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(
+	          'table',
+	          { className: 'table table-condensed le-recon-table' },
+	          _react2.default.createElement(
+	            'thead',
+	            null,
+	            _react2.default.createElement(
+	              'tr',
+	              null,
+	              _react2.default.createElement(
+	                'th',
+	                null,
+	                this.renderCheckbox(0)
+	              ),
+	              this.props.head.props.children
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'tbody',
+	            null,
+	            this.props.rows.map(function (row, i) {
+	              return _react2.default.createElement(
+	                'tr',
+	                { key: row.key },
+	                _react2.default.createElement(
+	                  'td',
+	                  null,
+	                  _this2.renderCheckbox(i + 1)
+	                ),
+	                row.props.children
+	              );
+	            })
+	          )
+	        ),
+	        this.renderButton()
+	      );
+	    }
+	  }]);
+
+	  return TableWithCheckboxes;
+	}(_react2.default.Component);
+
+	TableWithCheckboxes.defaultProps = {
+	  button: _react2.default.createElement(
+	    'button',
+	    { type: 'button', className: 'btn btn-success btn-lg' },
+	    'Submit'
+	  )
+	};
+
+	exports.default = TableWithCheckboxes;
 
 /***/ }
 /******/ ]);

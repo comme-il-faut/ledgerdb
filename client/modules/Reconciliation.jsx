@@ -4,6 +4,8 @@ import moment from 'moment';
 import Message from './Message.jsx';
 import { formatAmount, formatDate } from './Formatters';
 
+import TableWithCheckboxes from './Reconciliation/TableWithCheckboxes.jsx';
+
 class Reconciliation extends React.Component {
   constructor(props) {
     super(props);
@@ -135,22 +137,35 @@ class Reconciliation extends React.Component {
         || s1.statementId - s2.statementId;
   }
 
+  handleSubmitP2S(checked) {
+    console.log("%o", checked);
+  }
+
+  handleSubmitS2S(checked) {
+    console.log("%o", checked);
+  }
+
+  handleSubmitP(checked) {
+    console.log("%o", checked);
+  }
+
   render() {
     if (this.state.loading)
-      return null; //TODO spinner, or progress message "crunching numbers"
+      return null;
+      //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"
 
     return (
       <div>
-        <h3>Auto-matched Postings to Statements</h3>
+        <h3>1. Auto-matched Postings to Statements</h3>
         {this.renderTableP2S()}
 
-        <h3>Auto-matched Statements</h3>
+        <h3>2. Auto-matched Statements</h3>
         {this.renderTableS2S()}
 
-        <h3>Unmatched Postings</h3>
+        <h3>3. Unmatched Postings</h3>
         {this.renderTableP()}
 
-        <h3>Unmatched Statements</h3>
+        <h3>4. Unmatched Statements</h3>
         {this.renderTableS()}
 
         {/* <p>{JSON.stringify(this.state)}</p> */}
@@ -160,44 +175,43 @@ class Reconciliation extends React.Component {
   }
 
   renderTableP2S() {
-    if (!this.state.mapped.p2s)
+    if (!this.state.mapped.p2s.length)
       return this.renderAOK();
 
-    let rows = [];
+    const head = (
+      <tr>
+        <th className="text-nowrap">Date</th>
+        <th className="text-nowrap">Account</th>
+        <th className="text-right">Amount</th>
+        <th className="col-md-8">Description</th>
+      </tr>
+    );
 
-    //let accountId;
-    this.state.mapped.p2s.forEach((tuple) => {
-      let p = tuple[0];
-      let s = tuple[1];
-      /*
-      if (p.accountId != accountId) {
-        accountId = p.accountId;
-        rows.push(
-          <tr key={p.accountId}>
-            <th colSpan="4">
-              {p.accountId} - {this.accounts[p.accountId].name}
-            </th>
-          </tr>
-        );
-      }
-      */
-      rows.push(
+    const rows = this.state.mapped.p2s.map((tuple) => {
+      const p = tuple[0],
+            s = tuple[1];
+      return (
         <tr key={p.postingDetailId}>
-          <td className="text-nowrap">{formatDate(p.postingDate)}</td>
+          <td className="text-nowrap">
+            {formatDate(p.postingDate)}
+            <br/>
+            {p.postingDate != s.statementDate
+              && <small className="le-pad-left">{formatDate(s.statementDate)}</small>}
+          </td>
           <td className="text-nowrap">
             {this.accounts[p.accountId].name}
           </td>
           <td className="text-nowrap text-right">
             <span className={
               p.amount < 0
-                ? "number-negative"
-                : "number-positive"
+                ? "le-num-neg"
+                : "le-num-pos"
             }>
               {formatAmount(p.amount)}
             </span>
           </td>
           <td>
-            {p.description}
+            <span>{p.description}</span>
             <br/>
             <small>{s.description}</small>
           </td>
@@ -206,29 +220,31 @@ class Reconciliation extends React.Component {
     });
 
     return (
-      <table className="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th className="col-md-1 text-nowrap">Date</th>
-            <th className="col-md-2 text-nowrap">Account</th>
-            <th className="col-md-1 text-right">Amount</th>
-            <th className="col-md-8">Description</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <TableWithCheckboxes
+        head={head}
+        rows={rows}
+        onSubmit={this.handleSubmitP2S}
+      />
     );
   }
 
   renderTableS2S() {
-    if (!this.state.mapped.s2s)
+    if (!this.state.mapped.s2s.length)
       return this.renderAOK();
 
-    let rows = [];
-    this.state.mapped.s2s.forEach((tuple) => {
-      let s1 = tuple[0].amount > 0 ? tuple[0] : tuple[1];
-      let s2 = tuple[0].amount > 0 ? tuple[1] : tuple[0];
-      rows.push(
+    const head = (
+      <tr>
+        <th className="col-md-1 text-nowrap">Date</th>
+        <th className="col-md-2 text-nowrap">Account</th>
+        <th className="col-md-1 text-right">Amount</th>
+        <th className="col-md-8">Description</th>
+      </tr>
+    );
+
+    const rows = this.state.mapped.s2s.map((tuple) => {
+      const s1 = tuple[0].amount > 0 ? tuple[0] : tuple[1],
+            s2 = tuple[0].amount > 0 ? tuple[1] : tuple[0];
+      return (
         <tr key={s1.statementId}>
           <td className="text-nowrap">{formatDate(s1.statementDate)}</td>
           <td className="text-nowrap">
@@ -236,16 +252,16 @@ class Reconciliation extends React.Component {
               {this.accounts[s1.accountId].name}
             </span>
             <br/>
-            <span className="indent-left">
+            <span className="le-pad-left">
               {this.accounts[s2.accountId].name}
             </span>
           </td>
           <td className="text-nowrap text-right">
-            <span className="number-positive indent-right">
+            <span className="le-num-pos le-pad-right">
               {formatAmount(s1.amount)}
             </span>
             <br/>
-            <span className="number-negative">
+            <span className="le-num-neg">
               {formatAmount(s2.amount)}
             </span>
           </td>
@@ -259,65 +275,66 @@ class Reconciliation extends React.Component {
     });
 
     return (
-      <table className="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th className="col-md-1 text-nowrap">Date</th>
-            <th className="col-md-2 text-nowrap">Account</th>
-            <th className="col-md-1 text-right">Amount</th>
-            <th className="col-md-8">Description</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <TableWithCheckboxes
+        head={head}
+        rows={rows}
+        onSubmit={this.handleSubmitS2S}
+      />
     );
   }
 
   renderTableP() {
-    if (!this.state.unmapped.p)
+    if (!this.state.unmapped.p.length)
       return this.renderAOK();
 
-    let rows = [];
-    this.state.unmapped.p.forEach((p) => {
-      rows.push(
-        <tr key={p.postingDetailId}>
-          <td className="text-nowrap">{formatDate(p.postingDate)}</td>
-          <td className="text-nowrap">
-            {this.accounts[p.accountId].name}
-          </td>
-          <td className="text-nowrap text-right">
-            <span className={
-              p.amount < 0
-                ? "number-negative"
-                : "number-positive"
-            }>
-              {formatAmount(p.amount)}
-            </span>
-          </td>
-          <td>
-            {p.description}
-          </td>
-        </tr>
-      );
-    });
+    const head = (
+      <tr>
+        <th className="col-md-1 text-nowrap">Date</th>
+        <th className="col-md-2 text-nowrap">Account</th>
+        <th className="col-md-1 text-right">Amount</th>
+        <th className="col-md-8">Description</th>
+      </tr>
+    );
+
+    const rows = this.state.unmapped.p.map((p) => (
+      <tr key={p.postingDetailId}>
+        <td className="text-nowrap">{formatDate(p.postingDate)}</td>
+        <td className="text-nowrap">
+          {this.accounts[p.accountId].name}
+        </td>
+        <td className="text-nowrap text-right">
+          <span className={
+            p.amount < 0
+              ? "le-num-neg"
+              : "le-num-pos"
+          }>
+            {formatAmount(p.amount)}
+          </span>
+        </td>
+        <td>
+          {p.description}
+        </td>
+      </tr>
+    ));
+
+    const button = (
+      <button type="button" className="btn btn-danger btn-lg">
+        Delete
+      </button>
+    );
 
     return (
-      <table className="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th className="col-md-1 text-nowrap">Date</th>
-            <th className="col-md-2 text-nowrap">Account</th>
-            <th className="col-md-1 text-right">Amount</th>
-            <th className="col-md-8">Description</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <TableWithCheckboxes
+        head={head}
+        rows={rows}
+        button={button}
+        onSubmit={this.handleSubmitP}
+      />
     );
   }
 
   renderTableS() {
-    if (!this.state.unmapped.s)
+    if (!this.state.unmapped.s.length)
       return this.renderAOK();
 
     let rows = [];
@@ -331,8 +348,8 @@ class Reconciliation extends React.Component {
           <td className="text-nowrap text-right">
             <span className={
               s.amount < 0
-                ? "number-negative"
-                : "number-positive"
+                ? "le-num-neg"
+                : "le-num-pos"
             }>
               {formatAmount(s.amount)}
             </span>
