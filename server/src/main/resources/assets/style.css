@@ -7,6 +7,7 @@ html, div, span, body, form, button, select, option {
 body {
   padding-top: 70px;
   font: 15px "Roboto","Helvetica Neue",sans-serif;
+  overflow-y: scroll;
 }
 
 .form-signin {
@@ -102,8 +103,10 @@ form input[type=number] {
 }
 
 
-.number-negative { color: #d44950; }
-.number-positive { color: #4950d4; }
+.le-num-neg { color: #d44950; }
+.le-num-pos { color: #4950d4; }
 
-.indent-left { padding-left: 2em; }
-.indent-right { padding-right: 2em; }
+.le-pad-left { padding-left: 2em; }
+.le-pad-right { padding-right: 2em; }
+
+.le-recon-table { margin-bottom: 3px; /* default: 20px */ }

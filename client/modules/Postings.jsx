@@ -92,7 +92,7 @@ class Postings extends React.Component {
 
   renderSpan1(posting, content) {
     let props = { key: posting.postingDetailId };
-    if (posting.amount < 0) props.className = 'indent-left';
+    if (posting.amount < 0) props.className = 'le-pad-left';
     return (
       <span {...props}>
         {content}
@@ -103,8 +103,8 @@ class Postings extends React.Component {
 
   renderSpan2(posting, content) {
     let props = { key: posting.postingDetailId };
-    if (posting.amount > 0) props.className = 'number-positive indent-right';
-    if (posting.amount < 0) props.className = 'number-negative';
+    if (posting.amount > 0) props.className = 'le-num-pos le-pad-right';
+    if (posting.amount < 0) props.className = 'le-num-neg';
     return (
       <span {...props}>
         {content}
