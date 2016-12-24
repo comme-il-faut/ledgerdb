@@ -1,5 +1,6 @@
 package ledgerdb.server;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -17,7 +18,8 @@ public class AppExceptionMapper implements ExceptionMapper<Exception> {
         //LOG.warn("Exception occurred: " + e.toString(), e);
         
         String message;
-        if (e instanceof AppException) {
+        if (e instanceof AppException
+                || e instanceof WebApplicationException) {
             message = e.getMessage();
         } else {
             message = e.toString();
