@@ -6,9 +6,19 @@ class TableWithCheckboxes extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      checked: [false].concat(this.props.rows.map(row => false))
+      checked: Array(this.props.rows.length + 1).fill(false),
+      loading: false
     }
     this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  componentWillReceiveProps(props) {
+    if (props.rows.length < this.props.rows.length) {
+      this.setState({
+        checked: Array(props.rows.length + 1).fill(false),
+        loading: false
+      });
+    }
   }
 
   handleChange(i) {
@@ -17,8 +27,8 @@ class TableWithCheckboxes extends React.Component {
       if (i == 0) {
         state.checked.fill(checked);
       } else {
-        state.checked[i] = checked;
         state.checked[0] = false;
+        state.checked[i] = checked;
       }
       return { checked: state.checked }
     });
@@ -26,6 +36,7 @@ class TableWithCheckboxes extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault();
+    this.setState({ loading: true });
     this.props.onSubmit(this.state.checked.slice(1));
   }
 
@@ -35,14 +46,16 @@ class TableWithCheckboxes extends React.Component {
         type="checkbox"
         checked={this.state.checked[i]}
         onChange={this.handleChange.bind(this, i)}
+        disabled={this.state.loading}
       />
     );
   }
 
   renderButton() {
+    const disabled = this.state.loading || this.state.checked.every(checked => !checked);
     return React.cloneElement(
       this.props.button, {
-        disabled: this.state.checked.every(checked => !checked),
+        disabled: disabled,
         onClick: this.handleSubmit
       });
   }
@@ -82,6 +95,13 @@ TableWithCheckboxes.defaultProps = {
       Submit
     </button>
   )
+};
+
+TableWithCheckboxes.propTypes = {
+  head:     React.PropTypes.element.isRequired,
+  rows:     React.PropTypes.arrayOf(React.PropTypes.element).isRequired,
+  onSubmit: React.PropTypes.func.isRequired,
+  button:   React.PropTypes.element
 };
 
 export default TableWithCheckboxes;

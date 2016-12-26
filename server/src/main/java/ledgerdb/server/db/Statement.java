@@ -48,9 +48,6 @@ public class Statement {
     private String source;
     public String getSource() { return source; }
     
-    private Integer postingDetailId;
-    public Integer getPostingDetailId() { return postingDetailId; }
-    
     @org.hibernate.annotations.Type(type = "yes_no")
     protected boolean posted = false;
     public boolean isPosted() { return posted; }
@@ -60,14 +57,9 @@ public class Statement {
     protected int sequence = 1;
     public int getSequence() { return sequence; }
 
-    /*
-    public void setPostingDetailId(int postingDetailId) {
-        this.postingDetailId = postingDetailId;
+    public void reconcile(PostingDetail pd) {
+        pd.setStatementId(this.getId());
+        posted = true;
     }
-    or
-    public void reconcile(int postingDetailId)
-    or
-    public void reconcile(PostingDetail postingDetail)
-    */
     
 }

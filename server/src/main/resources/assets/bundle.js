@@ -45004,10 +45004,21 @@
 	  }
 
 	  _createClass(Message, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.show();
+	    }
+	  }, {
 	    key: 'componentDidUpdate',
 	    value: function componentDidUpdate() {
+	      this.show();
+	    }
+	  }, {
+	    key: 'show',
+	    value: function show() {
 	      if (this.props.message) {
-	        $('.modal').modal('show');
+	        var modal = $('.modal');
+	        modal.modal('show');
 	      }
 	    }
 	  }, {
@@ -45112,6 +45123,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _Message = __webpack_require__(360);
+
+	var _Message2 = _interopRequireDefault(_Message);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -45136,6 +45151,13 @@
 	  }
 
 	  _createClass(Postings, [{
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate() {
+	      if (this.state.message) {
+	        this.state.message = null;
+	      }
+	    }
+	  }, {
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      var _this2 = this;
@@ -45163,6 +45185,16 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        this.renderTable(),
+	        _react2.default.createElement(_Message2.default, { message: this.state.message })
+	      );
+	    }
+	  }, {
+	    key: 'renderTable',
+	    value: function renderTable() {
 	      var _this3 = this;
 
 	      if (!this.state.postings.length) return null;
@@ -45212,44 +45244,40 @@
 	      });
 
 	      return _react2.default.createElement(
-	        'div',
-	        null,
+	        'table',
+	        { className: 'table table-striped table-condensed' },
 	        _react2.default.createElement(
-	          'table',
-	          { className: 'table table-striped table-condensed' },
+	          'thead',
+	          null,
 	          _react2.default.createElement(
-	            'thead',
+	            'tr',
 	            null,
 	            _react2.default.createElement(
-	              'tr',
-	              null,
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-1' },
-	                'Date'
-	              ),
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-2' },
-	                'Account'
-	              ),
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-1 text-right' },
-	                'Amount'
-	              ),
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-8' },
-	                'Description'
-	              )
+	              'th',
+	              { className: 'col-md-1' },
+	              'Date'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-2' },
+	              'Account'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-right' },
+	              'Amount'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-8' },
+	              'Description'
 	            )
-	          ),
-	          _react2.default.createElement(
-	            'tbody',
-	            null,
-	            rows
 	          )
+	        ),
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
 	        )
 	      );
 	    }
@@ -45648,6 +45676,9 @@
 	      unmapped: { p: [], s: [] },
 	      message: null
 	    };
+	    _this.handleSubmitP2S = _this.handleSubmitP2S.bind(_this);
+	    _this.handleSubmitS2S = _this.handleSubmitS2S.bind(_this);
+	    _this.handleSubmitP = _this.handleSubmitP.bind(_this);
 	    return _this;
 	  }
 
@@ -45819,17 +45850,85 @@
 	  }, {
 	    key: 'handleSubmitP2S',
 	    value: function handleSubmitP2S(checked) {
-	      console.log("%o", checked);
+	      var _this4 = this;
+
+	      var body = this.state.mapped.p2s.filter(function (tuple, i) {
+	        return checked[i];
+	      }).map(function (tuple) {
+	        return {
+	          postingDetailId: tuple[0].postingDetailId,
+	          statementId: tuple[1].statementId
+	        };
+	      });
+
+	      fetch('api/reconciliation/p2s', {
+	        method: 'post',
+	        headers: {
+	          'Authorization': sessionStorage.token,
+	          'Content-type': 'application/json'
+	        },
+	        body: JSON.stringify(body)
+	      }).then(function (res) {
+	        if (res.ok) {
+	          // ok
+	          var mapped = _this4.state.mapped;
+	          mapped.p2s = mapped.p2s.filter(function (tuple, i) {
+	            return !checked[i];
+	          });
+	          _this4.setState({ mapped: mapped });
+	        } else {
+	          return res.text().then(function (text) {
+	            throw new Error(text ? text : res.statusText);
+	          });
+	        }
+	      }).catch(function (err) {
+	        console.log("Error has occurred: %o", err);
+	        _this4.setState({ message: err });
+	      });
 	    }
 	  }, {
 	    key: 'handleSubmitS2S',
 	    value: function handleSubmitS2S(checked) {
-	      console.log("%o", checked);
+	      var _this5 = this;
+
+	      var body = this.state.mapped.s2s.filter(function (tuple, i) {
+	        return checked[i];
+	      }).map(function (tuple) {
+	        return {
+	          statementId1: tuple[0].statementId,
+	          statementId2: tuple[1].statementId
+	        };
+	      });
+
+	      fetch('api/reconciliation/s2s', {
+	        method: 'post',
+	        headers: {
+	          'Authorization': sessionStorage.token,
+	          'Content-type': 'application/json'
+	        },
+	        body: JSON.stringify(body)
+	      }).then(function (res) {
+	        if (res.ok) {
+	          // ok
+	          var mapped = _this5.state.mapped;
+	          mapped.s2s = mapped.s2s.filter(function (tuple, i) {
+	            return !checked[i];
+	          });
+	          _this5.setState({ mapped: mapped });
+	        } else {
+	          return res.text().then(function (text) {
+	            throw new Error(text ? text : res.statusText);
+	          });
+	        }
+	      }).catch(function (err) {
+	        console.log("Error has occurred: %o", err);
+	        _this5.setState({ message: err });
+	      });
 	    }
 	  }, {
 	    key: 'handleSubmitP',
 	    value: function handleSubmitP(checked) {
-	      console.log("%o", checked);
+	      console.log("handleSubmitP: %o", checked);
 	    }
 	  }, {
 	    key: 'render',
@@ -45870,7 +45969,7 @@
 	  }, {
 	    key: 'renderTableP2S',
 	    value: function renderTableP2S() {
-	      var _this4 = this;
+	      var _this6 = this;
 
 	      if (!this.state.mapped.p2s.length) return this.renderAOK();
 
@@ -45919,7 +46018,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            _this4.accounts[p.accountId].name
+	            _this6.accounts[p.accountId].name
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -45957,7 +46056,7 @@
 	  }, {
 	    key: 'renderTableS2S',
 	    value: function renderTableS2S() {
-	      var _this5 = this;
+	      var _this7 = this;
 
 	      if (!this.state.mapped.s2s.length) return this.renderAOK();
 
@@ -46003,13 +46102,13 @@
 	            _react2.default.createElement(
 	              'span',
 	              null,
-	              _this5.accounts[s1.accountId].name
+	              _this7.accounts[s1.accountId].name
 	            ),
 	            _react2.default.createElement('br', null),
 	            _react2.default.createElement(
 	              'span',
 	              { className: 'le-pad-left' },
-	              _this5.accounts[s2.accountId].name
+	              _this7.accounts[s2.accountId].name
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46046,7 +46145,7 @@
 	  }, {
 	    key: 'renderTableP',
 	    value: function renderTableP() {
-	      var _this6 = this;
+	      var _this8 = this;
 
 	      if (!this.state.unmapped.p.length) return this.renderAOK();
 
@@ -46087,7 +46186,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            _this6.accounts[p.accountId].name
+	            _this8.accounts[p.accountId].name
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46122,7 +46221,7 @@
 	  }, {
 	    key: 'renderTableS',
 	    value: function renderTableS() {
-	      var _this7 = this;
+	      var _this9 = this;
 
 	      if (!this.state.unmapped.s.length) return this.renderAOK();
 
@@ -46139,7 +46238,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            _this7.accounts[s.accountId].name
+	            _this9.accounts[s.accountId].name
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46282,15 +46381,24 @@
 	    var _this = _possibleConstructorReturn(this, (TableWithCheckboxes.__proto__ || Object.getPrototypeOf(TableWithCheckboxes)).call(this, props));
 
 	    _this.state = {
-	      checked: [false].concat(_this.props.rows.map(function (row) {
-	        return false;
-	      }))
+	      checked: Array(_this.props.rows.length + 1).fill(false),
+	      loading: false
 	    };
 	    _this.handleSubmit = _this.handleSubmit.bind(_this);
 	    return _this;
 	  }
 
 	  _createClass(TableWithCheckboxes, [{
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(props) {
+	      if (props.rows.length < this.props.rows.length) {
+	        this.setState({
+	          checked: Array(props.rows.length + 1).fill(false),
+	          loading: false
+	        });
+	      }
+	    }
+	  }, {
 	    key: 'handleChange',
 	    value: function handleChange(i) {
 	      this.setState(function (state) {
@@ -46298,8 +46406,8 @@
 	        if (i == 0) {
 	          state.checked.fill(checked);
 	        } else {
-	          state.checked[i] = checked;
 	          state.checked[0] = false;
+	          state.checked[i] = checked;
 	        }
 	        return { checked: state.checked };
 	      });
@@ -46308,6 +46416,7 @@
 	    key: 'handleSubmit',
 	    value: function handleSubmit(e) {
 	      e.preventDefault();
+	      this.setState({ loading: true });
 	      this.props.onSubmit(this.state.checked.slice(1));
 	    }
 	  }, {
@@ -46316,16 +46425,18 @@
 	      return _react2.default.createElement('input', {
 	        type: 'checkbox',
 	        checked: this.state.checked[i],
-	        onChange: this.handleChange.bind(this, i)
+	        onChange: this.handleChange.bind(this, i),
+	        disabled: this.state.loading
 	      });
 	    }
 	  }, {
 	    key: 'renderButton',
 	    value: function renderButton() {
+	      var disabled = this.state.loading || this.state.checked.every(function (checked) {
+	        return !checked;
+	      });
 	      return _react2.default.cloneElement(this.props.button, {
-	        disabled: this.state.checked.every(function (checked) {
-	          return !checked;
-	        }),
+	        disabled: disabled,
 	        onClick: this.handleSubmit
 	      });
 	    }
@@ -46385,6 +46496,13 @@
 	    { type: 'button', className: 'btn btn-success btn-lg' },
 	    'Submit'
 	  )
+	};
+
+	TableWithCheckboxes.propTypes = {
+	  head: _react2.default.PropTypes.element.isRequired,
+	  rows: _react2.default.PropTypes.arrayOf(_react2.default.PropTypes.element).isRequired,
+	  onSubmit: _react2.default.PropTypes.func.isRequired,
+	  button: _react2.default.PropTypes.element
 	};
 
 	exports.default = TableWithCheckboxes;

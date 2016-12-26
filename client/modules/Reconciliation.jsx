@@ -15,6 +15,9 @@ class Reconciliation extends React.Component {
       unmapped:  { p: [], s: [] },
       message: null
     };
+    this.handleSubmitP2S = this.handleSubmitP2S.bind(this);
+    this.handleSubmitS2S = this.handleSubmitS2S.bind(this);
+    this.handleSubmitP = this.handleSubmitP.bind(this);
   }
 
   componentDidMount() {
@@ -138,15 +141,75 @@ class Reconciliation extends React.Component {
   }
 
   handleSubmitP2S(checked) {
-    console.log("%o", checked);
+    const body = this.state.mapped.p2s
+      .filter((tuple, i) => checked[i])
+      .map((tuple) => ({
+        postingDetailId: tuple[0].postingDetailId,
+        statementId: tuple[1].statementId
+      }));
+
+    fetch('api/reconciliation/p2s', {
+      method: 'post',
+      headers: {
+        'Authorization': sessionStorage.token,
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+      .then(res => {
+        if (res.ok) {
+          // ok
+          const mapped = this.state.mapped;
+          mapped.p2s = mapped.p2s.filter((tuple, i) => !checked[i]);
+          this.setState({ mapped: mapped });
+        } else {
+          return res.text().then(text => {
+            throw new Error(text ? text : res.statusText);
+          });
+        }
+      })
+      .catch(err => {
+        console.log("Error has occurred: %o", err);
+        this.setState({ message: err });
+      });
   }
 
   handleSubmitS2S(checked) {
-    console.log("%o", checked);
+    const body = this.state.mapped.s2s
+      .filter((tuple, i) => checked[i])
+      .map((tuple) => ({
+        statementId1: tuple[0].statementId,
+        statementId2: tuple[1].statementId
+      }));
+
+    fetch('api/reconciliation/s2s', {
+      method: 'post',
+      headers: {
+        'Authorization': sessionStorage.token,
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+      .then(res => {
+        if (res.ok) {
+          // ok
+          const mapped = this.state.mapped;
+          mapped.s2s = mapped.s2s.filter((tuple, i) => !checked[i]);
+          this.setState({ mapped: mapped });
+        } else {
+          return res.text().then(text => {
+            throw new Error(text ? text : res.statusText);
+          });
+        }
+      })
+      .catch(err => {
+        console.log("Error has occurred: %o", err);
+        this.setState({ message: err });
+      });
   }
 
   handleSubmitP(checked) {
-    console.log("%o", checked);
+    console.log("handleSubmitP: %o", checked);
   }
 
   render() {
