@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Message from './Message.jsx';
+
 class Postings extends React.Component {
   constructor(props) {
     super(props);
@@ -7,6 +9,12 @@ class Postings extends React.Component {
       postings: [],
       message: null
     };
+  }
+
+  componentDidUpdate() {
+    if (this.state.message) {
+      this.state.message = null;
+    }
   }
 
   componentDidMount() {
@@ -35,6 +43,16 @@ class Postings extends React.Component {
   }
 
   render() {
+    return (
+      <div>
+        {this.renderTable()}
+        {/* JSON.stringify(entries) */}
+        <Message message={this.state.message}/>
+      </div>
+    );
+  }
+
+  renderTable() {
     if (!this.state.postings.length)
       return null;
 
@@ -73,20 +91,17 @@ class Postings extends React.Component {
     });
 
     return (
-      <div>
-        <table className="table table-striped table-condensed">
-          <thead>
-            <tr>
-              <th className="col-md-1">Date</th>
-              <th className="col-md-2">Account</th>
-              <th className="col-md-1 text-right">Amount</th>
-              <th className="col-md-8">Description</th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
-        {/* JSON.stringify(entries) */}
-      </div>
+      <table className="table table-striped table-condensed">
+        <thead>
+          <tr>
+            <th className="col-md-1">Date</th>
+            <th className="col-md-2">Account</th>
+            <th className="col-md-1 text-right">Amount</th>
+            <th className="col-md-8">Description</th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
     );
   }
 
