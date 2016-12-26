@@ -11,14 +11,17 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import ledgerdb.server.AppException;
 import ledgerdb.server.ResponseFormatter;
 import ledgerdb.server.auth.User;
 import ledgerdb.server.db.PostingHeader;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -92,4 +95,36 @@ public class PostingResource {
         return postingHeader;
     }
     
+    @DELETE
+    public void delete(PostingHeader[] phs) {
+        Session session = sf.openSession();
+        Transaction tx = null;
+        try {
+            tx = session.beginTransaction();
+            
+            Query q1 = session.createQuery("delete from PostingDetail where postingHeader.id = :id");
+            Query q2 = session.createQuery("delete from PostingHeader where id = :id");
+            
+            for (PostingHeader ph : phs) {
+                int id = ph.getId();
+                //ph = session.get(PostingHeader.class, id);
+                //if (ph == null)
+                //    throw new AppException("No such posting header id: " + id);
+                
+                q1.setInteger("id", id);
+                q2.setInteger("id", id);
+                
+                q1.executeUpdate();
+                q2.executeUpdate();
+            }
+            
+            tx.commit();
+            tx = null;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
 }

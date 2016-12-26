@@ -6,8 +6,7 @@ class TableWithCheckboxes extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      checked: Array(this.props.rows.length + 1).fill(false),
-      loading: false
+      checked: Array(this.props.rows.length + 1).fill(false)
     }
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -15,8 +14,7 @@ class TableWithCheckboxes extends React.Component {
   componentWillReceiveProps(props) {
     if (props.rows.length < this.props.rows.length) {
       this.setState({
-        checked: Array(props.rows.length + 1).fill(false),
-        loading: false
+        checked: Array(props.rows.length + 1).fill(false)
       });
     }
   }
@@ -36,7 +34,6 @@ class TableWithCheckboxes extends React.Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    this.setState({ loading: true });
     this.props.onSubmit(this.state.checked.slice(1));
   }
 
@@ -46,13 +43,13 @@ class TableWithCheckboxes extends React.Component {
         type="checkbox"
         checked={this.state.checked[i]}
         onChange={this.handleChange.bind(this, i)}
-        disabled={this.state.loading}
+        disabled={this.props.loading}
       />
     );
   }
 
   renderButton() {
-    const disabled = this.state.loading || this.state.checked.every(checked => !checked);
+    const disabled = this.props.loading || this.state.checked.every(checked => !checked);
     return React.cloneElement(
       this.props.button, {
         disabled: disabled,

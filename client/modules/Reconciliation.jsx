@@ -11,8 +11,8 @@ class Reconciliation extends React.Component {
     super(props);
     this.state = {
       loading: true,
-      mapped: { p2s: [], s2s: [] },
-      unmapped:  { p: [], s: [] },
+      mapped: null, // { p2s: [], s2s: [] },
+      unmapped: null, // { p: [], s: [] },
       message: null
     };
     this.handleSubmitP2S = this.handleSubmitP2S.bind(this);
@@ -141,6 +141,7 @@ class Reconciliation extends React.Component {
   }
 
   handleSubmitP2S(checked) {
+    this.setState({ loading: true });
     const body = this.state.mapped.p2s
       .filter((tuple, i) => checked[i])
       .map((tuple) => ({
@@ -161,7 +162,7 @@ class Reconciliation extends React.Component {
           // ok
           const mapped = this.state.mapped;
           mapped.p2s = mapped.p2s.filter((tuple, i) => !checked[i]);
-          this.setState({ mapped: mapped });
+          this.setState({ loading: false, mapped: mapped });
         } else {
           return res.text().then(text => {
             throw new Error(text ? text : res.statusText);
@@ -170,11 +171,12 @@ class Reconciliation extends React.Component {
       })
       .catch(err => {
         console.log("Error has occurred: %o", err);
-        this.setState({ message: err });
+        this.setState({ loading: false, message: err });
       });
   }
 
   handleSubmitS2S(checked) {
+    this.setState({ loading: true });
     const body = this.state.mapped.s2s
       .filter((tuple, i) => checked[i])
       .map((tuple) => ({
@@ -195,7 +197,7 @@ class Reconciliation extends React.Component {
           // ok
           const mapped = this.state.mapped;
           mapped.s2s = mapped.s2s.filter((tuple, i) => !checked[i]);
-          this.setState({ mapped: mapped });
+          this.setState({ loading: false, mapped: mapped });
         } else {
           return res.text().then(text => {
             throw new Error(text ? text : res.statusText);
@@ -204,33 +206,66 @@ class Reconciliation extends React.Component {
       })
       .catch(err => {
         console.log("Error has occurred: %o", err);
-        this.setState({ message: err });
+        this.setState({ loading: false, message: err });
       });
   }
 
   handleSubmitP(checked) {
-    console.log("handleSubmitP: %o", checked);
+    this.setState({ loading: true });
+    const body = this.state.unmapped.p
+      .filter((p, i) => checked[i])
+      .map((p) => ({ id: p.postingHeaderId }));
+
+    fetch('api/posting', {
+      method: 'delete',
+      headers: {
+        'Authorization': sessionStorage.token,
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+      .then(res => {
+        if (res.ok) {
+          // ok
+          const unmapped = this.state.unmapped;
+          unmapped.p = unmapped.p.filter((p, i) => !checked[i]);
+          this.setState({ loading: false, unmapped: unmapped });
+        } else {
+          return res.text().then(text => {
+            throw new Error(text ? text : res.statusText);
+          });
+        }
+      })
+      .catch(err => {
+        console.log("Error has occurred: %o", err);
+        this.setState({ loading: false, message: err });
+      });
   }
 
   render() {
-    if (this.state.loading)
-      return null;
+    //if (this.state.loading)
+      //return null;
       //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"
+
+    //TODO if !loading && !mapped/!unmapped, show message in div
 
     return (
       <div>
-        <h3>1. Auto-matched Postings to Statements</h3>
-        {this.renderTableP2S()}
+        {this.state.mapped && this.state.unmapped && (
+          <div>
+            <h3>1. Auto-matched Postings to Statements</h3>
+            {this.renderTableP2S()}
 
-        <h3>2. Auto-matched Statements</h3>
-        {this.renderTableS2S()}
+            <h3>2. Auto-matched Statements</h3>
+            {this.renderTableS2S()}
 
-        <h3>3. Unmatched Postings</h3>
-        {this.renderTableP()}
+            <h3>3. Unmatched Postings</h3>
+            {this.renderTableP()}
 
-        <h3>4. Unmatched Statements</h3>
-        {this.renderTableS()}
-
+            <h3>4. Unmatched Statements</h3>
+            {this.renderTableS()}
+          </div>
+        )}
         {/* <p>{JSON.stringify(this.state)}</p> */}
         <Message message={this.state.message}/>
       </div>
@@ -287,6 +322,7 @@ class Reconciliation extends React.Component {
         head={head}
         rows={rows}
         onSubmit={this.handleSubmitP2S}
+        loading={this.state.loading}
       />
     );
   }
@@ -342,6 +378,7 @@ class Reconciliation extends React.Component {
         head={head}
         rows={rows}
         onSubmit={this.handleSubmitS2S}
+        loading={this.state.loading}
       />
     );
   }
@@ -392,6 +429,7 @@ class Reconciliation extends React.Component {
         rows={rows}
         button={button}
         onSubmit={this.handleSubmitP}
+        loading={this.state.loading}
       />
     );
   }

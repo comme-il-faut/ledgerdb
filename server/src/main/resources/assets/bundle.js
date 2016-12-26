@@ -45672,8 +45672,8 @@
 
 	    _this.state = {
 	      loading: true,
-	      mapped: { p2s: [], s2s: [] },
-	      unmapped: { p: [], s: [] },
+	      mapped: null, // { p2s: [], s2s: [] },
+	      unmapped: null, // { p: [], s: [] },
 	      message: null
 	    };
 	    _this.handleSubmitP2S = _this.handleSubmitP2S.bind(_this);
@@ -45852,6 +45852,7 @@
 	    value: function handleSubmitP2S(checked) {
 	      var _this4 = this;
 
+	      this.setState({ loading: true });
 	      var body = this.state.mapped.p2s.filter(function (tuple, i) {
 	        return checked[i];
 	      }).map(function (tuple) {
@@ -45875,7 +45876,7 @@
 	          mapped.p2s = mapped.p2s.filter(function (tuple, i) {
 	            return !checked[i];
 	          });
-	          _this4.setState({ mapped: mapped });
+	          _this4.setState({ loading: false, mapped: mapped });
 	        } else {
 	          return res.text().then(function (text) {
 	            throw new Error(text ? text : res.statusText);
@@ -45883,7 +45884,7 @@
 	        }
 	      }).catch(function (err) {
 	        console.log("Error has occurred: %o", err);
-	        _this4.setState({ message: err });
+	        _this4.setState({ loading: false, message: err });
 	      });
 	    }
 	  }, {
@@ -45891,6 +45892,7 @@
 	    value: function handleSubmitS2S(checked) {
 	      var _this5 = this;
 
+	      this.setState({ loading: true });
 	      var body = this.state.mapped.s2s.filter(function (tuple, i) {
 	        return checked[i];
 	      }).map(function (tuple) {
@@ -45914,7 +45916,7 @@
 	          mapped.s2s = mapped.s2s.filter(function (tuple, i) {
 	            return !checked[i];
 	          });
-	          _this5.setState({ mapped: mapped });
+	          _this5.setState({ loading: false, mapped: mapped });
 	        } else {
 	          return res.text().then(function (text) {
 	            throw new Error(text ? text : res.statusText);
@@ -45922,54 +45924,88 @@
 	        }
 	      }).catch(function (err) {
 	        console.log("Error has occurred: %o", err);
-	        _this5.setState({ message: err });
+	        _this5.setState({ loading: false, message: err });
 	      });
 	    }
 	  }, {
 	    key: 'handleSubmitP',
 	    value: function handleSubmitP(checked) {
-	      console.log("handleSubmitP: %o", checked);
+	      var _this6 = this;
+
+	      this.setState({ loading: true });
+	      var body = this.state.unmapped.p.filter(function (p, i) {
+	        return checked[i];
+	      }).map(function (p) {
+	        return { id: p.postingHeaderId };
+	      });
+
+	      fetch('api/posting', {
+	        method: 'delete',
+	        headers: {
+	          'Authorization': sessionStorage.token,
+	          'Content-type': 'application/json'
+	        },
+	        body: JSON.stringify(body)
+	      }).then(function (res) {
+	        if (res.ok) {
+	          // ok
+	          var unmapped = _this6.state.unmapped;
+	          unmapped.p = unmapped.p.filter(function (p, i) {
+	            return !checked[i];
+	          });
+	          _this6.setState({ loading: false, unmapped: unmapped });
+	        } else {
+	          return res.text().then(function (text) {
+	            throw new Error(text ? text : res.statusText);
+	          });
+	        }
+	      }).catch(function (err) {
+	        console.log("Error has occurred: %o", err);
+	        _this6.setState({ loading: false, message: err });
+	      });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      if (this.state.loading) return null;
-	      //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"
 
 	      return _react2.default.createElement(
 	        'div',
 	        null,
-	        _react2.default.createElement(
-	          'h3',
+	        this.state.mapped && this.state.unmapped && _react2.default.createElement(
+	          'div',
 	          null,
-	          '1. Auto-matched Postings to Statements'
+	          _react2.default.createElement(
+	            'h3',
+	            null,
+	            '1. Auto-matched Postings to Statements'
+	          ),
+	          this.renderTableP2S(),
+	          _react2.default.createElement(
+	            'h3',
+	            null,
+	            '2. Auto-matched Statements'
+	          ),
+	          this.renderTableS2S(),
+	          _react2.default.createElement(
+	            'h3',
+	            null,
+	            '3. Unmatched Postings'
+	          ),
+	          this.renderTableP(),
+	          _react2.default.createElement(
+	            'h3',
+	            null,
+	            '4. Unmatched Statements'
+	          ),
+	          this.renderTableS()
 	        ),
-	        this.renderTableP2S(),
-	        _react2.default.createElement(
-	          'h3',
-	          null,
-	          '2. Auto-matched Statements'
-	        ),
-	        this.renderTableS2S(),
-	        _react2.default.createElement(
-	          'h3',
-	          null,
-	          '3. Unmatched Postings'
-	        ),
-	        this.renderTableP(),
-	        _react2.default.createElement(
-	          'h3',
-	          null,
-	          '4. Unmatched Statements'
-	        ),
-	        this.renderTableS(),
 	        _react2.default.createElement(_Message2.default, { message: this.state.message })
 	      );
 	    }
 	  }, {
 	    key: 'renderTableP2S',
 	    value: function renderTableP2S() {
-	      var _this6 = this;
+	      var _this7 = this;
 
 	      if (!this.state.mapped.p2s.length) return this.renderAOK();
 
@@ -46018,7 +46054,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            _this6.accounts[p.accountId].name
+	            _this7.accounts[p.accountId].name
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46050,13 +46086,14 @@
 	      return _react2.default.createElement(_TableWithCheckboxes2.default, {
 	        head: head,
 	        rows: rows,
-	        onSubmit: this.handleSubmitP2S
+	        onSubmit: this.handleSubmitP2S,
+	        loading: this.state.loading
 	      });
 	    }
 	  }, {
 	    key: 'renderTableS2S',
 	    value: function renderTableS2S() {
-	      var _this7 = this;
+	      var _this8 = this;
 
 	      if (!this.state.mapped.s2s.length) return this.renderAOK();
 
@@ -46102,13 +46139,13 @@
 	            _react2.default.createElement(
 	              'span',
 	              null,
-	              _this7.accounts[s1.accountId].name
+	              _this8.accounts[s1.accountId].name
 	            ),
 	            _react2.default.createElement('br', null),
 	            _react2.default.createElement(
 	              'span',
 	              { className: 'le-pad-left' },
-	              _this7.accounts[s2.accountId].name
+	              _this8.accounts[s2.accountId].name
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46139,13 +46176,14 @@
 	      return _react2.default.createElement(_TableWithCheckboxes2.default, {
 	        head: head,
 	        rows: rows,
-	        onSubmit: this.handleSubmitS2S
+	        onSubmit: this.handleSubmitS2S,
+	        loading: this.state.loading
 	      });
 	    }
 	  }, {
 	    key: 'renderTableP',
 	    value: function renderTableP() {
-	      var _this8 = this;
+	      var _this9 = this;
 
 	      if (!this.state.unmapped.p.length) return this.renderAOK();
 
@@ -46186,7 +46224,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            _this8.accounts[p.accountId].name
+	            _this9.accounts[p.accountId].name
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46215,13 +46253,14 @@
 	        head: head,
 	        rows: rows,
 	        button: button,
-	        onSubmit: this.handleSubmitP
+	        onSubmit: this.handleSubmitP,
+	        loading: this.state.loading
 	      });
 	    }
 	  }, {
 	    key: 'renderTableS',
 	    value: function renderTableS() {
-	      var _this9 = this;
+	      var _this10 = this;
 
 	      if (!this.state.unmapped.s.length) return this.renderAOK();
 
@@ -46238,7 +46277,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            _this9.accounts[s.accountId].name
+	            _this10.accounts[s.accountId].name
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46381,8 +46420,7 @@
 	    var _this = _possibleConstructorReturn(this, (TableWithCheckboxes.__proto__ || Object.getPrototypeOf(TableWithCheckboxes)).call(this, props));
 
 	    _this.state = {
-	      checked: Array(_this.props.rows.length + 1).fill(false),
-	      loading: false
+	      checked: Array(_this.props.rows.length + 1).fill(false)
 	    };
 	    _this.handleSubmit = _this.handleSubmit.bind(_this);
 	    return _this;
@@ -46393,8 +46431,7 @@
 	    value: function componentWillReceiveProps(props) {
 	      if (props.rows.length < this.props.rows.length) {
 	        this.setState({
-	          checked: Array(props.rows.length + 1).fill(false),
-	          loading: false
+	          checked: Array(props.rows.length + 1).fill(false)
 	        });
 	      }
 	    }
@@ -46416,7 +46453,6 @@
 	    key: 'handleSubmit',
 	    value: function handleSubmit(e) {
 	      e.preventDefault();
-	      this.setState({ loading: true });
 	      this.props.onSubmit(this.state.checked.slice(1));
 	    }
 	  }, {
@@ -46426,13 +46462,13 @@
 	        type: 'checkbox',
 	        checked: this.state.checked[i],
 	        onChange: this.handleChange.bind(this, i),
-	        disabled: this.state.loading
+	        disabled: this.props.loading
 	      });
 	    }
 	  }, {
 	    key: 'renderButton',
 	    value: function renderButton() {
-	      var disabled = this.state.loading || this.state.checked.every(function (checked) {
+	      var disabled = this.props.loading || this.state.checked.every(function (checked) {
 	        return !checked;
 	      });
 	      return _react2.default.cloneElement(this.props.button, {
