@@ -5,9 +5,18 @@ class Message extends React.Component {
     super(props);
   }
 
+  componentDidMount() {
+    this.show();
+  }
+
   componentDidUpdate() {
+    this.show();
+  }
+
+  show() {
     if (this.props.message) {
-      $('.modal').modal('show');
+      const modal = $('.modal');
+      modal.modal('show');
     }
   }
 
