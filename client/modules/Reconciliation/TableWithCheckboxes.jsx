@@ -60,7 +60,7 @@ class TableWithCheckboxes extends React.Component {
   render() {
     return (
       <div>
-        <table className="table table-condensed le-recon-table">
+        <table className={this.props.className}>
           <thead>
             <tr>
               <th>
@@ -91,14 +91,16 @@ TableWithCheckboxes.defaultProps = {
     <button type="button" className="btn btn-success btn-lg">
       Submit
     </button>
-  )
+  ),
+  loading: false
 };
 
 TableWithCheckboxes.propTypes = {
   head:     React.PropTypes.element.isRequired,
   rows:     React.PropTypes.arrayOf(React.PropTypes.element).isRequired,
   onSubmit: React.PropTypes.func.isRequired,
-  button:   React.PropTypes.element
+  button:   React.PropTypes.element,
+  loading:  React.PropTypes.bool
 };
 
 export default TableWithCheckboxes;

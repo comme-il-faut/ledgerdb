@@ -1,9 +1,11 @@
 import React from 'react';
 import moment from 'moment';
 
+import Fortune from './Shared/Fortune.jsx';
 import Message from './Message.jsx';
 import { formatAmount, formatDate } from './Formatters';
 
+import FormAccountButton from './Reconciliation/FormAccountButton.jsx';
 import TableWithCheckboxes from './Reconciliation/TableWithCheckboxes.jsx';
 
 class Reconciliation extends React.Component {
@@ -18,6 +20,7 @@ class Reconciliation extends React.Component {
     this.handleSubmitP2S = this.handleSubmitP2S.bind(this);
     this.handleSubmitS2S = this.handleSubmitS2S.bind(this);
     this.handleSubmitP = this.handleSubmitP.bind(this);
+    this.handleSubmitS = this.handleSubmitS.bind(this);
   }
 
   componentDidMount() {
@@ -37,7 +40,7 @@ class Reconciliation extends React.Component {
         }
       })
       .then(json => {
-        for (let key of ['postings', 'statements', 'accounts']) {
+        for (let key of ['postings', 'statements', 'accounts', 'accountTypes']) {
           let a = json[key]
           if (!Array.isArray(a))
             throw new Error("Invalid server response");
@@ -119,125 +122,122 @@ class Reconciliation extends React.Component {
     this.setState({
       loading: false,
       mapped: {
-        p2s: Array.from(mapP2S.entries()).sort((e1, e2) => this.sortPostings(e1[0], e2[0])),
-        s2s: Array.from(mapS2S.entries()).sort((e1, e2) => this.sortStatements(e1[0], e2[0]))
+        p2s: Array.from(mapP2S.entries()).sort((e1, e2) =>
+          this.sort(e1[0], e2[0], ['postingDate', 'accountId', 'postingDetailId'])),
+        s2s: Array.from(mapS2S.entries()).sort((e1, e2) =>
+          this.sort(e1[0], e2[0], ['statementDate', 'accountId', 'statementId']))
       },
       unmapped: {
-        p: Array.from(setP.values()).sort(this.sortPostings),
-        s: Array.from(setS.values()).sort(this.sortStatements)
+        p: Array.from(setP.values()).sort((p1, p2) =>
+          this.sort(p1, p2, ['accountId', 'postingDate', 'postingDetailId'])),
+        s: Array.from(setS.values()).sort((s1, s2) =>
+          this.sort(s1, s2, ['accountId', 'statementDate', 'statementId']))
       }
     });
   }
 
-  sortPostings(p1, p2) {
-    return p1.postingDate.localeCompare(p2.postingDate)
-      || p1.accountId - p2.accountId
-      || p1.postingDetailId - p2.postingDetailId;
+  sort(o1, o2, fields) {
+    if (fields.length == 0) return 0;
+    const field = fields.shift();
+    let val = 0;
+    if (field.endsWith("Date"))
+      val = o1[field].localeCompare(o2[field]);
+    else
+      val = o1[field] - o2[field];
+    return val || this.sort(o1, o2, fields);
   }
-  sortStatements(s1, s2) {
-      return s1.statementDate.localeCompare(s2.statementDate)
-        || s1.accountId - s2.accountId
-        || s1.statementId - s2.statementId;
+
+  handleSubmitChecked(checked, url, method, key1, key2, mapper) {
+    this.setState({ loading: true });
+    const body = this.state[key1][key2]
+      .filter((tuple, i) => checked[i])
+      .map(mapper);
+
+    fetch('api/' + url, {
+      method: method,
+      headers: {
+        'Authorization': sessionStorage.token,
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+      .then(res => {
+        if (res.ok) {
+          const state = { loading: false };
+          state[key1] = this.state[key1];
+          state[key1][key2] = state[key1][key2].filter((tuple, i) => !checked[i]);
+          this.setState(state);
+        } else {
+          return res.text().then(text => {
+            throw new Error(text ? text : res.statusText);
+          });
+        }
+      })
+      .catch(err => {
+        console.log("Error has occurred: %o", err);
+        this.setState({ loading: false, message: err });
+      });
   }
 
   handleSubmitP2S(checked) {
-    this.setState({ loading: true });
-    const body = this.state.mapped.p2s
-      .filter((tuple, i) => checked[i])
-      .map((tuple) => ({
+    this.handleSubmitChecked(checked, 'reconciliation/p2s', 'post', 'mapped', 'p2s',
+      (tuple) => ({
         postingDetailId: tuple[0].postingDetailId,
         statementId: tuple[1].statementId
       }));
-
-    fetch('api/reconciliation/p2s', {
-      method: 'post',
-      headers: {
-        'Authorization': sessionStorage.token,
-        'Content-type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    })
-      .then(res => {
-        if (res.ok) {
-          // ok
-          const mapped = this.state.mapped;
-          mapped.p2s = mapped.p2s.filter((tuple, i) => !checked[i]);
-          this.setState({ loading: false, mapped: mapped });
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
-      })
-      .catch(err => {
-        console.log("Error has occurred: %o", err);
-        this.setState({ loading: false, message: err });
-      });
   }
 
   handleSubmitS2S(checked) {
-    this.setState({ loading: true });
-    const body = this.state.mapped.s2s
-      .filter((tuple, i) => checked[i])
-      .map((tuple) => ({
+    this.handleSubmitChecked(checked, 'reconciliation/s2s', 'post', 'mapped', 's2s',
+      (tuple) => ({
         statementId1: tuple[0].statementId,
         statementId2: tuple[1].statementId
       }));
+  }
 
-    fetch('api/reconciliation/s2s', {
+  handleSubmitP(checked) {
+    this.handleSubmitChecked(checked, 'posting', 'delete', 'unmapped', 'p',
+      (p) => ({
+        id: p.postingHeaderId
+      }));
+  }
+
+  handleSubmitS(s, accountId) {
+    const posting = {
+      postingDate: s.statementDate,
+      description: s.description,
+      details: [
+        { accountId: s.amount > 0 ? accountId : s.accountId, amount: -Math.abs(s.amount) },
+        { accountId: s.amount > 0 ? s.accountId : accountId, amount: Math.abs(s.amount) },
+      ]
+    };
+    this.setState({ loading: true });
+
+    fetch('api/posting', {
       method: 'post',
       headers: {
         'Authorization': sessionStorage.token,
         'Content-type': 'application/json'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(posting)
     })
       .then(res => {
         if (res.ok) {
-          // ok
-          const mapped = this.state.mapped;
-          mapped.s2s = mapped.s2s.filter((tuple, i) => !checked[i]);
-          this.setState({ loading: false, mapped: mapped });
+          return res.json();
         } else {
           return res.text().then(text => {
             throw new Error(text ? text : res.statusText);
           });
         }
       })
-      .catch(err => {
-        console.log("Error has occurred: %o", err);
-        this.setState({ loading: false, message: err });
-      });
-  }
+      .then(json => {
+        const state = { loading: false };
+        state.unmapped = this.state.unmapped;
+        state.unmapped.s = state.unmapped.s.filter((s2) => s2.statementId != s.statementId);
+        this.setState(state);
 
-  handleSubmitP(checked) {
-    this.setState({ loading: true });
-    const body = this.state.unmapped.p
-      .filter((p, i) => checked[i])
-      .map((p) => ({ id: p.postingHeaderId }));
-
-    fetch('api/posting', {
-      method: 'delete',
-      headers: {
-        'Authorization': sessionStorage.token,
-        'Content-type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    })
-      .then(res => {
-        if (res.ok) {
-          // ok
-          const unmapped = this.state.unmapped;
-          unmapped.p = unmapped.p.filter((p, i) => !checked[i]);
-          this.setState({ loading: false, unmapped: unmapped });
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
       })
       .catch(err => {
-        console.log("Error has occurred: %o", err);
         this.setState({ loading: false, message: err });
       });
   }
@@ -286,8 +286,9 @@ class Reconciliation extends React.Component {
     );
 
     const rows = this.state.mapped.p2s.map((tuple) => {
-      const p = tuple[0],
-            s = tuple[1];
+      const [p, s] = tuple;
+      //const p = tuple[0],
+      //      s = tuple[1];
       return (
         <tr key={p.postingDetailId}>
           <td className="text-nowrap">
@@ -319,6 +320,7 @@ class Reconciliation extends React.Component {
 
     return (
       <TableWithCheckboxes
+        className="table table-condensed table-hover le-recon-table"
         head={head}
         rows={rows}
         onSubmit={this.handleSubmitP2S}
@@ -373,10 +375,18 @@ class Reconciliation extends React.Component {
       );
     });
 
+    const button = (
+      <button type="button" className="btn btn-primary btn-lg">
+        <i className="fa fa-plus" aria-hidden="true"></i> Post
+      </button>
+    );
+
     return (
       <TableWithCheckboxes
+        className="table table-condensed table-hover le-recon-table"
         head={head}
         rows={rows}
+        button={button}
         onSubmit={this.handleSubmitS2S}
         loading={this.state.loading}
       />
@@ -419,12 +429,13 @@ class Reconciliation extends React.Component {
 
     const button = (
       <button type="button" className="btn btn-danger btn-lg">
-        Delete
+        <i className="fa fa-remove" aria-hidden="true"></i> Delete
       </button>
     );
 
     return (
       <TableWithCheckboxes
+        className="table table-condensed table-hover le-recon-table"
         head={head}
         rows={rows}
         button={button}
@@ -439,12 +450,24 @@ class Reconciliation extends React.Component {
       return this.renderAOK();
 
     let rows = [];
+    let accountId;
     this.state.unmapped.s.forEach((s) => {
+      if (accountId != s.accountId) {
+        accountId = s.accountId;
+        rows.push(
+          <tr key={"a" + accountId}>
+            <th colSpan="4">
+              {accountId + " - " + this.accounts[accountId].name}
+            </th>
+          </tr>
+        );
+      }
       rows.push(
         <tr key={s.statementId}>
-          <td className="text-nowrap">{formatDate(s.statementDate)}</td>
           <td className="text-nowrap">
-            {this.accounts[s.accountId].name}
+            <span className="le-pad-left">
+              {formatDate(s.statementDate)}
+            </span>
           </td>
           <td className="text-nowrap text-right">
             <span className={
@@ -458,22 +481,40 @@ class Reconciliation extends React.Component {
           <td>
             {s.description}
           </td>
+          <td className="text-nowrap">
+            <FormAccountButton
+              accountTypes={this.accountTypes}
+              accounts={Object.values(this.accounts)}
+              onSubmit={(accountId) => this.handleSubmitS(s, accountId)}
+              loading={this.state.loading}
+            />
+          </td>
         </tr>
       );
     });
 
     return (
-      <table className="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th className="col-md-1 text-nowrap">Date</th>
-            <th className="col-md-2 text-nowrap">Account</th>
-            <th className="col-md-1 text-right">Amount</th>
-            <th className="col-md-8">Description</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <div>
+        <table className="table table-condensed table-hover le-recon-table">
+          <thead>
+            <tr>
+              <th className="col-md-1 text-nowrap">Date</th>
+              <th className="col-md-1 text-right">Amount</th>
+              <th className="col-md-8">Description</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </table>
+        <Fortune
+          style={{
+            whiteSpace: "pre-wrap",
+            float: "right",
+            marginTop: '30px',
+            fontSize: '0.9em'
+          }}
+        />
+      </div>
     );
   }
 
