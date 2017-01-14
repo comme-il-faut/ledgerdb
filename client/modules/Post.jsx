@@ -2,6 +2,7 @@ import React from 'react';
 import Pikaday from 'pikaday';
 import moment from 'moment';
 
+import AccountSelect from './Shared/AccountSelect.jsx';
 import Message from './Message.jsx';
 
 const DATE_FORMAT_MDY = "M/D/YYYY";
@@ -164,31 +165,14 @@ class Post extends React.Component {
 
   renderSelect(id) {
     return (
-      <select
+      <AccountSelect
+        accountTypes={this.state.accountType}
+        accounts={this.state.account}
         className="form-control"
         id={id}
         value={this.state.input[id]}
         onChange={this.handleChange}
-      >
-        <option value="" hidden>Choose account...</option>
-        {this.state.accountType.map((accountType) => (
-          <optgroup
-            key={accountType.accountType}
-            label={accountType.mask + " - " + accountType.description}
-          >
-          {this.state.account
-            .filter(account => account.accountType == accountType.accountType)
-            .map(account => (
-              <option
-                key={account.accountId}
-                value={account.accountId}
-              >
-              {account.accountId} - {account.name}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+      />
     );
   }
 
