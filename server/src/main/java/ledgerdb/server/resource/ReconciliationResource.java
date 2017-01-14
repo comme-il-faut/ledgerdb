@@ -83,10 +83,12 @@ public class ReconciliationResource {
             });
             
             String accounts = rc.getResource(AccountResource.class).getAccounts();
+            String accountTypes = rc.getResource(AccountTypeResource.class).getAccountTypes();
             
             return "{\"postings\":" + postings
                     + ",\"statements\":" + statements
                     + ",\"accounts\":" + accounts
+                    + ",\"accountTypes\":" + accountTypes
                     + "}";
         }
     }

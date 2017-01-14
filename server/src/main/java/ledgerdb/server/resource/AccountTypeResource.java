@@ -24,7 +24,7 @@ public class AccountTypeResource {
     }
     
     @GET
-    public String getAccountTypes() throws SQLException {
+    public String getAccountTypes() {
         try (Session s = sf.openSession()) {
             return s.doReturningWork(con -> {
                 try (Statement st = con.createStatement()) {

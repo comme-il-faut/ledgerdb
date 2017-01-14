@@ -110,3 +110,4 @@ form input[type=number] {
 .le-pad-right { padding-right: 2em; }
 
 .le-recon-table { margin-bottom: 3px; /* default: 20px */ }
+.le-recon-table td { vertical-align: middle !important; /* default: top */}
