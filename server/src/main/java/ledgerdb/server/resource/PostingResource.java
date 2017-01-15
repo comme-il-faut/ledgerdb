@@ -90,6 +90,15 @@ public class PostingResource {
         try (Session s = sf.openSession()) {
             Transaction tx = s.beginTransaction();
             s.persist(postingHeader);
+            s.flush();
+            
+            Query q = s.createQuery("update Statement set posted = true where id = :id");
+            postingHeader.getPostingDetails()
+                    .forEach(pd -> {
+                        if (pd.getStatementId() != null)
+                            q.setParameter("id", pd.getStatementId())
+                                    .executeUpdate();
+                    });
             tx.commit();
         }
         return postingHeader;

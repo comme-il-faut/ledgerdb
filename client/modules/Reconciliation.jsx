@@ -211,6 +211,10 @@ class Reconciliation extends React.Component {
         { accountId: s.amount > 0 ? s.accountId : accountId, amount: Math.abs(s.amount) },
       ]
     };
+    posting.details.forEach((pd) => {
+      if (pd.accountId == s.accountId)
+        pd.statementId = s.statementId;
+    });
     this.setState({ loading: true });
 
     fetch('api/posting', {
