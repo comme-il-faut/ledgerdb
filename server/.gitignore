@@ -1,3 +1,4 @@
 config.yml
+ledgerdb-server.log*
 nbactions.xml
 target/
