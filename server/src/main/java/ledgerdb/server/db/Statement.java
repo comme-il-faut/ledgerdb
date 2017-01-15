@@ -49,12 +49,12 @@ public class Statement {
     public String getSource() { return source; }
     
     @org.hibernate.annotations.Type(type = "yes_no")
-    protected boolean posted = false;
+    private boolean posted = false;
     public boolean isPosted() { return posted; }
     
     @Transient
     @Min(1)
-    protected int sequence = 1;
+    private int sequence = 1;
     public int getSequence() { return sequence; }
 
     public void reconcile(PostingDetail pd) {

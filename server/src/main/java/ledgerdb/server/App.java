@@ -1,5 +1,6 @@
 package ledgerdb.server;
 
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import ledgerdb.server.auth.User;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -13,6 +14,7 @@ import io.dropwizard.setup.Environment;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.hibernate.cfg.AvailableSettings;
@@ -43,6 +45,13 @@ public class App extends Application<AppConfig> {
                 configuration.setProperty(AvailableSettings.USE_SQL_COMMENTS, "true");
                 configuration.setProperty(AvailableSettings.FORMAT_SQL, "true");
             }
+            
+            @Override
+            protected Hibernate5Module createHibernate5Module() {
+                Hibernate5Module module = super.createHibernate5Module();
+                module.disable(Hibernate5Module.Feature.USE_TRANSIENT_ANNOTATION);
+                return module;
+            }
         };
     }
 
@@ -71,6 +80,8 @@ public class App extends Application<AppConfig> {
         
         env.jersey().register(AppExceptionMapper.class);
         env.jersey().property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+        
+        env.jersey().register(LoggingFeature.class);
 
         of.createResources().forEach(resource ->
                 env.jersey().register(resource));
