@@ -20,6 +20,8 @@ import javax.ws.rs.core.MediaType;
 import ledgerdb.server.AppException;
 import ledgerdb.server.ResponseFormatter;
 import ledgerdb.server.auth.User;
+import ledgerdb.server.db.AccountBalance;
+import ledgerdb.server.db.PostingDetail;
 import ledgerdb.server.db.PostingHeader;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -72,11 +74,29 @@ public class PostingResource {
     @POST
     public PostingHeader post(
             @Auth User user,
-            @NotNull @Valid PostingHeader postingHeader) {
-        
-        if (postingHeader.getPostingDetails().isEmpty())
+            @NotNull @Valid PostingHeader ph) {
+        Session s = sf.openSession();
+        Transaction tx = null;
+        try {
+            tx = s.beginTransaction();
+            
+            post2(ph, s);
+            
+            tx.commit();
+            tx = null;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
+        } finally {
+            s.close();
+        }
+        return ph;
+    }
+    
+    void post2(PostingHeader ph, Session s) {
+        if (ph.getPostingDetails().isEmpty())
             throw new BadRequestException();
-        BigDecimal total = postingHeader.getPostingDetails()
+        BigDecimal total = ph.getPostingDetails()
                 .stream()
                 .map(pd -> pd.getAmount())
                 .reduce((a, b) -> a.add(b))
@@ -84,24 +104,76 @@ public class PostingResource {
         if (total.compareTo(BigDecimal.ZERO) != 0)
             throw new BadRequestException("Invalid unbalanced posting with " + total + " total.");
         
-        postingHeader.getPostingDetails()
-                .forEach(pd -> pd.setPostingHeader(postingHeader));
-        
-        try (Session s = sf.openSession()) {
-            Transaction tx = s.beginTransaction();
-            s.persist(postingHeader);
-            s.flush();
-            
-            Query q = s.createQuery("update Statement set posted = true where id = :id");
-            postingHeader.getPostingDetails()
-                    .forEach(pd -> {
-                        if (pd.getStatementId() != null)
-                            q.setParameter("id", pd.getStatementId())
-                                    .executeUpdate();
-                    });
-            tx.commit();
+        for (PostingDetail pd : ph.getPostingDetails()) {
+            if (pd.getPostingHeader() == null)
+                pd.setPostingHeader(ph);
+            else if (pd.getPostingHeader() != ph)
+                throw new BadRequestException();
         }
-        return postingHeader;
+        
+        s.persist(ph);
+        s.flush();
+        
+        // update statement(s)
+        
+        Query q1 = s.createQuery(
+                "update Statement"
+                + " set posted = true"
+                + " where id = :id"
+                + " and accountId = :accountId"
+                + " and posted = false"
+        );
+        for (PostingDetail pd : ph.getPostingDetails()) {
+            if (pd.getStatementId() != null) {
+                q1.setParameter("id", pd.getStatementId());
+                q1.setParameter("accountId", pd.getAccountId());
+                int count = q1.executeUpdate();
+                if (count != 1)
+                    throw new BadRequestException(
+                            "Failed to link posting detail to statement id " +
+                                    pd.getStatementId());
+            }
+        }
+        
+        // update account balances
+        
+        Query q2 = s.createQuery(
+                "update AccountBalance"
+                + " set amount = amount + :amount"
+                + " where accountId = :accountId"
+                + " and postingDate = :postingDate"
+        );
+        Query q3 = s.createQuery(
+                "select amount from AccountBalance "
+                + " where accountId = :accountId"
+                + " and postingDate ="
+                + "  (select max(postingDate) from AccountBalance"
+                + "   where accountId = :accountId"
+                + "   and postingDate <= :postingDate)"
+        );
+        ph.getPostingDetails().forEach(pd -> {
+            // update account balance
+            q2.setParameter("postingDate", ph.getPostingDate());
+            q2.setParameter("accountId", pd.getAccountId());
+            q2.setParameter("amount", pd.getAmount());
+            int count = q2.executeUpdate();
+            if (count == 0) {
+                // insert into account balance
+                q3.setParameter("postingDate", ph.getPostingDate());
+                q3.setParameter("accountId", pd.getAccountId());
+
+                BigDecimal amount = (BigDecimal)q3.uniqueResult();
+                if (amount == null)
+                    amount = BigDecimal.ZERO;
+                amount = amount.add(pd.getAmount());
+
+                AccountBalance ab = new AccountBalance();
+                ab.setAccountId(pd.getAccountId());
+                ab.setPostingDate(ph.getPostingDate());
+                ab.setAmount(amount);
+                s.persist(ab);
+            }
+        });
     }
     
     @DELETE

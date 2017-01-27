@@ -1,5 +1,6 @@
 package ledgerdb.server.resource;
 
+import io.dropwizard.auth.Auth;
 import java.sql.ResultSet;
 import java.util.Objects;
 import javax.annotation.security.PermitAll;
@@ -17,6 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import ledgerdb.server.AppException;
 import ledgerdb.server.ResponseFormatter;
+import ledgerdb.server.auth.User;
 import ledgerdb.server.db.PostingDetail;
 import ledgerdb.server.db.PostingHeader;
 import ledgerdb.server.db.Statement;
@@ -41,7 +43,7 @@ public class ReconciliationResource {
     }
     
     @GET
-    public String getPSA() {
+    public String fetchInitialData() {
         try (Session s = sf.openSession()) {
             String postings = s.doReturningWork(con -> {
                 try (java.sql.Statement st = con.createStatement()) {
@@ -95,7 +97,9 @@ public class ReconciliationResource {
 
     @POST
     @Path("p2s")
-    public void postP2S(P2S[] pairs) {
+    public void reconcileP2S(
+            @Auth User user,
+            P2S[] pairs) {
         Session s = sf.openSession();
         Transaction tx = null;
         try {
@@ -143,7 +147,11 @@ public class ReconciliationResource {
     
     @POST
     @Path("s2s")
-    public void postS2S(S2S[] pairs) {
+    public void reconcileS2S(
+            @Auth User user,
+            S2S[] pairs) {
+        PostingResource postingResource = rc.getResource(PostingResource.class);
+        
         Session s = sf.openSession();
         Transaction tx = null;
         try {
@@ -164,7 +172,7 @@ public class ReconciliationResource {
                     throw new AppException("Statement " + statementId1 + " is already posted");
                 if (statement2.isPosted())
                     throw new AppException("Statement " + statementId2 + " is already posted");
-                
+
                 if (!(Objects.equals(statement1.getDate(), statement2.getDate())
                         && Objects.equals(
                                 statement1.getAmount().negate(),
@@ -173,27 +181,26 @@ public class ReconciliationResource {
                     throw new AppException("Statement " + statementId1
                             + " and statement " + statementId2
                             + " cannot be paired");
-                
+
                 PostingHeader ph = new PostingHeader();
                 ph.setPostingDate(statement2.getDate());
                 ph.setDescription(statement2.getDescription());
-                
+
                 PostingDetail pd1 = new PostingDetail();
                 pd1.setAccountId(statement1.getAccountId());
                 pd1.setAmount(statement1.getAmount());
+                pd1.setStatementId(statementId1);
                 ph.addPostingDetail(pd1);
-                
+
                 PostingDetail pd2 = new PostingDetail();
                 pd2.setAccountId(statement2.getAccountId());
                 pd2.setAmount(statement2.getAmount());
+                pd2.setStatementId(statementId2);
                 ph.addPostingDetail(pd2);
-                
-                statement1.reconcile(pd1);
-                statement2.reconcile(pd2);
-                
-                s.persist(ph);
+
+                postingResource.post2(ph, s);
             }
-            
+                
             tx.commit();
             tx = null;
         } catch (Exception e) {

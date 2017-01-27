@@ -42,7 +42,7 @@ public class PostingDetail {
     
     private Integer statementId;
     public Integer getStatementId() { return statementId; }
-    void setStatementId(Integer statementId) {
+    public void setStatementId(Integer statementId) {
         this.statementId = statementId;
     }
     
