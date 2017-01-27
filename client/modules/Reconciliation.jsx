@@ -1,12 +1,12 @@
 import React from 'react';
 import moment from 'moment';
 
-import Fortune from './Shared/Fortune.jsx';
-import Message from './Message.jsx';
+import Fortune from './Shared/Fortune';
+import Message from './Message';
 import { formatAmount, formatDate } from './Formatters';
 
-import FormAccountButton from './Reconciliation/FormAccountButton.jsx';
-import TableWithCheckboxes from './Reconciliation/TableWithCheckboxes.jsx';
+import FormAccountButton from './Reconciliation/FormAccountButton';
+import TableWithCheckboxes from './Reconciliation/TableWithCheckboxes';
 
 class Reconciliation extends React.Component {
   constructor(props) {

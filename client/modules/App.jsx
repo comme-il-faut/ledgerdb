@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import Login from './Login.jsx'
+import Login from './Login'
 
 class App extends React.Component {
 

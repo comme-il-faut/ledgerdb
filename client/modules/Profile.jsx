@@ -1,6 +1,6 @@
 import React from 'react';
 
-import ChangePassword from './Profile/ChangePassword.jsx'
+import ChangePassword from './Profile/ChangePassword'
 
 class Profile extends React.Component {
   constructor(props) {
