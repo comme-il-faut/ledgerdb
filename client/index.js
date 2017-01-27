@@ -3,13 +3,13 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, useRouterHistory } from 'react-router';
 import { createHashHistory } from 'history';
 
-import Admin from './modules/Admin'
-import App from './modules/App'
-import Dashboard from './modules/Dashboard'
-import Post from './modules/Post'
-import Postings from './modules/Postings'
-import Profile from './modules/Profile'
-import Reconciliation from './modules/Reconciliation'
+import Admin from './src/Admin'
+import App from './src/App'
+import Dashboard from './src/Dashboard'
+import Post from './src/Post'
+import Postings from './src/Postings'
+import Profile from './src/Profile'
+import Reconciliation from './src/Reconciliation'
 
 const appHistory = useRouterHistory(createHashHistory)({ queryKey: false })
 
