@@ -58,6 +58,14 @@ class App extends React.Component {
   }
 
   render() {
+    if (!this.state.auth) {
+      return (
+        <div className="container">
+          <Login app={this}/>
+        </div>
+      );
+    }
+
     if (this.state.auth && !this.state.auth.verified) {
       return (
         <div className="container">
@@ -68,14 +76,6 @@ class App extends React.Component {
             */}
             </p>
           </div>
-        </div>
-      );
-    }
-
-    if (!this.state.auth) {
-      return (
-        <div className="container">
-          <Login app={this}/>
         </div>
       );
     }
@@ -117,11 +117,13 @@ class App extends React.Component {
               </li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
+              {/*
               <li>
                 <Link to="/admin">
                   <i className="fa fa-lock" aria-hidden="true"></i> Administration
                 </Link>
               </li>
+              */}
               <li className="dropdown">
                 <a href="#"
                   className="dropdown-toggle"
