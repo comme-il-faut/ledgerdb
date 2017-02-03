@@ -138,41 +138,36 @@ public class PostingResource {
         // update account balances
         
         Query q2 = s.createQuery(
-                "update AccountBalance"
-                + " set amount = amount + :amount"
-                + " where accountId = :accountId"
-                + " and postingDate = :postingDate"
-        );
-        Query q3 = s.createQuery(
-                "select amount from AccountBalance "
+                "select a from AccountBalance a"
                 + " where accountId = :accountId"
                 + " and postingDate ="
                 + "  (select max(postingDate) from AccountBalance"
                 + "   where accountId = :accountId"
                 + "   and postingDate <= :postingDate)"
         );
+        Query q3 = s.createQuery(
+                "update AccountBalance"
+                + " set amount = amount + :amount, reconciled = null"
+                + " where accountId = :accountId"
+                + " and postingDate >= :postingDate"
+        );
         ph.getPostingDetails().forEach(pd -> {
-            // update account balance
-            q2.setParameter("postingDate", ph.getPostingDate());
             q2.setParameter("accountId", pd.getAccountId());
-            q2.setParameter("amount", pd.getAmount());
-            int count = q2.executeUpdate();
-            if (count == 0) {
-                // insert into account balance
-                q3.setParameter("postingDate", ph.getPostingDate());
-                q3.setParameter("accountId", pd.getAccountId());
-
-                BigDecimal amount = (BigDecimal)q3.uniqueResult();
-                if (amount == null)
-                    amount = BigDecimal.ZERO;
-                amount = amount.add(pd.getAmount());
-
-                AccountBalance ab = new AccountBalance();
-                ab.setAccountId(pd.getAccountId());
-                ab.setPostingDate(ph.getPostingDate());
-                ab.setAmount(amount);
-                s.persist(ab);
+            q2.setParameter("postingDate", ph.getPostingDate());
+            AccountBalance ab = (AccountBalance)q2.uniqueResult();
+            if (ab == null || !ab.getPostingDate().equals(ph.getPostingDate())) {
+                AccountBalance ab2 = new AccountBalance();
+                ab2.setAccountId(pd.getAccountId());
+                ab2.setPostingDate(ph.getPostingDate());
+                ab2.setAmount(ab != null ? ab.getAmount() : BigDecimal.ZERO);
+                s.persist(ab2);
+                s.flush();
             }
+            
+            q3.setParameter("accountId", pd.getAccountId());
+            q3.setParameter("postingDate", ph.getPostingDate());
+            q3.setParameter("amount", pd.getAmount());
+            q3.executeUpdate();
         });
     }
     
