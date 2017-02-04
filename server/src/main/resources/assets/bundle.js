@@ -29352,7 +29352,7 @@
 	            '$'
 	          ),
 	          _react2.default.createElement('input', {
-	            type: 'number',
+	            type: 'text',
 	            min: '0',
 	            step: 'any',
 	            className: 'form-control',
@@ -29435,9 +29435,11 @@
 	  }, {
 	    key: 'setInput',
 	    value: function setInput(id, value) {
-	      var input = this.state.input;
-	      input[id] = value;
-	      this.setState({ valid: {}, input: input });
+	      this.setState(function (prevState) {
+	        var input = Object.assign({}, prevState.input);
+	        input[id] = value;
+	        return { valid: {}, input: input };
+	      });
 	    }
 	  }, {
 	    key: 'handleChange',
@@ -29455,8 +29457,6 @@
 	  }, {
 	    key: 'handleClick',
 	    value: function handleClick(action, e) {
-	      var _this3 = this;
-
 	      e.preventDefault();
 	      if (action == "calendar-check") {
 	        var m = (0, _moment2.default)();
@@ -29467,19 +29467,19 @@
 	        document.getElementById("date").focus();
 	      }
 	      if (action == "clear") {
-	        (function () {
-	          var input = _this3.state.input;
+	        this.setState(function (prevState) {
+	          var input = Object.assign({}, prevState.input);
 	          Object.keys(input).forEach(function (id) {
 	            return input[id] = "";
 	          });
-	          _this3.setState({ valid: {}, input: input });
-	        })();
+	          return { valid: {}, input: input };
+	        });
 	      }
 	    }
 	  }, {
 	    key: 'handleSubmit',
 	    value: function handleSubmit(e) {
-	      var _this4 = this;
+	      var _this3 = this;
 
 	      e.preventDefault();
 
@@ -29521,9 +29521,9 @@
 	        }
 	      }).then(function (json) {
 	        //console.log("Post-OK");
-	        _this4.setState({ running: false, message: "OK" });
+	        _this3.setState({ running: false, message: "OK" });
 	      }).catch(function (err) {
-	        _this4.setState({ running: false, message: err });
+	        _this3.setState({ running: false, message: err });
 	      });
 	    }
 	  }]);

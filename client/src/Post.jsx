@@ -116,7 +116,7 @@ class Post extends React.Component {
           <div className="input-group">
             <div className="input-group-addon">$</div>
             <input
-              type="number"
+              type="text"
               min="0"
               step="any"
               className="form-control"
@@ -185,9 +185,11 @@ class Post extends React.Component {
   }
 
   setInput(id, value) {
-    let input = this.state.input;
-    input[id] = value;
-    this.setState({ valid: {}, input: input });
+    this.setState((prevState) => {
+      let input = Object.assign({}, prevState.input);
+      input[id] = value;
+      return { valid: {}, input: input };
+    });
   }
 
   handleChange(e) {
@@ -213,9 +215,11 @@ class Post extends React.Component {
       document.getElementById("date").focus();
     }
     if (action == "clear") {
-      let input = this.state.input;
-      Object.keys(input).forEach(id => input[id] = "");
-      this.setState({ valid: {}, input: input });
+      this.setState((prevState) => {
+        let input = Object.assign({}, prevState.input);
+        Object.keys(input).forEach(id => input[id] = "");
+        return { valid: {}, input: input };
+      });
     }
   }
 
