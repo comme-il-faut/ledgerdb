@@ -34,7 +34,8 @@ class Post extends React.Component {
     this.pikaday = new Pikaday({
       field: document.getElementById('date'),
       format: DATE_FORMAT_MDY,
-      firstDay: 1,
+      firstDay: 0,
+      showDaysInNextAndPreviousMonths: true,
       onSelect: () => this.setInput("date", this.pikaday.toString())
     });
 
@@ -95,9 +96,16 @@ class Post extends React.Component {
               <button
                 className="btn btn-default"
                 type="button"
-                onClick={this.handleClick.bind(this, 'today')}
+                onClick={this.handleClick.bind(this, 'calendar-check')}
               >
                 <i className="fa fa-calendar-check-o" aria-hidden="true"></i>
+              </button>
+              <button
+                className="btn btn-default"
+                type="button"
+                onClick={this.handleClick.bind(this, 'calendar')}
+              >
+                <i className="fa fa-calendar" aria-hidden="true"></i>
               </button>
             </span>
           </div>
@@ -196,10 +204,13 @@ class Post extends React.Component {
 
   handleClick(action, e) {
     e.preventDefault();
-    if (action == "today") {
+    if (action == "calendar-check") {
       let m = moment();
       this.setInput('date', m.format(DATE_FORMAT_MDY));
       this.pikaday.setMoment(m, true); // do not trigger onSelect
+    }
+    if (action == "calendar") {
+      document.getElementById("date").focus();
     }
     if (action == "clear") {
       let input = this.state.input;

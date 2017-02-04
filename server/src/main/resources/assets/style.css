@@ -89,6 +89,8 @@ nav.navbar a:hover {
 .pika-single {
   font-family: inherit !important;
 }
+.pika-table .is-outside-current-month { opacity: 0.3; }
+.pika-table .is-outside-current-month:hover { opacity: 1; }
 
 form input[type=number] {
   -moz-appearance: textfield;
