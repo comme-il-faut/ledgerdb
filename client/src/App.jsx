@@ -115,6 +115,11 @@ class App extends React.Component {
                   <i className="fa fa-handshake-o" aria-hidden="true"></i> Reconciliation
                 </Link>
               </li>
+              <li>
+                <Link to="/accounts">
+                  <i className="fa fa-book" aria-hidden="true"></i> Accounts
+                </Link>
+              </li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
               {/*
