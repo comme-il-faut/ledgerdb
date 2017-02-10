@@ -45962,9 +45962,9 @@
 	          _react2.default.createElement(
 	            'form',
 	            { onSubmit: this.handleSubmit },
-	            this.renderTextInput('oldpw', 'Old Password'),
-	            this.renderTextInput('newpw', 'New Password'),
-	            this.renderTextInput('newpw2', 'Confirm New Password'),
+	            this.renderPasswordInput('oldpw', 'Old Password'),
+	            this.renderPasswordInput('newpw', 'New Password'),
+	            this.renderPasswordInput('newpw2', 'Confirm New Password'),
 	            this.renderButton()
 	          )
 	        ),
@@ -45972,8 +45972,8 @@
 	      );
 	    }
 	  }, {
-	    key: 'renderTextInput',
-	    value: function renderTextInput(id, label) {
+	    key: 'renderPasswordInput',
+	    value: function renderPasswordInput(id, label) {
 	      return _react2.default.createElement(
 	        'div',
 	        { className: 'form-group' },
@@ -45982,8 +45982,9 @@
 	          { htmlFor: id },
 	          label
 	        ),
-	        _react2.default.createElement('input', { type: 'password', className: 'form-control', id: id, ref: id, key: id,
+	        _react2.default.createElement('input', { type: 'password', className: 'form-control', id: id,
 	          placeholder: label,
+	          value: this.state[id],
 	          onChange: this.handleChange.bind(this, id)
 	        })
 	      );
@@ -46000,80 +46001,6 @@
 	        'button',
 	        { className: 'btn btn-primary btn-block', type: 'submit' },
 	        'Change Password'
-	      );
-	    }
-	  }, {
-	    key: 'renderMessage',
-	    value: function renderMessage() {
-	      if (!this.state.result) return null;
-
-	      var title = void 0,
-	          body = void 0;
-	      if (this.state.result instanceof Error) {
-	        title = _react2.default.createElement(
-	          'h4',
-	          { className: 'modal-title text-danger' },
-	          _react2.default.createElement('i', { className: 'fa fa-exclamation-circle', 'aria-hidden': 'true' }),
-	          ' Error'
-	        );
-	        body = _react2.default.createElement(
-	          'p',
-	          null,
-	          this.state.result.message
-	        );
-	      } else {
-	        title = _react2.default.createElement(
-	          'h4',
-	          { className: 'modal-title text-success' },
-	          _react2.default.createElement('i', { className: 'fa fa-check-circle', 'aria-hidden': 'true' }),
-	          ' Great Success'
-	        );
-	        body = _react2.default.createElement(
-	          'p',
-	          null,
-	          this.state.result
-	        );
-	      }
-
-	      return _react2.default.createElement(
-	        'div',
-	        { className: 'modal fade', tabIndex: '-1', role: 'dialog' },
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'modal-dialog modal-sm', role: 'document' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'modal-content' },
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'modal-header' },
-	              _react2.default.createElement(
-	                'button',
-	                { className: 'close', 'aria-label': 'Close', 'data-dismiss': 'modal', type: 'button' },
-	                _react2.default.createElement(
-	                  'span',
-	                  { 'aria-hidden': 'true' },
-	                  '\xD7'
-	                )
-	              ),
-	              title
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'modal-body' },
-	              body
-	            ),
-	            _react2.default.createElement(
-	              'div',
-	              { className: 'modal-footer' },
-	              _react2.default.createElement(
-	                'button',
-	                { type: 'button', className: 'btn btn-default', 'data-dismiss': 'modal' },
-	                'Close'
-	              )
-	            )
-	          )
-	        )
 	      );
 	    }
 	  }, {
@@ -46106,10 +46033,6 @@
 	        return;
 	      }
 
-	      var setError = function setError(err) {
-	        _this2.setState({ running: false, result: err });
-	      };
-
 	      fetch('api/chpasswd', {
 	        method: 'post',
 	        headers: { 'Authorization': sessionStorage.token },
@@ -46118,17 +46041,16 @@
 	        if (res.ok) {
 	          var result = "Your password has been changed successfully.";
 	          sessionStorage.token = 'Basic ' + btoa(sessionStorage.user + ':' + _this2.state.newpw);
-	          $('input:password').val('');
 	          _this2.setState({ oldpw: '', newpw: '', newpw2: '', running: false, result: result });
 	        } else {
-	          res.text().then(function (text) {
+	          return res.text().then(function (text) {
 	            if (text) throw new Error(text);else throw new Error(res.statusText);
 	          }).catch(function (err) {
-	            return setError(err);
+	            throw new Error(res.statusText);
 	          });
 	        }
 	      }).catch(function (err) {
-	        return setError(err);
+	        _this2.setState({ running: false, result: err });
 	      });
 	    }
 	  }, {

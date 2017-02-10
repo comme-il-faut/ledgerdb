@@ -17,24 +17,24 @@ class PasswordChange extends React.Component {
         </div>
         <div className="panel-body">
           <form onSubmit={this.handleSubmit}>
-            {this.renderTextInput('oldpw', 'Old Password')}
-            {this.renderTextInput('newpw', 'New Password')}
-            {this.renderTextInput('newpw2', 'Confirm New Password')}
+            {this.renderPasswordInput('oldpw', 'Old Password')}
+            {this.renderPasswordInput('newpw', 'New Password')}
+            {this.renderPasswordInput('newpw2', 'Confirm New Password')}
             {this.renderButton()}
           </form>
         </div>
-        {/* this.renderMessage() */}
         <Message message={this.state.result}/>
       </div>
     );
   }
 
-  renderTextInput(id, label) {
+  renderPasswordInput(id, label) {
     return (
       <div className="form-group">
         <label htmlFor={id}>{label}</label>
-        <input type="password" className="form-control" id={id} ref={id} key={id}
+        <input type="password" className="form-control" id={id}
           placeholder={label}
+          value={this.state[id]}
           onChange={this.handleChange.bind(this, id)}
           />
       </div>
@@ -52,53 +52,6 @@ class PasswordChange extends React.Component {
       return (
         <button className="btn btn-primary btn-block" type="submit">Change Password</button>
       );
-  }
-
-  renderMessage() {
-    if (!this.state.result)
-      return null;
-
-    let title, body;
-    if (this.state.result instanceof Error) {
-      title = (
-        <h4 className="modal-title text-danger">
-          <i className="fa fa-exclamation-circle" aria-hidden="true"></i> Error
-        </h4>
-      );
-      body = (
-        <p>{this.state.result.message}</p>
-      );
-    } else {
-      title = (
-        <h4 className="modal-title text-success">
-          <i className="fa fa-check-circle" aria-hidden="true"></i> Great Success
-        </h4>
-      );
-      body = (
-        <p>{this.state.result}</p>
-      );
-    }
-
-    return (
-      <div className="modal fade" tabIndex="-1" role="dialog">
-        <div className="modal-dialog modal-sm" role="document">
-          <div className="modal-content">
-            <div className="modal-header">
-              <button className="close" aria-label="Close" data-dismiss="modal" type="button">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              {title}
-            </div>
-            <div className="modal-body">
-              {body}
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   handleChange(field, e) {
@@ -126,10 +79,6 @@ class PasswordChange extends React.Component {
       return;
     }
 
-    let setError = (err) => {
-        this.setState({ running: false, result: err });
-    };
-
     fetch('api/chpasswd', {
       method: 'post',
       headers: { 'Authorization': sessionStorage.token },
@@ -139,18 +88,23 @@ class PasswordChange extends React.Component {
         if (res.ok) {
           let result = "Your password has been changed successfully.";
           sessionStorage.token = 'Basic ' + btoa(sessionStorage.user + ':' + this.state.newpw);
-          $('input:password').val('');
           this.setState({ oldpw: '', newpw: '', newpw2: '', running: false, result: result });
         } else {
-          res.text()
+          return res.text()
             .then(text => {
-              if (text) throw new Error(text);
-              else throw new Error(res.statusText);
+              if (text)
+                throw new Error(text);
+              else
+                throw new Error(res.statusText);
             })
-            .catch(err => setError(err));
+            .catch(err => {
+              throw new Error(res.statusText);
+            });
         }
       })
-      .catch(err => setError(err));
+      .catch(err => {
+        this.setState({ running: false, result: err });
+      });
   }
 
   componentDidUpdate() {
