@@ -48,7 +48,7 @@ class AccountBalanceRow extends React.PureComponent {
 
   render() {
     return (
-      <tr>
+      <tr className={this.state.reconciled && "success"}>
         <td>
           <span className="le-pad-left">
             {formatDate(this.props.postingDate)}
