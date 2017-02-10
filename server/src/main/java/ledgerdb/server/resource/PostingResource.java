@@ -27,6 +27,9 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,6 +114,23 @@ public class PostingResource {
                 throw new BadRequestException();
         }
         
+        // check account balances are not closed (i.e., not reconciled)
+        long count = (Long)s.createCriteria(AccountBalance.class)
+                .add(Restrictions.or(
+                        ph.getPostingDetails().stream().map(
+                                pd -> Restrictions.and(
+                                        Restrictions.eq("accountId", pd.getAccountId()),
+                                        Restrictions.ge("postingDate", ph.getPostingDate()),
+                                        Restrictions.isNotNull("reconciled")
+                                )
+                        ).toArray(Criterion[]::new)
+                ))
+                .setProjection(Projections.rowCount())
+                .uniqueResult();
+        if (count > 0) {
+            throw new BadRequestException();
+        }
+
         s.persist(ph);
         s.flush();
         
@@ -127,7 +147,7 @@ public class PostingResource {
             if (pd.getStatementId() != null) {
                 q1.setParameter("id", pd.getStatementId());
                 q1.setParameter("accountId", pd.getAccountId());
-                int count = q1.executeUpdate();
+                count = q1.executeUpdate();
                 if (count != 1)
                     throw new BadRequestException(
                             "Failed to link posting detail to statement id " +
