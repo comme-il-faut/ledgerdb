@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, useRouterHistory } from 'react-router';
 import { createHashHistory } from 'history';
 
-import Accounts from './src/Accounts'
+import AccountBalances from './src/AccountBalances'
 import Admin from './src/Admin'
 import App from './src/App'
 import Dashboard from './src/Dashboard'
@@ -22,7 +22,7 @@ ReactDOM.render(
       <Route path="post" component={Post}/>
       <Route path="postings" component={Postings}/>
       <Route path="recon" component={Reconciliation}/>
-      <Route path="accounts" component={Accounts}/>
+      <Route path="balance" component={AccountBalances}/>
 
       <Route path="admin" component={Admin}/>
       <Route path="profile" component={Profile}/>

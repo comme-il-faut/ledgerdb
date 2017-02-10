@@ -116,8 +116,8 @@ class App extends React.Component {
                 </Link>
               </li>
               <li>
-                <Link to="/accounts">
-                  <i className="fa fa-book" aria-hidden="true"></i> Accounts
+                <Link to="/balance">
+                  <i className="fa fa-balance-scale" aria-hidden="true"></i> Balances
                 </Link>
               </li>
             </ul>

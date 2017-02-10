@@ -106,10 +106,25 @@ form input[type=number] {
 
 
 .le-num-neg { color: #d44950; }
-.le-num-pos { color: #4950d4; }
+/* .le-num-pos { color: #4950d4; } */
+/* .le-num-pos { color: #4caf50; } */
+/* .le-num-pos { color: black; } */
 
 .le-pad-left { padding-left: 2em; }
 .le-pad-right { padding-right: 2em; }
 
 .le-recon-table { margin-bottom: 3px; /* default: 20px */ }
 .le-recon-table td { vertical-align: middle !important; /* default: top */}
+
+.le-balance-table .le-checkbox-off {
+  color: transparent;
+  cursor: pointer;
+}
+.le-balance-table tr:hover .le-checkbox-off {
+  color: #4caf50;
+  opacity: 0.6;
+}
+.le-balance-table .le-checkbox-on {
+  color: #4caf50;
+  cursor: default;
+}

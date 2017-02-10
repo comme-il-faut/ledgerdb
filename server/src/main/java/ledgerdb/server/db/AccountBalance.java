@@ -3,6 +3,7 @@ package ledgerdb.server.db;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -30,9 +31,21 @@ public class AccountBalance {
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
     
+    private LocalDateTime reconciled;
+    public boolean isReconciled() { return reconciled != null; }
+    public void setReconciled(boolean reconciled) {
+        this.reconciled = reconciled ? LocalDateTime.now() : null;
+    }
+    
     public static class AccountBalancePK implements Serializable {
         private Integer accountId;
         private LocalDate postingDate;
+        
+        public AccountBalancePK() {}
+        public AccountBalancePK(Integer accountId, LocalDate postingDate) {
+            this.accountId = accountId;
+            this.postingDate = postingDate;
+        }
         
         @Override
         public boolean equals(Object o) {
