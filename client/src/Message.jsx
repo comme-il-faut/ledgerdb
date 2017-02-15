@@ -1,6 +1,6 @@
 import React from 'react';
 
-class Message extends React.Component {
+class Message extends React.PureComponent {
   constructor(props) {
     super(props);
   }
@@ -9,8 +9,10 @@ class Message extends React.Component {
     this.show();
   }
 
-  componentDidUpdate() {
-    this.show();
+  componentDidUpdate(prevProps) {
+    if (this.props.message !== prevProps.message) {
+      this.show();
+    }
   }
 
   show() {
@@ -69,7 +71,20 @@ class Message extends React.Component {
 }
 
 Message.propTypes = {
-  message: React.PropTypes.any // string or Error
+  //message: React.PropTypes.any // string or Error
+  message: (props, propName, componentName) => {
+    if (propName != "message")
+      return new Error(
+        "Invalid prop " + propName + " supplied to " + componentName + " component"
+      );
+    const message = props[propName];
+    if (!(message === null ||
+        typeof(message) === 'string' ||
+        message instanceof Error))
+      return new Error(
+        "Invalid message supplied to " + componentName + " component"
+      );
+  }
 };
 
 export default Message;
