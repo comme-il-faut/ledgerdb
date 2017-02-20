@@ -226,7 +226,7 @@ class Post extends React.Component {
   handleSubmit(e) {
     e.preventDefault();
 
-    let input = this.state.input;
+    let input = Object.assign({}, this.state.input);
     let m = moment(input.date, DATE_FORMAT_MDY, true); // use strict parsing
 
     let valid = this.state.valid;
@@ -237,6 +237,8 @@ class Post extends React.Component {
     this.setState({ valid: valid });
     if (!Object.keys(valid).every(id => valid[id]))
       return;
+
+    input.amount = input.amount.replace(/,/g, "");
 
     let posting = {
       postingDate: m.format('YYYY-MM-DD'),
