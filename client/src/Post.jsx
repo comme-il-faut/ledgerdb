@@ -198,8 +198,10 @@ class Post extends React.Component {
     if (e.target.id == "date") {
       let value = e.target.value;
       if (value == "") {
-        this.pikaday.setDate(null);
+        this.pikaday.setDate(null, true);
         this.pikaday.gotoToday();
+      } else {
+        this.pikaday.setDate(value, true);
       }
     }
   }
@@ -211,7 +213,7 @@ class Post extends React.Component {
       this.setInput('date', m.format(DATE_FORMAT_MDY));
       this.pikaday.setMoment(m, true); // do not trigger onSelect
     }
-    if (action == "calendar") {
+    if (action.startsWith("calendar")) {
       document.getElementById("date").focus();
     }
     if (action == "clear") {
