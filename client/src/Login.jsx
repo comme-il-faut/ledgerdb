@@ -38,7 +38,7 @@ class Login extends React.Component {
   }
 
   handleChange(field, e) {
-    let state = this.state;
+    let state = {};
     state[field] = e.target.value;
     this.setState(state);
   }
@@ -46,14 +46,14 @@ class Login extends React.Component {
   renderButton() {
     if (this.state.running)
       return (
-        <button className="btn btn-lg btn-primary btn-block disabled" type="submit" disabled>
-          <i className="fa fa-circle-o-notch fa-spin"></i> Logging in...
+        <button className="btn btn-lg btn-primary btn-block le-loading" type="submit" disabled>
+          <i className="fa fa-spinner fa-pulse fa-fw" aria-hidden="true"></i> Log in
         </button>
       );
     else
       return (
         <button className="btn btn-lg btn-primary btn-block" type="submit">
-          <i className="fa fa-key" aria-hidden="true"></i> Log in
+          <i className="fa fa-key fa-fw" aria-hidden="true"></i> Log in
         </button>
       );
   }

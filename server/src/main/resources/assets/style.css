@@ -1,9 +1,3 @@
-/*
-html, div, span, body, form, button, select, option {
-  font: 15px "Roboto","Helvetica Neue",sans-serif;
-}
-*/
-
 body {
   padding-top: 70px;
   font: 15px "Roboto","Helvetica Neue",sans-serif;
@@ -30,7 +24,7 @@ body {
 }
 .form-signin-heading {
   font-family: "Yanone Kaffeesatz";
-  color: #4caf50;
+  color: #4caf50; /* Fruit Salad */
   text-transform: uppercase;
 }
 
@@ -44,7 +38,7 @@ nav.navbar a {
   border-bottom: 2px solid transparent;
 }
 nav.navbar a:hover {
-  color: #4caf50 !important;
+  color: #4caf50 !important; /* Fruit Salad */
 }
 .nav > li > a:hover {
   border-top-color: #f77825; /* orange */
@@ -57,12 +51,13 @@ nav.navbar a:hover {
 }
 
 
-.form-horizontal {
-  max-width: 600px;
-}
-.form-horizontal select {
-  width: 99%;
-}
+
+.form-horizontal { max-width: 600px; }
+.form-horizontal select { width: 99%; }
+
+.pull-left { margin-left: 7px; }
+.modal-body { word-wrap: break-word; }
+
 
 
 .transition-fade-enter {
@@ -96,19 +91,10 @@ form input[type=number] {
   -moz-appearance: textfield;
 }
 
-.pull-left {
-  margin-left: 7px;
-}
 
-.modal-body {
-  word-wrap: break-word;
-}
+.le-loading { cursor: wait !important; }
 
-
-.le-num-neg { color: #d44950; }
-/* .le-num-pos { color: #4950d4; } */
-/* .le-num-pos { color: #4caf50; } */
-/* .le-num-pos { color: black; } */
+.le-num-neg { color: #d44950; /* Mandy */ }
 
 .le-pad-left { padding-left: 2em; }
 .le-pad-right { padding-right: 2em; }
@@ -121,10 +107,10 @@ form input[type=number] {
   cursor: pointer;
 }
 .le-balance-table tr:hover .le-checkbox-off {
-  color: #4caf50;
+  color: #4caf50; /* Fruit Salad */
   opacity: 0.6;
 }
 .le-balance-table .le-checkbox-on {
-  color: #4caf50;
+  color: #4caf50; /* Fruit Salad */
   cursor: default;
 }

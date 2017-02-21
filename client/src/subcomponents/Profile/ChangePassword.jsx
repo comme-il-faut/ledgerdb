@@ -44,8 +44,8 @@ class PasswordChange extends React.Component {
   renderButton() {
     if (this.state.running)
       return (
-        <button className="btn btn-primary btn-block disabled" type="submit" disabled>
-          <i className="fa fa-circle-o-notch fa-spin"></i> Change Password
+        <button className="btn btn-primary btn-block le-loading" type="submit" disabled>
+          <i className="fa fa-spinner fa-pulse fa-fw" aria-hidden="true"></i> Change Password
         </button>
       );
     else

@@ -42645,11 +42645,7 @@
 	        return _react2.default.createElement(
 	          'div',
 	          { className: 'container' },
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'text-center' },
-	            _react2.default.createElement('p', null)
-	          )
+	          _react2.default.createElement('div', { className: 'text-center' })
 	        );
 	      }
 
@@ -43712,7 +43708,7 @@
 	  }, {
 	    key: 'handleChange',
 	    value: function handleChange(field, e) {
-	      var state = this.state;
+	      var state = {};
 	      state[field] = e.target.value;
 	      this.setState(state);
 	    }
@@ -43721,13 +43717,13 @@
 	    value: function renderButton() {
 	      if (this.state.running) return _react2.default.createElement(
 	        'button',
-	        { className: 'btn btn-lg btn-primary btn-block disabled', type: 'submit', disabled: true },
-	        _react2.default.createElement('i', { className: 'fa fa-circle-o-notch fa-spin' }),
-	        ' Logging in...'
+	        { className: 'btn btn-lg btn-primary btn-block le-loading', type: 'submit', disabled: true },
+	        _react2.default.createElement('i', { className: 'fa fa-spinner fa-pulse fa-fw', 'aria-hidden': 'true' }),
+	        ' Log in'
 	      );else return _react2.default.createElement(
 	        'button',
 	        { className: 'btn btn-lg btn-primary btn-block', type: 'submit' },
-	        _react2.default.createElement('i', { className: 'fa fa-key', 'aria-hidden': 'true' }),
+	        _react2.default.createElement('i', { className: 'fa fa-key fa-fw', 'aria-hidden': 'true' }),
 	        ' Log in'
 	      );
 	    }
@@ -46011,8 +46007,8 @@
 	    value: function renderButton() {
 	      if (this.state.running) return _react2.default.createElement(
 	        'button',
-	        { className: 'btn btn-primary btn-block disabled', type: 'submit', disabled: true },
-	        _react2.default.createElement('i', { className: 'fa fa-circle-o-notch fa-spin' }),
+	        { className: 'btn btn-primary btn-block le-loading', type: 'submit', disabled: true },
+	        _react2.default.createElement('i', { className: 'fa fa-spinner fa-pulse fa-fw', 'aria-hidden': 'true' }),
 	        ' Change Password'
 	      );else return _react2.default.createElement(
 	        'button',
