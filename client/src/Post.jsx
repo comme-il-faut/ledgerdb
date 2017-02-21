@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import AccountSelect from './shared/AccountSelect';
 import Message from './shared/Message';
+import { fetchJSON } from './fetch';
 
 const DATE_FORMAT_MDY = "M/D/YYYY";
 
@@ -46,22 +47,13 @@ class Post extends React.Component {
         method: 'get',
         headers: { 'Authorization': sessionStorage.token }
       })
-        .then(res => {
-          if (res.ok) {
-            return res.json();
-          } else {
-            return res.text().then(text => {
-              throw new Error(text ? text : res.statusText);
-            });
-          }
-        })
+        .then(fetchJSON)
         .then(json => {
           let state = {};
           state[key] = json;
           this.setState(state);
         })
         .catch(err => {
-          console.log("Error has occurred: %o", err);
           let state = { message: err };
           state[key] = [];
           this.setState(state);
@@ -261,17 +253,8 @@ class Post extends React.Component {
       },
       body: JSON.stringify(posting)
     })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
-      })
+      .then(fetchJSON)
       .then(json => {
-        //console.log("Post-OK");
         this.setState({ running: false, message: "OK" });
       })
       .catch(err => {

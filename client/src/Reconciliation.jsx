@@ -3,6 +3,7 @@ import moment from 'moment';
 
 import Fortune from './shared/Fortune';
 import Message from './shared/Message';
+import { fetchCheck, fetchJSON } from './fetch';
 import { formatAmount, formatDate } from './formatters';
 
 import FormAccountButton from './subcomponents/Reconciliation/FormAccountButton';
@@ -33,15 +34,7 @@ class Reconciliation extends React.Component {
       method: 'get',
       headers: { 'Authorization': sessionStorage.token }
     })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
-      })
+      .then(fetchJSON)
       .then(json => {
         for (let key of ['postings', 'statements', 'accounts', 'accountTypes']) {
           let a = json[key]
@@ -56,7 +49,6 @@ class Reconciliation extends React.Component {
         this.reconcile();
       })
       .catch(err => {
-        console.log("Error has occurred: %o", err);
         this.setState({ loading: false, message: err });
       });
   }
@@ -158,20 +150,14 @@ class Reconciliation extends React.Component {
       },
       body: JSON.stringify(body)
     })
+      .then(fetchCheck)
       .then(res => {
-        if (res.ok) {
-          const state = { loading: false };
-          state[key1] = this.state[key1];
-          state[key1][key2] = state[key1][key2].filter((tuple, i) => !checked[i]);
-          this.setState(state);
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
+        const state = { loading: false };
+        state[key1] = this.state[key1];
+        state[key1][key2] = state[key1][key2].filter((tuple, i) => !checked[i]);
+        this.setState(state);
       })
       .catch(err => {
-        console.log("Error has occurred: %o", err);
         this.setState({ loading: false, message: err });
       });
   }
@@ -222,15 +208,7 @@ class Reconciliation extends React.Component {
       },
       body: JSON.stringify(posting)
     })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
-      })
+      .then(fetchJSON)
       .then(json => {
         const state = { loading: false };
         state.unmapped = this.state.unmapped;

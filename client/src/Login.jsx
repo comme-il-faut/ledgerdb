@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { fetchCheck } from './fetch';
+
 class Login extends React.Component {
 
   constructor(props) {
@@ -22,15 +24,12 @@ class Login extends React.Component {
       method: 'get',
       headers: { 'Authorization': token }
     })
+      .then(fetchCheck)
       .then(res => {
-        if (res.ok) {
-          this.setState({ running: false, err: null });
-          let auth = { user: this.state.user, token: token };
-          let remember = document.getElementById('inputRemember').checked;
-          this.props.app.setAuth(auth, remember);
-        } else {
-          throw Error(res.statusText);
-        }
+        this.setState({ running: false, err: null });
+        let auth = { user: this.state.user, token: token };
+        let remember = document.getElementById('inputRemember').checked;
+        this.props.app.setAuth(auth, remember);
       })
       .catch(err => {
         this.setState({ running: false, err: err });

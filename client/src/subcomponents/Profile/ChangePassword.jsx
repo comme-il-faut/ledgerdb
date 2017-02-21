@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Message from '../../shared/Message';
+import { fetchCheck } from './fetch';
 
 class PasswordChange extends React.Component {
   constructor(props) {
@@ -84,23 +85,11 @@ class PasswordChange extends React.Component {
       headers: { 'Authorization': sessionStorage.token },
       body: JSON.stringify({ oldpw: this.state.oldpw, newpw: this.state.newpw })
     })
+      .then(fetchCheck)
       .then(res => {
-        if (res.ok) {
-          let result = "Your password has been changed successfully.";
-          sessionStorage.token = 'Basic ' + btoa(sessionStorage.user + ':' + this.state.newpw);
-          this.setState({ oldpw: '', newpw: '', newpw2: '', running: false, result: result });
-        } else {
-          return res.text()
-            .then(text => {
-              if (text)
-                throw new Error(text);
-              else
-                throw new Error(res.statusText);
-            })
-            .catch(err => {
-              throw new Error(res.statusText);
-            });
-        }
+        const result = "Your password has been changed successfully.";
+        sessionStorage.token = 'Basic ' + btoa(sessionStorage.user + ':' + this.state.newpw);
+        this.setState({ oldpw: '', newpw: '', newpw2: '', running: false, result: result });
       })
       .catch(err => {
         this.setState({ running: false, result: err });

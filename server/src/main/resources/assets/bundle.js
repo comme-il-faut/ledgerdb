@@ -27380,6 +27380,12 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _Message = __webpack_require__(364);
+
+	var _Message2 = _interopRequireDefault(_Message);
+
+	var _fetch = __webpack_require__(373);
+
 	var _formatters = __webpack_require__(240);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -27426,20 +27432,11 @@
 	          'Content-type': 'application/json'
 	        },
 	        body: JSON.stringify(accountBalance)
-	      }).then(function (res) {
-	        if (res.ok) {
-	          _this2.setState({ reconciled: true, loading: false });
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          }).catch(function (err) {
-	            throw new Error(res.statusText);
-	          });
-	        }
+	      }).then(_fetch.fetchCheck).then(function (res) {
+	        _this2.setState({ reconciled: true, loading: false });
 	      }).catch(function (err) {
-	        console.error("Error: %o", err);
-	        _this2.setState({ err: err, loading: false });
-	        //TODO: render error
+	        _this2.setState({ loading: false });
+	        _this2.props.onError && _this2.props.onError(err);
 	      });
 	    }
 	  }, {
@@ -27526,6 +27523,7 @@
 	      },
 	      err: null
 	    };
+	    _this3.handleError = _this3.handleError.bind(_this3);
 	    return _this3;
 	  }
 
@@ -27541,15 +27539,7 @@
 	        return fetch('api/' + resource, {
 	          method: 'get',
 	          headers: { 'Authorization': sessionStorage.token }
-	        }).then(function (res) {
-	          if (res.ok) {
-	            return res.json();
-	          } else {
-	            return res.text().then(function (text) {
-	              throw new Error(text ? text : res.statusText);
-	            });
-	          }
-	        });
+	        }).then(_fetch.fetchJSON);
 	      })).then(function (values) {
 	        var state = { data: {} };
 	        resources.forEach(function (resource, i) {
@@ -27559,10 +27549,12 @@
 	          state.data[key] = values[i];
 	        });
 	        _this4.setState(state);
-	      }).catch(function (err) {
-	        console.error("Error: %o", err);
-	        _this4.setState({ err: err });
-	      });
+	      }).catch(this.handleError);
+	    }
+	  }, {
+	    key: 'handleError',
+	    value: function handleError(err) {
+	      this.setState({ err: err });
 	    }
 	  }, {
 	    key: 'render',
@@ -27583,6 +27575,11 @@
 	            { className: 'col-md-6' },
 	            this.renderTable('L')
 	          )
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { style: { clear: "both" } },
+	          _react2.default.createElement(_Message2.default, { message: this.state.err })
 	        )
 	      );
 	    }
@@ -27633,7 +27630,8 @@
 	              postingDate: balance.postingDate,
 	              sign: at.sign,
 	              amount: balance.amount,
-	              reconciled: balance.reconciled
+	              reconciled: balance.reconciled,
+	              onError: _this5.handleError
 	            }));
 	          });
 	        });
@@ -43653,6 +43651,8 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _fetch = __webpack_require__(373);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -43692,15 +43692,11 @@
 	      fetch('api/login', {
 	        method: 'get',
 	        headers: { 'Authorization': token }
-	      }).then(function (res) {
-	        if (res.ok) {
-	          _this2.setState({ running: false, err: null });
-	          var auth = { user: _this2.state.user, token: token };
-	          var remember = document.getElementById('inputRemember').checked;
-	          _this2.props.app.setAuth(auth, remember);
-	        } else {
-	          throw Error(res.statusText);
-	        }
+	      }).then(_fetch.fetchCheck).then(function (res) {
+	        _this2.setState({ running: false, err: null });
+	        var auth = { user: _this2.state.user, token: token };
+	        var remember = document.getElementById('inputRemember').checked;
+	        _this2.props.app.setAuth(auth, remember);
 	      }).catch(function (err) {
 	        _this2.setState({ running: false, err: err });
 	      });
@@ -43912,6 +43908,8 @@
 
 	var _Message2 = _interopRequireDefault(_Message);
 
+	var _fetch = __webpack_require__(373);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -43974,20 +43972,11 @@
 	        fetch('api/' + resource, {
 	          method: 'get',
 	          headers: { 'Authorization': sessionStorage.token }
-	        }).then(function (res) {
-	          if (res.ok) {
-	            return res.json();
-	          } else {
-	            return res.text().then(function (text) {
-	              throw new Error(text ? text : res.statusText);
-	            });
-	          }
-	        }).then(function (json) {
+	        }).then(_fetch.fetchJSON).then(function (json) {
 	          var state = {};
 	          state[key] = json;
 	          _this2.setState(state);
 	        }).catch(function (err) {
-	          console.log("Error has occurred: %o", err);
 	          var state = { message: err };
 	          state[key] = [];
 	          _this2.setState(state);
@@ -44220,16 +44209,7 @@
 	          'Content-type': 'application/json'
 	        },
 	        body: JSON.stringify(posting)
-	      }).then(function (res) {
-	        if (res.ok) {
-	          return res.json();
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          });
-	        }
-	      }).then(function (json) {
-	        //console.log("Post-OK");
+	      }).then(_fetch.fetchJSON).then(function (json) {
 	        _this3.setState({ running: false, message: "OK" });
 	      }).catch(function (err) {
 	        _this3.setState({ running: false, message: err });
@@ -45661,6 +45641,8 @@
 
 	var _Message2 = _interopRequireDefault(_Message);
 
+	var _fetch = __webpack_require__(373);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -45701,18 +45683,9 @@
 	      fetch('api/posting', {
 	        method: 'get',
 	        headers: { 'Authorization': sessionStorage.token }
-	      }).then(function (res) {
-	        if (res.ok) {
-	          return res.json();
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          });
-	        }
-	      }).then(function (json) {
+	      }).then(_fetch.fetchJSON).then(function (json) {
 	        _this2.setState({ postings: json });
 	      }).catch(function (err) {
-	        console.log("Error has occurred: %o", err);
 	        _this2.setState({ postings: [], message: err });
 	      });
 	    }
@@ -46103,6 +46076,8 @@
 
 	var _Message2 = _interopRequireDefault(_Message);
 
+	var _fetch = __webpack_require__(373);
+
 	var _formatters = __webpack_require__(240);
 
 	var _FormAccountButton = __webpack_require__(370);
@@ -46154,15 +46129,7 @@
 	      fetch('api/reconciliation', {
 	        method: 'get',
 	        headers: { 'Authorization': sessionStorage.token }
-	      }).then(function (res) {
-	        if (res.ok) {
-	          return res.json();
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          });
-	        }
-	      }).then(function (json) {
+	      }).then(_fetch.fetchJSON).then(function (json) {
 	        var _arr = ['postings', 'statements', 'accounts', 'accountTypes'];
 
 	        for (var _i = 0; _i < _arr.length; _i++) {
@@ -46177,7 +46144,6 @@
 	        });
 	        _this2.reconcile();
 	      }).catch(function (err) {
-	        console.log("Error has occurred: %o", err);
 	        _this2.setState({ loading: false, message: err });
 	      });
 	    }
@@ -46322,21 +46288,14 @@
 	          'Content-type': 'application/json'
 	        },
 	        body: JSON.stringify(body)
-	      }).then(function (res) {
-	        if (res.ok) {
-	          var state = { loading: false };
-	          state[key1] = _this4.state[key1];
-	          state[key1][key2] = state[key1][key2].filter(function (tuple, i) {
-	            return !checked[i];
-	          });
-	          _this4.setState(state);
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          });
-	        }
+	      }).then(_fetch.fetchCheck).then(function (res) {
+	        var state = { loading: false };
+	        state[key1] = _this4.state[key1];
+	        state[key1][key2] = state[key1][key2].filter(function (tuple, i) {
+	          return !checked[i];
+	        });
+	        _this4.setState(state);
 	      }).catch(function (err) {
-	        console.log("Error has occurred: %o", err);
 	        _this4.setState({ loading: false, message: err });
 	      });
 	    }
@@ -46391,15 +46350,7 @@
 	          'Content-type': 'application/json'
 	        },
 	        body: JSON.stringify(posting)
-	      }).then(function (res) {
-	        if (res.ok) {
-	          return res.json();
-	        } else {
-	          return res.text().then(function (text) {
-	            throw new Error(text ? text : res.statusText);
-	          });
-	        }
-	      }).then(function (json) {
+	      }).then(_fetch.fetchJSON).then(function (json) {
 	        var state = { loading: false };
 	        state.unmapped = _this5.state.unmapped;
 	        state.unmapped.s = state.unmapped.s.filter(function (s2) {
@@ -47174,6 +47125,39 @@
 	};
 
 	exports.default = TableWithCheckboxes;
+
+/***/ },
+/* 372 */,
+/* 373 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.fetchCheck = fetchCheck;
+	exports.fetchJSON = fetchJSON;
+	function fetchCheck(res) {
+	  if (res.ok) {
+	    return res;
+	  } else {
+	    return res.text().then(function (text) {
+	      throw new Error(text ? text : res.statusText);
+	    }, function (err) {
+	      throw new Error(res.statusText);
+	    }).catch(function (err) {
+	      console.error("Error in fetchCheck: %o", err);
+	      throw err;
+	    });
+	  }
+	}
+
+	function fetchJSON(res) {
+	  return Promise.resolve(res).then(fetchCheck).then(function (res) {
+	    return res.json();
+	  });
+	}
 
 /***/ }
 /******/ ]);

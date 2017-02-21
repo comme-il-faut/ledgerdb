@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Message from './shared/Message';
+import { fetchJSON } from './fetch';
 
 class Postings extends React.Component {
   constructor(props) {
@@ -24,20 +25,11 @@ class Postings extends React.Component {
       method: 'get',
       headers: { 'Authorization': sessionStorage.token }
     })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
-      })
+      .then(fetchJSON)
       .then(json => {
         this.setState({ postings: json });
       })
       .catch(err => {
-        console.log("Error has occurred: %o", err);
         this.setState({ postings: [], message: err });
       });
   }

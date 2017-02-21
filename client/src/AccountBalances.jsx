@@ -1,4 +1,7 @@
 import React from 'react';
+
+import Message from './shared/Message';
+import { fetchCheck, fetchJSON } from './fetch';
 import { formatAmount, formatDate } from './formatters';
 
 class AccountBalanceRow extends React.PureComponent {
@@ -28,20 +31,11 @@ class AccountBalanceRow extends React.PureComponent {
         'Content-type': 'application/json'
       },
       body: JSON.stringify(accountBalance)
-    }).then(res => {
-      if (res.ok) {
-        this.setState({ reconciled: true, loading: false });
-      } else {
-        return res.text().then(text => {
-          throw new Error(text ? text : res.statusText);
-        }).catch(err => {
-          throw new Error(res.statusText);
-        });
-      }
+    }).then(fetchCheck).then(res => {
+      this.setState({ reconciled: true, loading: false });
     }).catch(err => {
-      console.error("Error: %o", err);
-      this.setState({ err: err, loading: false });
-      //TODO: render error
+      this.setState({ loading: false });
+      this.props.onError && this.props.onError(err);
     });
 
   }
@@ -109,6 +103,7 @@ class AccountBalances extends React.Component {
       },
       err: null
     };
+    this.handleError = this.handleError.bind(this);
   }
 
   componentDidMount() {
@@ -119,15 +114,7 @@ class AccountBalances extends React.Component {
       fetch('api/' + resource, {
         method: 'get',
         headers: { 'Authorization': sessionStorage.token }
-      }).then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          return res.text().then(text => {
-            throw new Error(text ? text : res.statusText);
-          });
-        }
-      })
+      }).then(fetchJSON)
     )).then(values => {
       let state = { data: {} };
       resources.forEach((resource, i) => {
@@ -135,10 +122,11 @@ class AccountBalances extends React.Component {
         state.data[key] = values[i];
       });
       this.setState(state);
-    }).catch(err => {
-      console.error("Error: %o", err);
-      this.setState({ err: err });
-    });
+    }).catch(this.handleError);
+  }
+
+  handleError(err) {
+    this.setState({ err: err });
   }
 
   render() {
@@ -151,6 +139,9 @@ class AccountBalances extends React.Component {
           <div className="col-md-6">
             {this.renderTable('L')}
           </div>
+        </div>
+        <div style={{clear: "both"}}>
+          <Message message={this.state.err}/>
         </div>
         {/*
         <p style={{clear: "both"}}>{JSON.stringify(this.state)}</p>
@@ -195,6 +186,7 @@ class AccountBalances extends React.Component {
                     sign={at.sign}
                     amount={balance.amount}
                     reconciled={balance.reconciled}
+                    onError={this.handleError}
                   />
                 );
               });
