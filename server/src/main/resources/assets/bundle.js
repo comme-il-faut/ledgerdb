@@ -46019,7 +46019,7 @@
 	  }, {
 	    key: 'handleChange',
 	    value: function handleChange(field, e) {
-	      var state = this.state;
+	      var state = {};
 	      state[field] = e.target.value;
 	      this.setState(state);
 	    }
@@ -46065,13 +46065,6 @@
 	      }).catch(function (err) {
 	        _this2.setState({ running: false, result: err });
 	      });
-	    }
-	  }, {
-	    key: 'componentDidUpdate',
-	    value: function componentDidUpdate() {
-	      if (this.state.result) {
-	        this.state.result = null;
-	      }
 	    }
 	  }]);
 

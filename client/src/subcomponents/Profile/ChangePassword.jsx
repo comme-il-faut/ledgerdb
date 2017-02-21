@@ -55,7 +55,7 @@ class PasswordChange extends React.Component {
   }
 
   handleChange(field, e) {
-    let state = this.state;
+    let state = {};
     state[field] = e.target.value;
     this.setState(state);
   }
@@ -105,12 +105,6 @@ class PasswordChange extends React.Component {
       .catch(err => {
         this.setState({ running: false, result: err });
       });
-  }
-
-  componentDidUpdate() {
-    if (this.state.result) {
-      this.state.result = null;
-    }
   }
 
 }
