@@ -1,7 +1,7 @@
 import React from 'react';
 
-import AccountTypes from './Admin/AccountTypes'
-import Accounts from './Admin/Accounts'
+import AccountTypes from './subcomponents/Admin/AccountTypes';
+import Accounts from './subcomponents/Admin/Accounts';
 
 class Admin extends React.Component {
   constructor(props) {

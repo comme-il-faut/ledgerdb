@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Message from './Message';
+import Message from './shared/Message';
 
 class Postings extends React.Component {
   constructor(props) {

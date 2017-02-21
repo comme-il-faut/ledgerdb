@@ -76,12 +76,12 @@ class Login extends React.Component {
           <h2 className="form-signin-heading">
             <i className="fa fa-bar-chart" aria-hidden="true"></i> LedgerDB
           </h2>
-          <label for="inputUser" className="sr-only">Username</label>
+          <label htmlFor="inputUser" className="sr-only">Username</label>
           <input type="text" id="inputUser" className="form-control"
-            placeholder="Username" required autofocus
+            placeholder="Username" required autoFocus
             onChange={this.handleChange.bind(this, 'user')}
             />
-          <label for="inputPass" className="sr-only">Password</label>
+          <label htmlFor="inputPass" className="sr-only">Password</label>
           <input type="password" id="inputPass" className="form-control"
             placeholder="Password"
             onChange={this.handleChange.bind(this, 'pass')}

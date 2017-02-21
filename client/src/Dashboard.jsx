@@ -3,7 +3,7 @@ import React from 'react';
 class Dashboard extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { text: "..." };
+    this.state = { text: "" };
   }
 
   componentDidMount() {
@@ -23,7 +23,9 @@ class Dashboard extends React.Component {
 
   render() {
     return (
-      <pre>{this.state.text}</pre>
+      <div>
+          <pre>{this.state.text}</pre>
+      </div>
     );
   }
 }

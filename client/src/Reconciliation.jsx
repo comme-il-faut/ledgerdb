@@ -1,16 +1,18 @@
 import React from 'react';
 import moment from 'moment';
 
-import Fortune from './Shared/Fortune';
-import Message from './Message';
-import { formatAmount, formatDate } from './Formatters';
+import Fortune from './shared/Fortune';
+import Message from './shared/Message';
+import { formatAmount, formatDate } from './formatters';
 
-import FormAccountButton from './Reconciliation/FormAccountButton';
-import TableWithCheckboxes from './Reconciliation/TableWithCheckboxes';
+import FormAccountButton from './subcomponents/Reconciliation/FormAccountButton';
+import TableWithCheckboxes from './subcomponents/Reconciliation/TableWithCheckboxes';
 
 class Reconciliation extends React.Component {
+
   constructor(props) {
     super(props);
+    console.log("Reconciliation.constructor");
     this.state = {
       loading: true,
       mapped: null, // { p2s: [], s2s: [] },
@@ -24,6 +26,7 @@ class Reconciliation extends React.Component {
   }
 
   componentDidMount() {
+    console.log("Reconciliation.componentDidMount");
     document.title = "LedgerDB - Reconciliation";
 
     fetch('api/reconciliation', {
@@ -56,12 +59,6 @@ class Reconciliation extends React.Component {
         console.log("Error has occurred: %o", err);
         this.setState({ loading: false, message: err });
       });
-  }
-
-  componentDidUpdate() {
-    if (this.state.message) {
-      this.state.message = null;
-    }
   }
 
   reconcile() {
@@ -247,6 +244,7 @@ class Reconciliation extends React.Component {
   }
 
   render() {
+    console.log("Reconciliation.render");
     //if (this.state.loading)
       //return null;
       //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"
@@ -268,6 +266,16 @@ class Reconciliation extends React.Component {
 
             <h3>4. Unmatched Statements</h3>
             {this.renderTableS()}
+
+            <hr/>
+            <Fortune
+              style={{
+                whiteSpace: "pre-wrap",
+                float: "right",
+                marginTop: '30px',
+                fontSize: '0.8em'
+              }}
+            />
           </div>
         )}
         {/* <p>{JSON.stringify(this.state)}</p> */}
@@ -498,27 +506,17 @@ class Reconciliation extends React.Component {
     });
 
     return (
-      <div>
-        <table className="table table-condensed table-hover le-recon-table">
-          <thead>
-            <tr>
-              <th className="col-md-1 text-nowrap">Date</th>
-              <th className="col-md-1 text-right">Amount</th>
-              <th className="col-md-8">Description</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>{rows}</tbody>
-        </table>
-        <Fortune
-          style={{
-            whiteSpace: "pre-wrap",
-            float: "right",
-            marginTop: '30px',
-            fontSize: '0.9em'
-          }}
-        />
-      </div>
+      <table className="table table-condensed table-hover le-recon-table">
+        <thead>
+          <tr>
+            <th className="col-md-1 text-nowrap">Date</th>
+            <th className="col-md-1 text-right">Amount</th>
+            <th className="col-md-8">Description</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
     );
   }
 

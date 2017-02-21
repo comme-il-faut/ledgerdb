@@ -2,8 +2,8 @@ import React from 'react';
 import Pikaday from 'pikaday';
 import moment from 'moment';
 
-import AccountSelect from './Shared/AccountSelect';
-import Message from './Message';
+import AccountSelect from './shared/AccountSelect';
+import Message from './shared/Message';
 
 const DATE_FORMAT_MDY = "M/D/YYYY";
 

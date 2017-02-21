@@ -1,6 +1,6 @@
 import React from 'react';
 
-import AccountSelect from '../Shared/AccountSelect';
+import AccountSelect from '../../shared/AccountSelect';
 
 class FormAccountButton extends React.Component {
   constructor(props) {

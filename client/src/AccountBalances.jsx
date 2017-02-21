@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatAmount, formatDate } from './Formatters';
+import { formatAmount, formatDate } from './formatters';
 
 class AccountBalanceRow extends React.PureComponent {
 

@@ -27380,7 +27380,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Formatters = __webpack_require__(240);
+	var _formatters = __webpack_require__(240);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -27454,7 +27454,7 @@
 	          _react2.default.createElement(
 	            'span',
 	            { className: 'le-pad-left' },
-	            (0, _Formatters.formatDate)(this.props.postingDate)
+	            (0, _formatters.formatDate)(this.props.postingDate)
 	          )
 	        ),
 	        _react2.default.createElement(
@@ -27479,7 +27479,7 @@
 	      return _react2.default.createElement(
 	        'span',
 	        { className: className },
-	        (0, _Formatters.formatAmount)(amount)
+	        (0, _formatters.formatAmount)(amount)
 	      );
 	    }
 	  }, {
@@ -42631,6 +42631,8 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      console.log("App.render");
+
 	      if (!this.state.auth) {
 	        return _react2.default.createElement(
 	          'div',
@@ -43767,16 +43769,16 @@
 	          ),
 	          _react2.default.createElement(
 	            'label',
-	            { 'for': 'inputUser', className: 'sr-only' },
+	            { htmlFor: 'inputUser', className: 'sr-only' },
 	            'Username'
 	          ),
 	          _react2.default.createElement('input', { type: 'text', id: 'inputUser', className: 'form-control',
-	            placeholder: 'Username', required: true, autofocus: true,
+	            placeholder: 'Username', required: true, autoFocus: true,
 	            onChange: this.handleChange.bind(this, 'user')
 	          }),
 	          _react2.default.createElement(
 	            'label',
-	            { 'for': 'inputPass', className: 'sr-only' },
+	            { htmlFor: 'inputPass', className: 'sr-only' },
 	            'Password'
 	          ),
 	          _react2.default.createElement('input', { type: 'password', id: 'inputPass', className: 'form-control',
@@ -43841,7 +43843,7 @@
 
 	    var _this = _possibleConstructorReturn(this, (Dashboard.__proto__ || Object.getPrototypeOf(Dashboard)).call(this, props));
 
-	    _this.state = { text: "..." };
+	    _this.state = { text: "" };
 	    return _this;
 	  }
 
@@ -43866,9 +43868,13 @@
 	    key: "render",
 	    value: function render() {
 	      return _react2.default.createElement(
-	        "pre",
+	        "div",
 	        null,
-	        this.state.text
+	        _react2.default.createElement(
+	          "pre",
+	          null,
+	          this.state.text
+	        )
 	      );
 	    }
 	  }]);
@@ -44152,8 +44158,10 @@
 	      if (e.target.id == "date") {
 	        var value = e.target.value;
 	        if (value == "") {
-	          this.pikaday.setDate(null);
+	          this.pikaday.setDate(null, true);
 	          this.pikaday.gotoToday();
+	        } else {
+	          this.pikaday.setDate(value, true);
 	        }
 	      }
 	    }
@@ -44166,7 +44174,7 @@
 	        this.setInput('date', m.format(DATE_FORMAT_MDY));
 	        this.pikaday.setMoment(m, true); // do not trigger onSelect
 	      }
-	      if (action == "calendar") {
+	      if (action.startsWith("calendar")) {
 	        document.getElementById("date").focus();
 	      }
 	      if (action == "clear") {
@@ -44186,7 +44194,7 @@
 
 	      e.preventDefault();
 
-	      var input = this.state.input;
+	      var input = Object.assign({}, this.state.input);
 	      var m = (0, _moment2.default)(input.date, DATE_FORMAT_MDY, true); // use strict parsing
 
 	      var valid = this.state.valid;
@@ -44198,6 +44206,8 @@
 	      if (!Object.keys(valid).every(function (id) {
 	        return valid[id];
 	      })) return;
+
+	      input.amount = input.amount.replace(/,/g, "");
 
 	      var posting = {
 	        postingDate: m.format('YYYY-MM-DD'),
@@ -45515,8 +45525,8 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var Message = function (_React$Component) {
-	  _inherits(Message, _React$Component);
+	var Message = function (_React$PureComponent) {
+	  _inherits(Message, _React$PureComponent);
 
 	  function Message(props) {
 	    _classCallCheck(this, Message);
@@ -45531,8 +45541,10 @@
 	    }
 	  }, {
 	    key: 'componentDidUpdate',
-	    value: function componentDidUpdate() {
-	      this.show();
+	    value: function componentDidUpdate(prevProps) {
+	      if (this.props.message !== prevProps.message) {
+	        this.show();
+	      }
 	    }
 	  }, {
 	    key: 'show',
@@ -45620,10 +45632,15 @@
 	  }]);
 
 	  return Message;
-	}(_react2.default.Component);
+	}(_react2.default.PureComponent);
 
 	Message.propTypes = {
-	  message: _react2.default.PropTypes.any // string or Error
+	  //message: React.PropTypes.any // string or Error
+	  message: function message(props, propName, componentName) {
+	    if (propName != "message") return new Error("Invalid prop " + propName + " supplied to " + componentName + " component");
+	    var message = props[propName];
+	    if (!(message === null || typeof message === 'string' || message instanceof Error)) return new Error("Invalid message supplied to " + componentName + " component");
+	  }
 	};
 
 	exports.default = Message;
@@ -46097,7 +46114,7 @@
 
 	var _Message2 = _interopRequireDefault(_Message);
 
-	var _Formatters = __webpack_require__(240);
+	var _formatters = __webpack_require__(240);
 
 	var _FormAccountButton = __webpack_require__(370);
 
@@ -46123,6 +46140,7 @@
 
 	    var _this = _possibleConstructorReturn(this, (Reconciliation.__proto__ || Object.getPrototypeOf(Reconciliation)).call(this, props));
 
+	    console.log("Reconciliation.constructor");
 	    _this.state = {
 	      loading: true,
 	      mapped: null, // { p2s: [], s2s: [] },
@@ -46141,6 +46159,7 @@
 	    value: function componentDidMount() {
 	      var _this2 = this;
 
+	      console.log("Reconciliation.componentDidMount");
 	      document.title = "LedgerDB - Reconciliation";
 
 	      fetch('api/reconciliation', {
@@ -46172,13 +46191,6 @@
 	        console.log("Error has occurred: %o", err);
 	        _this2.setState({ loading: false, message: err });
 	      });
-	    }
-	  }, {
-	    key: 'componentDidUpdate',
-	    value: function componentDidUpdate() {
-	      if (this.state.message) {
-	        this.state.message = null;
-	      }
 	    }
 	  }, {
 	    key: 'reconcile',
@@ -46412,6 +46424,12 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      console.log("Reconciliation.render");
+	      //if (this.state.loading)
+	      //return null;
+	      //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"
+
+	      //TODO if !loading && !mapped/!unmapped, show message in div
 
 	      return _react2.default.createElement(
 	        'div',
@@ -46442,7 +46460,16 @@
 	            null,
 	            '4. Unmatched Statements'
 	          ),
-	          this.renderTableS()
+	          this.renderTableS(),
+	          _react2.default.createElement('hr', null),
+	          _react2.default.createElement(_Fortune2.default, {
+	            style: {
+	              whiteSpace: "pre-wrap",
+	              float: "right",
+	              marginTop: '30px',
+	              fontSize: '0.8em'
+	            }
+	          })
 	        ),
 	        _react2.default.createElement(_Message2.default, { message: this.state.message })
 	      );
@@ -46493,12 +46520,12 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            (0, _Formatters.formatDate)(p.postingDate),
+	            (0, _formatters.formatDate)(p.postingDate),
 	            _react2.default.createElement('br', null),
 	            p.postingDate != s.statementDate && _react2.default.createElement(
 	              'small',
 	              { className: 'le-pad-left' },
-	              (0, _Formatters.formatDate)(s.statementDate)
+	              (0, _formatters.formatDate)(s.statementDate)
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46512,7 +46539,7 @@
 	            _react2.default.createElement(
 	              'span',
 	              { className: p.amount < 0 ? "le-num-neg" : "le-num-pos" },
-	              (0, _Formatters.formatAmount)(p.amount)
+	              (0, _formatters.formatAmount)(p.amount)
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46582,7 +46609,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            (0, _Formatters.formatDate)(s1.statementDate)
+	            (0, _formatters.formatDate)(s1.statementDate)
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46605,13 +46632,13 @@
 	            _react2.default.createElement(
 	              'span',
 	              { className: 'le-num-pos le-pad-right' },
-	              (0, _Formatters.formatAmount)(s1.amount)
+	              (0, _formatters.formatAmount)(s1.amount)
 	            ),
 	            _react2.default.createElement('br', null),
 	            _react2.default.createElement(
 	              'span',
 	              { className: 'le-num-neg' },
-	              (0, _Formatters.formatAmount)(s2.amount)
+	              (0, _formatters.formatAmount)(s2.amount)
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46679,7 +46706,7 @@
 	          _react2.default.createElement(
 	            'td',
 	            { className: 'text-nowrap' },
-	            (0, _Formatters.formatDate)(p.postingDate)
+	            (0, _formatters.formatDate)(p.postingDate)
 	          ),
 	          _react2.default.createElement(
 	            'td',
@@ -46692,7 +46719,7 @@
 	            _react2.default.createElement(
 	              'span',
 	              { className: p.amount < 0 ? "le-num-neg" : "le-num-pos" },
-	              (0, _Formatters.formatAmount)(p.amount)
+	              (0, _formatters.formatAmount)(p.amount)
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46750,7 +46777,7 @@
 	            _react2.default.createElement(
 	              'span',
 	              { className: 'le-pad-left' },
-	              (0, _Formatters.formatDate)(s.statementDate)
+	              (0, _formatters.formatDate)(s.statementDate)
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46759,7 +46786,7 @@
 	            _react2.default.createElement(
 	              'span',
 	              { className: s.amount < 0 ? "le-num-neg" : "le-num-pos" },
-	              (0, _Formatters.formatAmount)(s.amount)
+	              (0, _formatters.formatAmount)(s.amount)
 	            )
 	          ),
 	          _react2.default.createElement(
@@ -46783,49 +46810,37 @@
 	      });
 
 	      return _react2.default.createElement(
-	        'div',
-	        null,
+	        'table',
+	        { className: 'table table-condensed table-hover le-recon-table' },
 	        _react2.default.createElement(
-	          'table',
-	          { className: 'table table-condensed table-hover le-recon-table' },
+	          'thead',
+	          null,
 	          _react2.default.createElement(
-	            'thead',
+	            'tr',
 	            null,
 	            _react2.default.createElement(
-	              'tr',
-	              null,
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-1 text-nowrap' },
-	                'Date'
-	              ),
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-1 text-right' },
-	                'Amount'
-	              ),
-	              _react2.default.createElement(
-	                'th',
-	                { className: 'col-md-8' },
-	                'Description'
-	              ),
-	              _react2.default.createElement('th', null)
-	            )
-	          ),
-	          _react2.default.createElement(
-	            'tbody',
-	            null,
-	            rows
+	              'th',
+	              { className: 'col-md-1 text-nowrap' },
+	              'Date'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-1 text-right' },
+	              'Amount'
+	            ),
+	            _react2.default.createElement(
+	              'th',
+	              { className: 'col-md-8' },
+	              'Description'
+	            ),
+	            _react2.default.createElement('th', null)
 	          )
 	        ),
-	        _react2.default.createElement(_Fortune2.default, {
-	          style: {
-	            whiteSpace: "pre-wrap",
-	            float: "right",
-	            marginTop: '30px',
-	            fontSize: '0.9em'
-	          }
-	        })
+	        _react2.default.createElement(
+	          'tbody',
+	          null,
+	          rows
+	        )
 	      );
 	    }
 	  }, {
@@ -47017,7 +47032,7 @@
 /* 371 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
@@ -47028,8 +47043,6 @@
 	var _react = __webpack_require__(1);
 
 	var _react2 = _interopRequireDefault(_react);
-
-	var _Formatters = __webpack_require__(240);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -47055,7 +47068,7 @@
 	  }
 
 	  _createClass(TableWithCheckboxes, [{
-	    key: 'componentWillReceiveProps',
+	    key: "componentWillReceiveProps",
 	    value: function componentWillReceiveProps(props) {
 	      if (props.rows.length < this.props.rows.length) {
 	        this.setState({
@@ -47064,7 +47077,7 @@
 	      }
 	    }
 	  }, {
-	    key: 'handleChange',
+	    key: "handleChange",
 	    value: function handleChange(i) {
 	      this.setState(function (state) {
 	        var checked = !state.checked[i];
@@ -47078,23 +47091,23 @@
 	      });
 	    }
 	  }, {
-	    key: 'handleSubmit',
+	    key: "handleSubmit",
 	    value: function handleSubmit(e) {
 	      e.preventDefault();
 	      this.props.onSubmit(this.state.checked.slice(1));
 	    }
 	  }, {
-	    key: 'renderCheckbox',
+	    key: "renderCheckbox",
 	    value: function renderCheckbox(i) {
-	      return _react2.default.createElement('input', {
-	        type: 'checkbox',
+	      return _react2.default.createElement("input", {
+	        type: "checkbox",
 	        checked: this.state.checked[i],
 	        onChange: this.handleChange.bind(this, i),
 	        disabled: this.props.loading
 	      });
 	    }
 	  }, {
-	    key: 'renderButton',
+	    key: "renderButton",
 	    value: function renderButton() {
 	      var disabled = this.props.loading || this.state.checked.every(function (checked) {
 	        return !checked;
@@ -47105,24 +47118,24 @@
 	      });
 	    }
 	  }, {
-	    key: 'render',
+	    key: "render",
 	    value: function render() {
 	      var _this2 = this;
 
 	      return _react2.default.createElement(
-	        'div',
+	        "div",
 	        null,
 	        _react2.default.createElement(
-	          'table',
+	          "table",
 	          { className: this.props.className },
 	          _react2.default.createElement(
-	            'thead',
+	            "thead",
 	            null,
 	            _react2.default.createElement(
-	              'tr',
+	              "tr",
 	              null,
 	              _react2.default.createElement(
-	                'th',
+	                "th",
 	                null,
 	                this.renderCheckbox(0)
 	              ),
@@ -47130,14 +47143,14 @@
 	            )
 	          ),
 	          _react2.default.createElement(
-	            'tbody',
+	            "tbody",
 	            null,
 	            this.props.rows.map(function (row, i) {
 	              return _react2.default.createElement(
-	                'tr',
+	                "tr",
 	                { key: row.key },
 	                _react2.default.createElement(
-	                  'td',
+	                  "td",
 	                  null,
 	                  _this2.renderCheckbox(i + 1)
 	                ),
@@ -47156,9 +47169,9 @@
 
 	TableWithCheckboxes.defaultProps = {
 	  button: _react2.default.createElement(
-	    'button',
-	    { type: 'button', className: 'btn btn-success btn-lg' },
-	    'Submit'
+	    "button",
+	    { type: "button", className: "btn btn-success btn-lg" },
+	    "Submit"
 	  ),
 	  loading: false
 	};

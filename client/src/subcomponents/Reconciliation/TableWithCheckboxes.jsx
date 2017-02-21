@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { formatAmount, formatDate } from '../Formatters';
-
 class TableWithCheckboxes extends React.Component {
   constructor(props) {
     super(props);

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
-import Login from './Login'
+import Login from './Login';
 
 class App extends React.Component {
 
@@ -58,6 +58,8 @@ class App extends React.Component {
   }
 
   render() {
+    console.log("App.render");
+
     if (!this.state.auth) {
       return (
         <div className="container">
