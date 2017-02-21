@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Message from '../../shared/Message';
-import { fetchCheck } from './fetch';
+import { fetchCheck } from '../../fetch';
 
 class PasswordChange extends React.Component {
   constructor(props) {
