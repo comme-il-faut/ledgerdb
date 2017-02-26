@@ -1,56 +1,32 @@
 import React from 'react';
 
-import Message from './shared/Message';
 import { fetchJSON } from './fetch';
+import { formatAmount } from './formatters';
 
 class Postings extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      postings: [],
-      message: null
-    };
-  }
 
-  componentDidUpdate() {
-    if (this.state.message) {
-      this.state.message = null;
-    }
+  static getInitialPromise() {
+    return fetch('api/posting', {
+      method: 'get',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchJSON);
   }
 
   componentDidMount() {
     document.title = "LedgerDB - Postings";
-
-    fetch('api/posting', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    })
-      .then(fetchJSON)
-      .then(json => {
-        this.setState({ postings: json });
-      })
-      .catch(err => {
-        this.setState({ postings: [], message: err });
-      });
   }
 
   render() {
-    return (
-      <div>
-        {this.renderTable()}
-        {/* JSON.stringify(entries) */}
-        <Message message={this.state.message}/>
-      </div>
-    );
-  }
-
-  renderTable() {
-    if (!this.state.postings.length)
-      return null;
+    const postings = this.props.data;
+    if (!postings || !(postings.length > 0)) {
+      return (
+        <p>Thou hast seen nothing yet.</p>
+      );
+    }
 
     let entries = [], entry = [];
 
-    this.state.postings.forEach((posting) => {
+    postings.forEach((posting) => {
       if (entry.length
           && entry[0].postingHeaderId != posting.postingHeaderId) {
         entries.push(entry);
@@ -74,7 +50,7 @@ class Postings extends React.Component {
           <td className="text-nowrap text-right">
             {entry.map((posting) => this.renderSpan2(
               posting,
-              this.renderAmount(posting.amount)
+              formatAmount(posting.amount)
             ))}
           </td>
           <td>{entry[0].description}</td>
@@ -118,14 +94,6 @@ class Postings extends React.Component {
         <br/>
       </span>
     );
-  }
-
-  renderAmount(amount) {
-    if (amount == 0) return "-";
-    let s = amount.toLocaleString('en-US', { minimumFractionDigits: 2 });
-    if (s.startsWith("-"))
-      s = "(" + s.substring(1) + ")";
-    return s;
   }
 }
 

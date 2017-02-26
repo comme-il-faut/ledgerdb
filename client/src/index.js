@@ -11,6 +11,7 @@ import Post from './Post';
 import Postings from './Postings';
 import Profile from './Profile';
 import Reconciliation from './Reconciliation';
+import promisedComponent from './promisedComponent';
 
 const appHistory = useRouterHistory(createHashHistory)({ queryKey: false })
 
@@ -20,9 +21,9 @@ ReactDOM.render(
       <IndexRoute component={Dashboard}/>
 
       <Route path="post" component={Post}/>
-      <Route path="postings" component={Postings}/>
-      <Route path="recon" component={Reconciliation}/>
-      <Route path="balance" component={AccountBalances}/>
+      <Route path="postings" component={promisedComponent(Postings)}/>
+      <Route path="recon" component={promisedComponent(Reconciliation)}/>
+      <Route path="balance" component={promisedComponent(AccountBalances)}/>
 
       <Route path="admin" component={Admin}/>
       <Route path="profile" component={Profile}/>

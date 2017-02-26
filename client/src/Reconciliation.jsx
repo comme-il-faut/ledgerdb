@@ -11,9 +11,16 @@ import TableWithCheckboxes from './subcomponents/Reconciliation/TableWithCheckbo
 
 class Reconciliation extends React.Component {
 
+  static getInitialPromise() {
+    return fetch('api/reconciliation', {
+      method: 'get',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchJSON)
+  }
+
   constructor(props) {
     super(props);
-    console.log("Reconciliation.constructor");
+    //console.log("Reconciliation.constructor");
     this.state = {
       loading: true,
       mapped: null, // { p2s: [], s2s: [] },
@@ -24,33 +31,23 @@ class Reconciliation extends React.Component {
     this.handleSubmitS2S = this.handleSubmitS2S.bind(this);
     this.handleSubmitP = this.handleSubmitP.bind(this);
     this.handleSubmitS = this.handleSubmitS.bind(this);
+
+    for (let key of ['postings', 'statements', 'accounts', 'accountTypes']) {
+      let a = props.data[key]
+      if (!Array.isArray(a))
+        throw new Error("Invalid server response");
+      this[key] = props.data[key];
+    }
+    this.accounts = {};
+    props.data.accounts.forEach((a) => {
+      this.accounts[a.accountId] = a;
+    })
+    this.reconcile();
   }
 
   componentDidMount() {
-    console.log("Reconciliation.componentDidMount");
+    //console.log("Reconciliation.componentDidMount");
     document.title = "LedgerDB - Reconciliation";
-
-    fetch('api/reconciliation', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    })
-      .then(fetchJSON)
-      .then(json => {
-        for (let key of ['postings', 'statements', 'accounts', 'accountTypes']) {
-          let a = json[key]
-          if (!Array.isArray(a))
-            throw new Error("Invalid server response");
-          this[key] = json[key];
-        }
-        this.accounts = {};
-        json.accounts.forEach((a) => {
-          this.accounts[a.accountId] = a;
-        })
-        this.reconcile();
-      })
-      .catch(err => {
-        this.setState({ loading: false, message: err });
-      });
   }
 
   reconcile() {
@@ -108,6 +105,7 @@ class Reconciliation extends React.Component {
       }
     }
 
+    /*
     this.setState({
       loading: false,
       mapped: {
@@ -123,6 +121,24 @@ class Reconciliation extends React.Component {
           this.sort(s1, s2, ['accountId', 'statementDate', 'statementId']))
       }
     });
+    */
+    // Warning: setState(...): Can only update a mounted or mounting component.
+    // This usually means you called setState() on an unmounted component. This
+    // is a no-op. Please check the code for the Reconciliation component. 
+
+    this.state.loading = false;
+    this.state.mapped = {
+      p2s: Array.from(mapP2S.entries()).sort((e1, e2) =>
+        this.sort(e1[0], e2[0], ['postingDate', 'accountId', 'postingDetailId'])),
+      s2s: Array.from(mapS2S.entries()).sort((e1, e2) =>
+        this.sort(e1[0], e2[0], ['statementDate', 'accountId', 'statementId']))
+    };
+    this.state.unmapped = {
+      p: Array.from(setP.values()).sort((p1, p2) =>
+        this.sort(p1, p2, ['accountId', 'postingDate', 'postingDetailId'])),
+      s: Array.from(setS.values()).sort((s1, s2) =>
+        this.sort(s1, s2, ['accountId', 'statementDate', 'statementId']))
+    };
   }
 
   sort(o1, o2, fields) {
@@ -222,7 +238,7 @@ class Reconciliation extends React.Component {
   }
 
   render() {
-    console.log("Reconciliation.render");
+    //console.log("Reconciliation.render");
     //if (this.state.loading)
       //return null;
       //return <p>...</p>; //TODO spinner, or progress message "crunching numbers"

@@ -93,14 +93,26 @@ class AccountBalanceRow extends React.PureComponent {
 
 class AccountBalances extends React.Component {
 
+  static getInitialPromise() {
+    const resources = ["account_type", "account", "balance"];
+    return Promise.all(resources.map(resource =>
+      fetch('api/' + resource, {
+        method: 'get',
+        headers: { 'Authorization': sessionStorage.token }
+      }).then(fetchJSON)
+    )).then(values => {
+      let data = {};
+      resources.forEach((resource, i) => {
+        const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase());
+        data[key] = values[i];
+      });
+      return data;
+    });
+  }
+
   constructor(props) {
     super(props);
     this.state = {
-      data: {
-        accountType: [],
-        account: [],
-        balance: []
-      },
       err: null
     };
     this.handleError = this.handleError.bind(this);
@@ -108,21 +120,6 @@ class AccountBalances extends React.Component {
 
   componentDidMount() {
     document.title = "LedgerDB - Account Balances";
-
-    let resources = ["account_type", "account", "balance"];
-    Promise.all(resources.map(resource =>
-      fetch('api/' + resource, {
-        method: 'get',
-        headers: { 'Authorization': sessionStorage.token }
-      }).then(fetchJSON)
-    )).then(values => {
-      let state = { data: {} };
-      resources.forEach((resource, i) => {
-        const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase());
-        state.data[key] = values[i];
-      });
-      this.setState(state);
-    }).catch(this.handleError);
   }
 
   handleError(err) {
@@ -152,10 +149,9 @@ class AccountBalances extends React.Component {
 
   renderTable(accountType) {
     let rows = [];
-    this.state.data.accountType
+    this.props.data &&
+    this.props.data.accountType
       .filter((at) => at.accountType == accountType)
-        //at.accountType == 'A' ||
-        //at.accountType == 'L')
       .forEach((at) => {
         rows.push(
           <tr key={accountType}>
@@ -165,7 +161,7 @@ class AccountBalances extends React.Component {
             </th>
           </tr>
         );
-        this.state.data.account
+        this.props.data.account
           .filter((account) => account.accountType == at.accountType)
           .forEach((account) => {
             rows.push(
@@ -175,7 +171,7 @@ class AccountBalances extends React.Component {
                 <td></td>
               </tr>
             );
-            this.state.data.balance
+            this.props.data.balance
               .filter((balance) => balance.accountId == account.accountId)
               .forEach((balance) => {
                 rows.push(

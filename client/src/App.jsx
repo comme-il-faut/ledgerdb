@@ -58,8 +58,6 @@ class App extends React.Component {
   }
 
   render() {
-    console.log("App.render");
-
     if (!this.state.auth) {
       return (
         <div className="container">
