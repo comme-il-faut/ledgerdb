@@ -188,6 +188,7 @@ public class PostingResource {
             q3.setParameter("postingDate", ph.getPostingDate());
             q3.setParameter("amount", pd.getAmount());
             q3.executeUpdate();
+            s.flush();
         });
     }
     
