@@ -43,7 +43,8 @@ public class ReconciliationResource {
     }
     
     @GET
-    public String fetchInitialData() {
+    public String doGet() {
+        //if (this != null) throw new NotFoundException();
         try (Session s = sf.openSession()) {
             String postings = s.doReturningWork(con -> {
                 try (java.sql.Statement st = con.createStatement()) {
@@ -84,8 +85,8 @@ public class ReconciliationResource {
                 }
             });
             
-            String accounts = rc.getResource(AccountResource.class).getAccounts();
-            String accountTypes = rc.getResource(AccountTypeResource.class).getAccountTypes();
+            String accounts = rc.getResource(AccountResource.class).doGet();
+            String accountTypes = rc.getResource(AccountTypeResource.class).doGet();
             
             return "{\"postings\":" + postings
                     + ",\"statements\":" + statements
@@ -97,7 +98,7 @@ public class ReconciliationResource {
 
     @POST
     @Path("p2s")
-    public void reconcileP2S(
+    public void doPostP2S(
             @Auth User user,
             P2S[] pairs) {
         Session s = sf.openSession();
@@ -147,7 +148,7 @@ public class ReconciliationResource {
     
     @POST
     @Path("s2s")
-    public void reconcileS2S(
+    public void doPostS2S(
             @Auth User user,
             S2S[] pairs) {
         PostingResource postingResource = rc.getResource(PostingResource.class);
@@ -198,7 +199,7 @@ public class ReconciliationResource {
                 pd2.setStatementId(statementId2);
                 ph.addPostingDetail(pd2);
 
-                postingResource.post2(ph, s);
+                postingResource.postPostings(ph, s);
             }
                 
             tx.commit();

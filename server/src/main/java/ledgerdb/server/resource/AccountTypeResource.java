@@ -24,7 +24,7 @@ public class AccountTypeResource {
     }
     
     @GET
-    public String getAccountTypes() {
+    public String doGet() {
         try (Session s = sf.openSession()) {
             return s.doReturningWork(con -> {
                 try (Statement st = con.createStatement()) {

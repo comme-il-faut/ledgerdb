@@ -28,7 +28,7 @@ public class InstitutionLinkResource {
     
     @GET
     @Path("{institution}/{reference}")
-    public InstitutionLink get(
+    public InstitutionLink doGet(
             @PathParam("institution") String institution,
             @PathParam("reference") String reference) {
         InstitutionLink il;

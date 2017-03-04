@@ -36,7 +36,7 @@ public class AccountBalanceResource {
     }
     
     @GET
-    public String getAccountBalances() {
+    public String doGet() {
         try (Session s = sf.openSession()) {
             return s.doReturningWork(con -> {
                 try (Statement st = con.createStatement()) {
@@ -64,7 +64,7 @@ public class AccountBalanceResource {
     
     @POST
     @Path("reconcile")
-    public void reconcile(
+    public void doPostReconcile(
             @Auth User user,
             @NotNull @Valid AccountBalance ab) {
         Session s = sf.openSession();

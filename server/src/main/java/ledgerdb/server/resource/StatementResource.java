@@ -34,7 +34,7 @@ public class StatementResource {
         
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    public String post(
+    public String doPost(
             @Auth User user,
             @NotNull @Valid Statement statement) {
         

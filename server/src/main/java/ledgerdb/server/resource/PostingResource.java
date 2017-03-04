@@ -48,7 +48,7 @@ public class PostingResource {
     }
     
     @GET
-    public String get() throws SQLException, JsonProcessingException {
+    public String doGet() throws SQLException, JsonProcessingException {
         try (Session s = sf.openSession()) {
             return s.doReturningWork(con -> {
                 try (Statement st = con.createStatement()) {
@@ -75,7 +75,7 @@ public class PostingResource {
     }
     
     @POST
-    public PostingHeader post(
+    public PostingHeader doPost(
             @Auth User user,
             @NotNull @Valid PostingHeader ph) {
         Session s = sf.openSession();
@@ -83,7 +83,7 @@ public class PostingResource {
         try {
             tx = s.beginTransaction();
             
-            post2(ph, s);
+            postPostings(ph, s);
             
             tx.commit();
             tx = null;
@@ -96,7 +96,7 @@ public class PostingResource {
         return ph;
     }
     
-    void post2(PostingHeader ph, Session s) {
+    void postPostings(PostingHeader ph, Session s) {
         if (ph.getPostingDetails().isEmpty())
             throw new BadRequestException();
         BigDecimal total = ph.getPostingDetails()
@@ -193,7 +193,7 @@ public class PostingResource {
     }
     
     @DELETE
-    public void delete(PostingHeader[] phs) {
+    public void doDelete(PostingHeader[] phs) {
         Session session = sf.openSession();
         Transaction tx = null;
         try {
@@ -224,4 +224,6 @@ public class PostingResource {
             session.close();
         }
     }
+    
+    
 }
