@@ -156,9 +156,9 @@ public class ReconciliationResource {
         Session s = sf.openSession();
         Transaction tx = null;
         try {
-            tx = s.beginTransaction();
-            
             for (S2S pair : pairs) {
+                tx = s.beginTransaction();
+            
                 int statementId1 = pair.statementId1;
                 int statementId2 = pair.statementId2;
                 
@@ -200,9 +200,8 @@ public class ReconciliationResource {
                 ph.addPostingDetail(pd2);
 
                 postingResource.postPostings(ph, s);
+                tx.commit();
             }
-                
-            tx.commit();
             tx = null;
         } catch (Exception e) {
             if (tx != null) tx.rollback();

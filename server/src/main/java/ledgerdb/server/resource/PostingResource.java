@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -16,6 +17,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import ledgerdb.server.AppException;
 import ledgerdb.server.ResponseFormatter;
@@ -105,7 +107,14 @@ public class PostingResource {
                 .reduce((a, b) -> a.add(b))
                 .get();
         if (total.compareTo(BigDecimal.ZERO) != 0)
-            throw new BadRequestException("Invalid unbalanced posting with " + total + " total.");
+            throw new BadRequestException("Unbalanced posting with non zero total " + total);
+        
+        if (!ph.getPostingDetails()
+                .stream()
+                .map(pd -> pd.getAccountId())
+                .allMatch(new HashSet<>()::add)) {
+            throw new BadRequestException("Accounts must be unique within a single posting");
+        }
         
         for (PostingDetail pd : ph.getPostingDetails()) {
             if (pd.getPostingHeader() == null)
@@ -224,6 +233,4 @@ public class PostingResource {
             session.close();
         }
     }
-    
-    
 }
