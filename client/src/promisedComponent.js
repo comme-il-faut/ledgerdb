@@ -21,6 +21,7 @@ function promisedComponent(component) {
       }
 
       if (this.state.err) {
+        console.log("Oh snap! Error: %o", this.state.err);
         return (
           <div className="alert alert-danger">
             <strong>Oh snap!</strong> {this.state.err.toString()}
