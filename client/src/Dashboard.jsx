@@ -1,30 +1,18 @@
 import React from 'react';
 
+import VizFlowsSankey from './VizFlowsSankey';
+import promisedComponent from './promisedComponent';
+
 class Dashboard extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { text: "" };
-  }
 
   componentDidMount() {
     document.title = "LedgerDB";
-    fetch('api/fortune', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    })
-      .then(res => {
-        if (res.ok) {
-          res.text().then(text => {
-            this.setState({ text: text });
-          });
-        }
-      });
   }
 
   render() {
     return (
       <div>
-          <pre>{this.state.text}</pre>
+        {React.createElement(promisedComponent(VizFlowsSankey))}
       </div>
     );
   }

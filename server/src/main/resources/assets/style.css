@@ -107,10 +107,31 @@ form input[type=number] {
   cursor: pointer;
 }
 .le-balance-table tr:hover .le-checkbox-off {
-  color: #4caf50; /* Fruit Salad */
-  opacity: 0.6;
+  color: #c7c7c7; /* grey78 */
 }
 .le-balance-table .le-checkbox-on {
   color: #4caf50; /* Fruit Salad */
   cursor: default;
+}
+
+
+
+.viz-flow-sankey-node rect {
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.viz-flow-sankey-node text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.viz-flow-sankey-link {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .12;
+}
+
+.viz-flow-sankey-link:hover {
+  stroke-opacity: .36;
 }

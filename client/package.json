@@ -22,6 +22,14 @@
     "webpack": "^1.13.2"
   },
   "dependencies": {
+    "d3-array": "^1.1.0",
+    "d3-color": "^1.0.2",
+    "d3-drag": "^1.0.3",
+    "d3-format": "^1.1.0",
+    "d3-request": "^1.0.4",
+    "d3-sankey": "^0.4.2",
+    "d3-scale": "^1.0.4",
+    "d3-selection": "^1.0.4",
     "moment": "^2.15.1",
     "pikaday": "^1.5.1",
     "react": "^15.3.2",
