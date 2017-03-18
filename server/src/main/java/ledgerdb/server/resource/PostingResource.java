@@ -137,7 +137,7 @@ public class PostingResource {
                 .setProjection(Projections.rowCount())
                 .uniqueResult();
         if (count > 0) {
-            throw new BadRequestException();
+            throw new BadRequestException("Can't post to account with balance marked as reconciled");
         }
 
         s.persist(ph);
