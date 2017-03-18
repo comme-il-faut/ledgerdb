@@ -44054,7 +44054,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _d = __webpack_require__(388);
+	var _d = __webpack_require__(364);
 
 	var _d2 = _interopRequireDefault(_d);
 
@@ -44094,6 +44094,11 @@
 	    var _this = _possibleConstructorReturn(this, (VizFlowsSankey.__proto__ || Object.getPrototypeOf(VizFlowsSankey)).call(this, props));
 
 	    _this.state = { err: null };
+	    _this.flows = {
+	      nodes: [],
+	      links: []
+	    };
+	    _this.redraw = _this.redraw.bind(_this);
 	    return _this;
 	  }
 
@@ -44143,11 +44148,22 @@
 	        console.log("Error: %o", err);
 	        _this2.setState({ err: err });
 	      });
+
+	      window.addEventListener("resize", this.redraw);
+	    }
+	  }, {
+	    key: 'componentWillUnmount',
+	    value: function componentWillUnmount() {
+	      window.removeEventListener("resize", this.redraw);
 	    }
 	  }, {
 	    key: 'redraw',
 	    value: function redraw() {
 	      var div = _d2.default.select('#viz-flows-sankey-chart');
+
+	      while (div.node().firstChild) {
+	        div.node().removeChild(div.node().firstChild);
+	      }
 
 	      var margin = { top: 1, right: 1, bottom: 6, left: 1 },
 	          width = div.node().getBoundingClientRect().width - margin.left - margin.right,
@@ -44230,7 +44246,38 @@
 	exports.default = VizFlowsSankey;
 
 /***/ },
-/* 364 */,
+/* 364 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _d3Drag = __webpack_require__(365);
+
+	var _d3Color = __webpack_require__(368);
+
+	var _d3Sankey = __webpack_require__(369);
+
+	var _d3Scale = __webpack_require__(373);
+
+	var _d3Selection = __webpack_require__(367);
+
+	exports.default = {
+	  drag: _d3Drag.drag,
+	  get event() {
+	    return _d3Selection.event;
+	  },
+	  rgb: _d3Color.rgb,
+	  sankey: _d3Sankey.sankey,
+	  scaleOrdinal: _d3Scale.scaleOrdinal,
+	  schemeCategory20: _d3Scale.schemeCategory20,
+	  select: _d3Selection.select
+	};
+
+/***/ },
 /* 365 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -53015,38 +53062,6 @@
 	};
 
 	exports.default = TableWithCheckboxes;
-
-/***/ },
-/* 388 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _d3Drag = __webpack_require__(365);
-
-	var _d3Color = __webpack_require__(368);
-
-	var _d3Sankey = __webpack_require__(369);
-
-	var _d3Scale = __webpack_require__(373);
-
-	var _d3Selection = __webpack_require__(367);
-
-	exports.default = {
-	  drag: _d3Drag.drag,
-	  get event() {
-	    return _d3Selection.event;
-	  },
-	  rgb: _d3Color.rgb,
-	  sankey: _d3Sankey.sankey,
-	  scaleOrdinal: _d3Scale.scaleOrdinal,
-	  schemeCategory20: _d3Scale.schemeCategory20,
-	  select: _d3Selection.select
-	};
 
 /***/ }
 /******/ ]);

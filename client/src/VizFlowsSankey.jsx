@@ -19,6 +19,11 @@ class VizFlowsSankey extends React.PureComponent {
   constructor(props) {
     super(props);
     this.state = { err: null };
+    this.flows = {
+      nodes: [],
+      links: [],
+    };
+    this.redraw = this.redraw.bind(this);
   }
 
   componentDidMount() {
@@ -56,10 +61,20 @@ class VizFlowsSankey extends React.PureComponent {
       console.log("Error: %o", err)
       this.setState({ err: err });
     });
+
+    window.addEventListener("resize", this.redraw);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.redraw);
   }
 
   redraw() {
     const div = d3.select('#viz-flows-sankey-chart');
+
+    while (div.node().firstChild) {
+      div.node().removeChild(div.node().firstChild);
+    }
 
     const margin = { top: 1, right: 1, bottom: 6, left: 1 },
           width = div.node().getBoundingClientRect().width - margin.left - margin.right,
