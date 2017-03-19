@@ -1,8 +1,8 @@
 import React from 'react';
-import Pikaday from 'pikaday';
 import moment from 'moment';
 
 import AccountSelect from './shared/AccountSelect';
+import DateInput from './shared/DateInput';
 import Message from './shared/Message';
 import { fetchJSON } from './fetch';
 
@@ -27,18 +27,11 @@ class Post extends React.Component {
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleClear = this.handleClear.bind(this);
   }
 
   componentDidMount() {
     document.title = "LedgerDB - Post";
-
-    this.pikaday = new Pikaday({
-      field: document.getElementById('date'),
-      format: DATE_FORMAT_MDY,
-      firstDay: 0,
-      showDaysInNextAndPreviousMonths: true,
-      onSelect: () => this.setInput("date", this.pikaday.toString())
-    });
 
     let resources = ["account_type", "account"];
     resources.forEach(resource => {
@@ -61,10 +54,6 @@ class Post extends React.Component {
     });
   }
 
-  componentWillUnmount() {
-    this.pikaday.destroy();
-  }
-
   componentDidUpdate() {
     if (this.state.message) {
       this.state.message = null;
@@ -75,32 +64,11 @@ class Post extends React.Component {
     return (
       <form className="form-horizontal" onSubmit={this.handleSubmit}>
         {this.renderFormGroup("date", "Date", (
-          <div className="input-group">
-            <input
-              type="date"
-              className="form-control"
-              id="date"
-              placeholder={DATE_FORMAT_MDY}
-              value={this.state.input.date}
-              onChange={this.handleChange}
-            />
-            <span className="input-group-btn">
-              <button
-                className="btn btn-default"
-                type="button"
-                onClick={this.handleClick.bind(this, 'calendar-check')}
-              >
-                <i className="fa fa-calendar-check-o" aria-hidden="true"></i>
-              </button>
-              <button
-                className="btn btn-default"
-                type="button"
-                onClick={this.handleClick.bind(this, 'calendar')}
-              >
-                <i className="fa fa-calendar" aria-hidden="true"></i>
-              </button>
-            </span>
-          </div>
+          <DateInput
+            id="date"
+            format={DATE_FORMAT_MDY}
+            onChange={(date) => this.setInput("date", date)}
+          />
         ))}
         {this.renderFormGroup("cr", "From", this.renderSelect("cr"))}
         {this.renderFormGroup("dr", "To", this.renderSelect("dr"))}
@@ -138,14 +106,16 @@ class Post extends React.Component {
             {' '}
             <button
               type="reset"
-              onClick={this.handleClick.bind(this, 'clear')}
+              onClick={this.handleClear}
               className="btn btn-default"
             >
               <i className="fa fa-eraser" aria-hidden="true"></i> Clear
             </button>
           </div>
         </div>
-        {/*<p>{JSON.stringify(this.state.input)}</p>*/}
+        {/*
+        <p>{JSON.stringify(this.state.input)}</p>
+        */}
         <Message message={this.state.message}/>
       </form>
     );
@@ -186,35 +156,15 @@ class Post extends React.Component {
 
   handleChange(e) {
     this.setInput(e.target.id, e.target.value);
-
-    if (e.target.id == "date") {
-      let value = e.target.value;
-      if (value == "") {
-        this.pikaday.setDate(null, true);
-        this.pikaday.gotoToday();
-      } else {
-        this.pikaday.setDate(value, true);
-      }
-    }
   }
 
-  handleClick(action, e) {
+  handleClear(e) {
     e.preventDefault();
-    if (action == "calendar-check") {
-      let m = moment();
-      this.setInput('date', m.format(DATE_FORMAT_MDY));
-      this.pikaday.setMoment(m, true); // do not trigger onSelect
-    }
-    if (action.startsWith("calendar")) {
-      document.getElementById("date").focus();
-    }
-    if (action == "clear") {
-      this.setState((prevState) => {
-        let input = Object.assign({}, prevState.input);
-        Object.keys(input).forEach(id => input[id] = "");
-        return { valid: {}, input: input };
-      });
-    }
+    this.setState((prevState) => {
+      let input = Object.assign({}, prevState.input);
+      Object.keys(input).forEach(id => input[id] = "");
+      return { valid: {}, input: input };
+    });
   }
 
   handleSubmit(e) {
