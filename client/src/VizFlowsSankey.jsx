@@ -51,18 +51,46 @@ class VizFlowsSankey extends React.PureComponent {
         target: accountIdsIndex[flow.account2],
         value: flow.amount
       }));
+
+      this.detectCycle(nodes, links);
+
       this.flows = {
         nodes: nodes,
         links: links
       };
 
       this.redraw();
+      window.addEventListener("resize", this.redraw);
+
     }).catch(err => {
       console.log("Error: %o", err)
       this.setState({ err: err });
     });
+  }
 
-    window.addEventListener("resize", this.redraw);
+  detectCycle(nodes, links, i, nodeVisited, nodeVisiting) {
+    if (typeof i === 'undefined') {
+      nodeVisited = new Array(nodes.length).fill(false);
+      nodeVisiting = new Array(nodes.length).fill(false);
+      for (i = 0; i < nodes.length; i++) {
+        this.detectCycle(nodes, links, i, nodeVisited, nodeVisiting);
+      }
+    } else {
+      if (nodeVisited[i])
+        return;
+      if (nodeVisiting[i])
+        throw new Error("Oops...found a cycle!");
+
+      nodeVisiting[i] = true;
+      for (let j = 0; j < links.length; j++) {
+        if (links[j].source == i) {
+          const k = links[j].target;
+          this.detectCycle(nodes, links, k, nodeVisited, nodeVisiting);
+        }
+      }
+      nodeVisiting[i] = false;
+      nodeVisited[i] = true;
+    }
   }
 
   componentWillUnmount() {

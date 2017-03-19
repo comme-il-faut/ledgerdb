@@ -44138,18 +44138,44 @@
 	            value: flow.amount
 	          };
 	        });
+
+	        _this2.detectCycle(nodes, links);
+
 	        _this2.flows = {
 	          nodes: nodes,
 	          links: links
 	        };
 
 	        _this2.redraw();
+	        window.addEventListener("resize", _this2.redraw);
 	      }).catch(function (err) {
 	        console.log("Error: %o", err);
 	        _this2.setState({ err: err });
 	      });
+	    }
+	  }, {
+	    key: 'detectCycle',
+	    value: function detectCycle(nodes, links, i, nodeVisited, nodeVisiting) {
+	      if (typeof i === 'undefined') {
+	        nodeVisited = new Array(nodes.length).fill(false);
+	        nodeVisiting = new Array(nodes.length).fill(false);
+	        for (i = 0; i < nodes.length; i++) {
+	          this.detectCycle(nodes, links, i, nodeVisited, nodeVisiting);
+	        }
+	      } else {
+	        if (nodeVisited[i]) return;
+	        if (nodeVisiting[i]) throw new Error("Oops...found a cycle!");
 
-	      window.addEventListener("resize", this.redraw);
+	        nodeVisiting[i] = true;
+	        for (var j = 0; j < links.length; j++) {
+	          if (links[j].source == i) {
+	            var k = links[j].target;
+	            this.detectCycle(nodes, links, k, nodeVisited, nodeVisiting);
+	          }
+	        }
+	        nodeVisiting[i] = false;
+	        nodeVisited[i] = true;
+	      }
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
