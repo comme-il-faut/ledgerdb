@@ -3,7 +3,7 @@ import React from 'react';
 import VizFlowsSankey from './VizFlowsSankey';
 import promisedComponent from './promisedComponent';
 
-class Dashboard extends React.Component {
+class Dashboard extends React.PureComponent {
 
   componentDidMount() {
     document.title = "LedgerDB";
