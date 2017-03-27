@@ -17,6 +17,9 @@ class DateInput extends React.PureComponent {
       showDaysInNextAndPreviousMonths: true,
       onSelect: () => this.setDate(this.pikaday.toString())
     });
+
+    // http://getbootstrap.com/javascript/#tooltips
+    $('[data-toggle="tooltip"]').tooltip({ trigger: 'hover' });
   }
 
   componentWillUnmount() {
@@ -24,7 +27,7 @@ class DateInput extends React.PureComponent {
   }
 
   setDate(date) {
-    console.log("DateInput > setDate > " + date);
+    //console.log("DateInput > setDate > " + date);
     this.setState({ date: date });
     this.props.onChange &&
     this.props.onChange(date);
@@ -48,7 +51,7 @@ class DateInput extends React.PureComponent {
       this.setDate(m.format(this.props.format));
       this.pikaday.setMoment(m, true); // do not trigger onSelect
     }
-    if (action.startsWith("calendar")) {
+    if (action == "calendar") {
       this.field.focus();
     }
   }
@@ -70,6 +73,9 @@ class DateInput extends React.PureComponent {
             className="btn btn-default"
             type="button"
             onClick={this.handleClick.bind(this, 'calendar-check')}
+            data-toggle="tooltip"
+            data-placement="bottom"
+            title="Today"
           >
             <i className="fa fa-calendar-check-o" aria-hidden="true"></i>
           </button>
