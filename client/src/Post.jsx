@@ -4,9 +4,8 @@ import moment from 'moment';
 import AccountSelect from './shared/AccountSelect';
 import DateInput from './shared/DateInput';
 import Message from './shared/Message';
+import { DATE_FORMAT_MDY } from './shared/DateInput';
 import { fetchJSON } from './fetch';
-
-const DATE_FORMAT_MDY = "M/D/YYYY";
 
 class Post extends React.Component {
   constructor(props) {
