@@ -1,38 +1,49 @@
 import React from 'react';
+import moment from 'moment';
 
+import DateInput from './shared/DateInput';
 import d3 from './subcomponents/VizFlowsSankey/d3';
+import { DATE_FORMAT_MDY, DATE_FORMAT_ISO } from './shared/DateInput';
 import { fetchJSON } from './fetch';
 import { formatAmount } from './formatters';
 
-//class VizFlowsSankeyChart extends React.PureComponent {
-//}
-
-class VizFlowsSankey extends React.PureComponent {
-
-  static getInitialPromise() {
-    return fetch('api/account', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    }).then(fetchJSON);
-  }
+class VizFlowsSankeyChart extends React.PureComponent {
 
   constructor(props) {
     super(props);
     this.state = { err: null };
+
     this.flows = {
       nodes: [],
       links: [],
     };
+
+    this.accounts = {};
+    this.props.accounts.forEach(a => {
+      this.accounts[a.accountId] = a;
+    });
+
     this.redraw = this.redraw.bind(this);
   }
 
   componentDidMount() {
-    this.accounts = {};
-    this.props.data.forEach(a => {
-      this.accounts[a.accountId] = a;
-    });
+    this.reload(this.props.d1, this.props.d2);
+    window.addEventListener("resize", this.redraw);
+  }
 
-    fetch('api/posting/flows?d1=2017-02-01&d2=2017-02-28', {
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.redraw);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.reload(nextProps.d1, nextProps.d2);
+  }
+
+  reload(d1, d2) {
+    this.flows.nodes = [];
+    this.flows.links = [];
+    this.clear();
+    fetch('api/posting/flows?d1=' + d1 + '&d2=' + d2, {
       method: 'get',
       headers: { 'Authorization': sessionStorage.token }
     }).then(fetchJSON).then(flows => {
@@ -58,9 +69,7 @@ class VizFlowsSankey extends React.PureComponent {
         nodes: nodes,
         links: links
       };
-
       this.redraw();
-      window.addEventListener("resize", this.redraw);
 
     }).catch(err => {
       console.log("Error: %o", err)
@@ -69,7 +78,7 @@ class VizFlowsSankey extends React.PureComponent {
   }
 
   detectCycle(nodes, links, i, nodeVisited, nodeVisiting) {
-    if (typeof i === 'undefined') {
+    if (i === undefined) {
       nodeVisited = new Array(nodes.length).fill(false);
       nodeVisiting = new Array(nodes.length).fill(false);
       for (i = 0; i < nodes.length; i++) {
@@ -93,16 +102,20 @@ class VizFlowsSankey extends React.PureComponent {
     }
   }
 
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.redraw);
+  clear() {
+    const div = d3.select('#viz-flows-sankey-chart');
+    const node = div.node();
+    while (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
   }
 
   redraw() {
-    const div = d3.select('#viz-flows-sankey-chart');
+    if (this.flows.nodes.length == 0)
+      return;
 
-    while (div.node().firstChild) {
-      div.node().removeChild(div.node().firstChild);
-    }
+    this.clear();
+    const div = d3.select('#viz-flows-sankey-chart');
 
     const margin = { top: 1, right: 1, bottom: 6, left: 1 },
           width = div.node().getBoundingClientRect().width - margin.left - margin.right,
@@ -203,17 +216,90 @@ class VizFlowsSankey extends React.PureComponent {
       .attr("text-anchor", "start");
   }
 
-  /*
-  shouldComponentUpdate(nextProps, nextState) {
-    return false;
-  }
-  */
-
   render() {
     return (
-      <div id="viz-flows-sankey-chart">
+      <div className="col-md-9" id="viz-flows-sankey-chart">
         {this.state.err &&
          this.state.err.toString()}
+      </div>
+    );
+  }
+}
+
+class VizFlowsSankey extends React.PureComponent {
+
+  static getInitialPromise() {
+    return fetch('api/account', {
+      method: 'get',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchJSON);
+  }
+
+  constructor(props) {
+    super(props);
+
+    this.d1 = moment().startOf('month').format(DATE_FORMAT_MDY);
+    this.d2 = moment().endOf('month').format(DATE_FORMAT_MDY);
+    this.state = {
+      d1: this.d1,
+      d2: this.d2
+    };
+
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(field, date) {
+    this[field] = date;
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    this.setState({
+      d1: this.d1,
+      d2: this.d2
+    });
+  }
+
+  render() {
+    const d1iso = moment(this.state.d1, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO)
+    const d2iso = moment(this.state.d2, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO)
+    return (
+      <div className="row">
+        <div className="col-md-3">
+          <form onSubmit={this.handleSubmit}>
+            {/*
+            <div className="form-group">
+              <small><label htmlFor="viz-flows-sankey-input-d1">Quick dates:</label></small>
+              <select className="form-control">
+                <option>Current month</option>
+                <option>Previous month</option>
+                <option>Last 10 days</option>
+                <option>Last 30 days</option>
+              </select>
+            </div>
+            */}
+            <div className="form-group">
+              <small><label htmlFor="viz-flows-sankey-input-d1">Start date:</label></small>
+              <DateInput id="viz-flows-sankey-input-d1"
+                value={this.state.d1}
+                onChange={this.handleChange.bind(this, 'd1')}
+              />
+            </div>
+            <div className="form-group">
+              <small><label htmlFor="viz-flows-sankey-input-d2">End date:</label></small>
+              <DateInput id="viz-flows-sankey-input-d2"
+                value={this.state.d2}
+                onChange={this.handleChange.bind(this, 'd2')}
+              />
+            </div>
+            <button type="submit" className="btn btn-default">Refresh</button>
+          </form>
+        </div>
+        <VizFlowsSankeyChart
+          accounts={this.props.data}
+          d1={d1iso}
+          d2={d2iso}
+        />
       </div>
     );
   }

@@ -2,10 +2,17 @@ import React from 'react';
 import Pikaday from 'pikaday';
 import moment from 'moment';
 
+export const DATE_FORMAT_ISO = "YYYY-MM-DD";
+export const DATE_FORMAT_MDY = "M/D/YYYY"; // default
+
 class DateInput extends React.PureComponent {
+
+  static get DATE_FORMAT_ISO() { return DATE_FORMAT_ISO; }
+  static get DATE_FORMAT_MDY() { return DATE_FORMAT_MDY; }
+
   constructor(props) {
     super(props);
-    this.state = { date: "" };
+    this.state = { date: this.props.value || "" };
     this.handleChange = this.handleChange.bind(this);
   }
 
@@ -24,6 +31,13 @@ class DateInput extends React.PureComponent {
 
   componentWillUnmount() {
     this.pikaday.destroy();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.value !== undefined &&
+        nextProps.value != this.state.date) {
+      this.setState({ date: nextProps.value });
+    }
   }
 
   setDate(date) {
@@ -100,7 +114,7 @@ DateInput.propTypes = {
 };
 
 DateInput.defaultProps = {
-  format: "M/D/YYYY" // DATE_FORMAT_MDY
+  format: DATE_FORMAT_MDY
 };
 
 export default DateInput;
