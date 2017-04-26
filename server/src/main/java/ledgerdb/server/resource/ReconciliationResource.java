@@ -22,6 +22,7 @@ import ledgerdb.server.auth.User;
 import ledgerdb.server.db.PostingDetail;
 import ledgerdb.server.db.PostingHeader;
 import ledgerdb.server.db.Statement;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -201,6 +202,15 @@ public class ReconciliationResource {
 
                 postingResource.postPostings(ph, s);
                 tx.commit();
+                s.clear(); // clear cached account balances
+                
+                //XXX
+                {
+                    SQLQuery q = s.createSQLQuery("select count(*) from v_check_account_balance");
+                    if (((Number)q.uniqueResult()).intValue() != 0) {
+                        throw new IllegalStateException("Account balance check FAILED!");
+                    }
+                }
             }
             tx = null;
         } catch (Exception e) {
