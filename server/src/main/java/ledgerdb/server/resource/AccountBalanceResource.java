@@ -3,6 +3,7 @@ package ledgerdb.server.resource;
 import io.dropwizard.auth.Auth;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -15,6 +16,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import ledgerdb.server.AppException;
 import ledgerdb.server.ResponseFormatter;
 import ledgerdb.server.auth.User;
 import ledgerdb.server.db.AccountBalance;
@@ -67,6 +69,10 @@ public class AccountBalanceResource {
     public void doPostReconcile(
             @Auth User user,
             @NotNull @Valid AccountBalance ab) {
+        if (!ab.getPostingDate().isBefore(LocalDate.now())) {
+            throw new AppException("Future dated account balance may not be marked reconciled.");
+        }
+        
         Session s = sf.openSession();
         Transaction tx = null;
         try {
