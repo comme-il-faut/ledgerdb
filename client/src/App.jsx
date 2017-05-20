@@ -91,29 +91,34 @@ class App extends React.Component {
               <span className="icon-bar"></span>
             </button>
             <Link to="/" className="navbar-brand">
-              <i className="fa fa-bar-chart" aria-hidden="true"></i> LedgerDB
+              LedgerDB
             </Link>
           </div>
           <div id="navbar" className="navbar-collapse collapse">
             <ul className="nav navbar-nav navbar-left">
               <li>
-                <Link to="/post">
+                <Link to="/post" activeClassName="active">
                   <i className="fa fa-plus" aria-hidden="true"></i> Post
                 </Link>
               </li>
               <li>
-                <Link to="/postings">
+                <Link to="/postings" activeClassName="active">
                   <i className="fa fa-search" aria-hidden="true"></i> Postings
                 </Link>
               </li>
               <li>
-                <Link to="/recon">
+                <Link to="/recon" activeClassName="active">
                   <i className="fa fa-handshake-o" aria-hidden="true"></i> Reconciliation
                 </Link>
               </li>
               <li>
-                <Link to="/balance">
+                <Link to="/balance" activeClassName="active">
                   <i className="fa fa-balance-scale" aria-hidden="true"></i> Balances
+                </Link>
+              </li>
+              <li>
+                <Link to="/reports" activeClassName="active">
+                  <i className="fa fa-bar-chart" aria-hidden="true"></i> Reports
                 </Link>
               </li>
             </ul>
