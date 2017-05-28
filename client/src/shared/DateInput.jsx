@@ -79,6 +79,7 @@ class DateInput extends React.PureComponent {
           className="form-control"
           ref={(input) => { this.field = input; }}
           placeholder={this.props.format}
+          size={this.props.format.length}
           value={this.state.date}
           onChange={this.handleChange}
         />
