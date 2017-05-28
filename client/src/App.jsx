@@ -160,7 +160,7 @@ class App extends React.Component {
           transitionLeave={false}
         >
         {React.cloneElement(this.props.children, { key:
-          /\w+/.exec(this.props.location.pathname)[0]
+          /\w*/.exec(this.props.location.pathname)[0]
         })}
         </ReactCSSTransitionGroup>
       </div>
