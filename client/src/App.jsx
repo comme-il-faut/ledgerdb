@@ -159,7 +159,9 @@ class App extends React.Component {
           transitionEnterTimeout={500}
           transitionLeave={false}
         >
-        {React.cloneElement(this.props.children, { key: this.props.location.pathname })}
+        {React.cloneElement(this.props.children, { key:
+          /\w+/.exec(this.props.location.pathname)[0]
+        })}
         </ReactCSSTransitionGroup>
       </div>
     )
