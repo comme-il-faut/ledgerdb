@@ -37,32 +37,6 @@ class PromiseContainer extends React.PureComponent {
 
   render() {
     if (this.state.pending) {
-      /*
-      return (
-        <section>
-          <div style={{ color: "#c7c7c7" }}>
-            <i className="fa fa-spinner fa-pulse fa-3x fa-fw" aria-hidden="true"></i>
-            <span className="sr-only">Loading...</span>
-          </div>
-        </section>
-      );
-      */
-      /*
-      return (
-        <section>
-          <div className="progress">
-            <div className="progress-bar progress-bar-striped active"
-                 role="progressbar"
-                 aria-valuenow="100"
-                 aria-valuemin="0"
-                 aria-valuemax="100"
-                 style={{ width: "100%" }}>
-              <span className="sr-only">Loading...</span>
-            </div>
-          </div>
-        </section>
-      );
-      */
       return (
         <section>
           <ProgressBar/>
