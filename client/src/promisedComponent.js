@@ -7,15 +7,20 @@ function promisedComponent(component) {
     constructor(props) {
       super(props);
       //console.log("promisedComponent -> constructor");
-      this.state = { pending: true };
-      component.getInitialPromise()
-        .then(data => this.setState({ pending: false, data: data }))
-        .catch(err => this.setState({ pending: false, err: err }));
+      if (typeof component.getInitialPromise === 'function') {
+        this.state = { pending: true };
+        component.getInitialPromise()
+          .then(data => this.setState({ pending: false, data: data }))
+          .catch(err => this.setState({ pending: false, err: err }));
+      } else {
+        this.state = { pending: false };
+      }
       document.title = "LedgerDB";
     }
 
     render() {
-      //console.log("promisedComponent -> render");
+      //console.log("promisedComponent -> render " + component.name);
+
       if (this.state.pending) {
         return null;
       }
