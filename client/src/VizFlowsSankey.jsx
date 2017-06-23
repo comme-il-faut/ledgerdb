@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 
 import DateInput from './shared/DateInput';
-import d3 from './subcomponents/VizFlowsSankey/d3';
+//import d3 from './subcomponents/VizFlowsSankey/d3';
 import { DATE_FORMAT_MDY, DATE_FORMAT_ISO } from './shared/DateInput';
 import { fetchJSON } from './fetch';
 import { formatAmount } from './formatters';
@@ -43,7 +43,7 @@ class VizFlowsSankeyChart extends React.PureComponent {
     this.flows.nodes = [];
     this.flows.links = [];
     this.clear();
-    fetch('api/posting/flows?d1=' + d1 + '&d2=' + d2, {
+    fetch('api/posting/flows2?d1=' + d1 + '&d2=' + d2, {
       method: 'get',
       headers: { 'Authorization': sessionStorage.token }
     }).then(fetchJSON).then(flows => {
@@ -218,7 +218,7 @@ class VizFlowsSankeyChart extends React.PureComponent {
 
   render() {
     return (
-      <div className="col-md-9" id="viz-flows-sankey-chart">
+      <div id="viz-flows-sankey-chart">
         {this.state.err &&
          this.state.err.toString()}
       </div>
@@ -261,15 +261,13 @@ class VizFlowsSankey extends React.PureComponent {
   }
 
   render() {
-    const d1iso = moment(this.state.d1, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO)
-    const d2iso = moment(this.state.d2, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO)
     return (
-      <div className="row">
-        <div className="col-md-3">
-          <form onSubmit={this.handleSubmit}>
+      <div>
+        <div className="form-group input-group">
+          <form className="form-inline" onSubmit={this.handleSubmit}>
             {/*
             <div className="form-group">
-              <small><label htmlFor="viz-flows-sankey-input-d1">Quick dates:</label></small>
+              <small><label htmlFor="viz-flows-sankey-input-d1">Quick dates:</label></small><br/>
               <select className="form-control">
                 <option>Current month</option>
                 <option>Previous month</option>
@@ -277,28 +275,33 @@ class VizFlowsSankey extends React.PureComponent {
                 <option>Last 30 days</option>
               </select>
             </div>
+            &nbsp;
             */}
             <div className="form-group">
-              <small><label htmlFor="viz-flows-sankey-input-d1">Start date:</label></small>
+              <small><label htmlFor="viz-flows-sankey-input-d1">Start date:</label></small><br/>
               <DateInput id="viz-flows-sankey-input-d1"
                 value={this.state.d1}
                 onChange={this.handleChange.bind(this, 'd1')}
               />
             </div>
+            &nbsp;
             <div className="form-group">
-              <small><label htmlFor="viz-flows-sankey-input-d2">End date:</label></small>
+              <small><label htmlFor="viz-flows-sankey-input-d2">End date:</label></small><br/>
               <DateInput id="viz-flows-sankey-input-d2"
                 value={this.state.d2}
                 onChange={this.handleChange.bind(this, 'd2')}
               />
             </div>
-            <button type="submit" className="btn btn-default">Refresh</button>
+            &nbsp;
+            <div className="form-group le-bottom-align">
+              <button type="submit" className="btn btn-default">Refresh</button>
+            </div>
           </form>
         </div>
         <VizFlowsSankeyChart
           accounts={this.props.data}
-          d1={d1iso}
-          d2={d2iso}
+          d1={ moment(this.state.d1, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO) }
+          d2={ moment(this.state.d2, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO) }
         />
       </div>
     );
