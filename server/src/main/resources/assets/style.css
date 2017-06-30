@@ -4,6 +4,11 @@ body {
   overflow-y: scroll;
 }
 
+section {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
 .form-signin {
   max-width: 330px;
   padding: 15px;
@@ -40,14 +45,14 @@ nav.navbar a {
 nav.navbar a:hover {
   color: #4caf50 !important; /* Fruit Salad */
 }
-.nav > li > a:hover {
-  border-top-color: #f77825; /* orange */
+nav.navbar li > a.active {
+  color: #4caf50 !important; /* Fruit Salad */
+  border-bottom-color: #f77825; /* orange */
 }
 .nav .open > a,
 .nav .open > a:focus,
 .nav .open > a:hover {
-  border-top-color: #f77825; /* orange */
-  border-bottom-color: transparent;
+  border-color: transparent;
 }
 
 
@@ -114,6 +119,21 @@ form input[type=number] {
   cursor: default;
 }
 
+.le-bottom-align {
+  position: absolute;
+  bottom: 0;
+}
+
+/*
+.le-form-inline.form-inline {
+  margin-top: 20px;
+}
+.le-form-inline.form-inline > .form-group > label {
+  position: absolute;
+  top: -1px;
+}
+*/
+
 
 
 .viz-flow-sankey-node rect {
@@ -135,4 +155,37 @@ form input[type=number] {
 
 .viz-flow-sankey-link:hover {
   stroke-opacity: .36;
+}
+
+.sidebar {
+  position: fixed;
+  top: 51px;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  display: block;
+  padding: 20px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: #f8f8f8;  /* same as .navbar-default */
+  border-right: 1px solid #e7e7e7;  /* same as .navbar-default */
+}
+.nav-sidebar {
+  margin-right: -21px;
+  margin-bottom: 20px;
+  margin-left: -20px;
+}
+.nav-sidebar > li > a {
+  text-indent: -7px;
+  padding-right: 20px;
+  padding-left: 27px;
+  border-left: 2px solid transparent;
+  border-right: 2px solid transparent;
+}
+.nav-sidebar a.active,
+.nav-sidebar a.active:hover,
+.nav-sidebar a.active:focus {
+  border-left-color: #f77825; /* orange */
+  background-color: #e7e7e7; /* same as .navbar-nav > .open */
+  color: #4caf50 !important; /* Fruit Salad */
 }

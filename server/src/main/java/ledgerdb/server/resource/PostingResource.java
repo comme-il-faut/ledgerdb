@@ -11,6 +11,7 @@ import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,7 +20,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import ledgerdb.server.AppException;
 import ledgerdb.server.ResponseFormatter;
 import ledgerdb.server.auth.User;
 import ledgerdb.server.db.AccountBalance;
@@ -235,29 +235,50 @@ public class PostingResource {
     }
     
     @GET
-    @Path("flows")
-    public String doGetFlows(
-            @QueryParam("d1") String d1,
-            @QueryParam("d2") String d2) {
+    @Path("flows1")
+    public String doGetFlows1(
+            @QueryParam("d1") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d1,
+            @QueryParam("d2") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d2) {
         
-        if (d1 != null && !d1.matches("^\\d{4}-\\d{2}-\\d{2}$"))
-            throw new BadRequestException();
-        if (d2 != null && !d2.matches("^\\d{4}-\\d{2}-\\d{2}$"))
-            throw new BadRequestException();
+        //try { Thread.sleep(2000); } catch (InterruptedException e) {}
+        //try { Thread.sleep(160000); } catch (InterruptedException e) {}
         
-        StringBuilder where = new StringBuilder();
-        if (d1 != null) {
-            where.append("  and h.posting_date >= '")
-                    .append(d1)
-                    .append("'")
-                    .append(" \n");
+        String sql
+                = "select \n"
+                + "  to_char(h.posting_date, 'YYYY-MM') as posting_month, \n"
+                + "  d.account_id, \n"
+                + "  sum(d.amount) as amount \n"
+                + "from posting_header h \n"
+                + "natural join posting_detail d \n"
+                + "where exists \n"
+                + " (select null from account \n"
+                + "  where account_id = d.account_id \n"
+                //+ "  and account_type in ('I', 'X')) \n" //TODO specify with query param
+                + "  and account_type = 'X') \n"
+                + "and h.posting_date >= '" + d1 + "' \n"
+                + "and h.posting_date <= '" + d2 + "' \n"
+                + "group by \n"
+                + "  to_char(h.posting_date, 'YYYY-MM'), \n"
+                + "  d.account_id \n"
+                + "order by \n"
+                + "  to_char(h.posting_date, 'YYYY-MM'), \n"
+                + "  d.account_id \n";
+        
+        try (Session s = sf.openSession()) {
+            return s.doReturningWork(con -> {
+                try (Statement st = con.createStatement()) {
+                    ResultSet rs = st.executeQuery(sql);
+                    return ResponseFormatter.format(rs);
+                }
+            });
         }
-        if (d2 != null) {
-            where.append("  and h.posting_date <= '")
-                    .append(d2)
-                    .append("'")
-                    .append(" \n");
-        }
+    }
+    
+    @GET
+    @Path("flows2")
+    public String doGetFlows2(
+            @QueryParam("d1") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d1,
+            @QueryParam("d2") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d2) {
         
         String sql
                 = "with ph as ( \n"
@@ -268,13 +289,13 @@ public class PostingResource {
                 + "  from posting_header h \n"
                 + "  natural join posting_detail d \n"
                 + "  where d.amount < 0 \n"
-                + where.toString()
+                + "  and h.posting_date >= '" + d1 + "' \n"
+                + "  and h.posting_date <= '" + d2 + "' \n"
                 + "  group by \n"
                 + "    h.posting_header_id, \n"
                 + "    h.posting_date \n"
                 + ") \n"
                 + "select \n"
-                //+ "  to_char(ph.posting_date, 'YYYY-MM') as posting_month, \n"
                 + "  p1.account_id as account_1, \n"
                 + "  p2.account_id as account_2, \n"
                 + "  sum(round((p1.amount * (p2.amount / ph.amount)), 2)) as amount, \n"
@@ -287,16 +308,14 @@ public class PostingResource {
                 + "join posting_detail p2 \n"
                 + "  on p2.posting_header_id = ph.posting_header_id \n"
                 + "  and p2.amount > 0 \n"
-                + "where not exists \n"
-                + " (select null from account \n"
-                + "  where account_id in (p1.account_id, p2.account_id) \n"
-                + "  and (account_type = 'E' or account_id = 1110)) \n"
+                //+ "where not exists \n"
+                //+ " (select null from account \n"
+                //+ "  where account_id in (p1.account_id, p2.account_id) \n"
+                //+ "  and (account_type = 'E' or account_id = 1110)) \n"
                 + "group by \n"
-                //+ "  to_char(ph.posting_date, 'YYYY-MM'), \n"
                 + "  p1.account_id, \n"
                 + "  p2.account_id \n"
                 + "order by \n"
-                //+ "  to_char(ph.posting_date, 'YYYY-MM'), \n"
                 + "  p1.account_id, \n"
                 + "  p2.account_id \n";
         

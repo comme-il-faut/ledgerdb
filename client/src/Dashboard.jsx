@@ -1,7 +1,6 @@
 import React from 'react';
 
-import VizFlowsSankey from './VizFlowsSankey';
-import promisedComponent from './promisedComponent';
+import ProgressBar from './shared/ProgressBar';
 
 class Dashboard extends React.PureComponent {
 
@@ -10,9 +9,16 @@ class Dashboard extends React.PureComponent {
   }
 
   render() {
+    /*
     return (
       <div>
-        {React.createElement(promisedComponent(VizFlowsSankey))}
+        TODO
+      </div>
+    );
+    */
+    return (
+      <div>
+        <ProgressBar/>
       </div>
     );
   }
