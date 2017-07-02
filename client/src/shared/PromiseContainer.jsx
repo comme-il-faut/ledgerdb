@@ -14,7 +14,7 @@ class PromiseContainer extends React.PureComponent {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (!Object.keys(nextProps).every(key => nextProps[key] === this.props.key)) {
+    if (!Object.keys(nextProps).every(key => nextProps[key] === this.props[key])) {
       this.setState({ pending: true });
       this.load(nextProps);
     }
