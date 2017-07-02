@@ -42,7 +42,8 @@ class VizHistogram_Chart extends React.PureComponent {
       const div = d3.select(this.root);
 
       const parseDate = d3.timeParse("%Y-%m"),
-            formatDate = d3.timeFormat("%b-%Y");
+            formatDate = d3.timeFormat("%b-%Y"),
+            formatAmount = d3.format(",.2f");
 
       const margin = { top: 20, right: 20, bottom: 30, left: 40 },
             width = div.node().getBoundingClientRect().width - margin.left - margin.right,
@@ -72,20 +73,9 @@ class VizHistogram_Chart extends React.PureComponent {
       )].sort();
       //TODO: sort by stddev
 
-      /*
-      const dataByPostingMonth = new Map();
-      xKeys.forEach(postingMonth => {
-        const e2 = { postingMonth: postingMonth };
-        yKeys.forEach(accountId => e2[accountId] = 0);
-        dataByPostingMonth.set(postingMonth, e2);
-      });
-      this.props.histogram.forEach(e1 => {
-        const e2 = dataByPostingMonth.get(e1.postingMonth)
-        e2[e1.accountId] = e1.amount;
-      });
-      const data = Array.from(dataByPostingMonth.values());
-      debugger;
-      */
+      const accounts = Object.assign({}, ...this.props.accounts.map(e => ({
+        [e.accountId]: e
+      })));
 
       const data = xKeys.map(postingMonth => {
         const d = Object.assign(
@@ -126,6 +116,7 @@ class VizHistogram_Chart extends React.PureComponent {
           g.selectAll("line")
             .style("stroke", "lightgrey")
             .style("stroke-opacity", 0.7)
+            .style("stroke-dasharray", "3,2")
             .style("shape-rendering", "crispEdges"))
         .call(g =>
           g.select(".domain")
@@ -142,7 +133,12 @@ class VizHistogram_Chart extends React.PureComponent {
           .attr("x", d => x(d.data.postingMonth))
           .attr("y", d => y(d[1]))
           .attr("height", d => y(d[0]) - y(d[1]))
-          .attr("width", x.bandwidth());
+          .attr("width", x.bandwidth())
+          .append("title").text(function(d, i) {
+            const accountId = this.parentNode.parentNode.__data__.key; // series.key
+            return accountId + ": " + accounts[accountId].name + "\n" +
+              "$" + formatAmount(d.data[accountId]);
+          });
 
     } catch (err) {
       alert(err.toString());
@@ -156,11 +152,9 @@ class VizHistogram_Chart extends React.PureComponent {
         <div ref={root => this.root = root}
           style={{ width: "100%", height: "400px" }}>
         </div>
-        {/*
         <p>
           {JSON.stringify(this.props)}
         </p>
-        */}
       </section>
     );
   }
@@ -255,8 +249,8 @@ class VizHistogram extends React.PureComponent {
   }
 
   handleSubmit(d1, d2) {
-    //this.setState({ d1: d1, d2: d2 });
-    alert("d1=" + d1.format(DATE_FORMAT_ISO) + ", d2=" + d2.format(DATE_FORMAT_ISO));
+    this.setState({ d1: d1, d2: d2 });
+    //alert("d1=" + d1.format(DATE_FORMAT_ISO) + ", d2=" + d2.format(DATE_FORMAT_ISO));
   }
 
   render() {

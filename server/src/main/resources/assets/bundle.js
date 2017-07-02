@@ -47929,7 +47929,8 @@
 	          var div = d3.select(_this2.root);
 
 	          var parseDate = d3.timeParse("%Y-%m"),
-	              formatDate = d3.timeFormat("%b-%Y");
+	              formatDate = d3.timeFormat("%b-%Y"),
+	              formatAmount = d3.format(",.2f");
 
 	          var margin = { top: 20, right: 20, bottom: 30, left: 40 },
 	              width = div.node().getBoundingClientRect().width - margin.left - margin.right,
@@ -47953,20 +47954,9 @@
 	          })))).sort();
 	          //TODO: sort by stddev
 
-	          /*
-	          const dataByPostingMonth = new Map();
-	          xKeys.forEach(postingMonth => {
-	            const e2 = { postingMonth: postingMonth };
-	            yKeys.forEach(accountId => e2[accountId] = 0);
-	            dataByPostingMonth.set(postingMonth, e2);
-	          });
-	          this.props.histogram.forEach(e1 => {
-	            const e2 = dataByPostingMonth.get(e1.postingMonth)
-	            e2[e1.accountId] = e1.amount;
-	          });
-	          const data = Array.from(dataByPostingMonth.values());
-	          debugger;
-	          */
+	          var accounts = Object.assign.apply(Object, [{}].concat(_toConsumableArray(_this2.props.accounts.map(function (e) {
+	            return _defineProperty({}, e.accountId, e);
+	          }))));
 
 	          var data = xKeys.map(function (postingMonth) {
 	            var d = Object.assign.apply(Object, [{ postingMonth: postingMonth }].concat(_toConsumableArray(yKeys.map(function (accountId) {
@@ -47996,7 +47986,7 @@
 	          g.append("g").attr("class", "axis").call(d3.axisLeft(y));
 
 	          g.append("g").attr("class", "gridline").call(d3.axisLeft(y).tickSize(-width).tickFormat("")).call(function (g) {
-	            return g.selectAll("line").style("stroke", "lightgrey").style("stroke-opacity", 0.7).style("shape-rendering", "crispEdges");
+	            return g.selectAll("line").style("stroke", "lightgrey").style("stroke-opacity", 0.7).style("stroke-dasharray", "3,2").style("shape-rendering", "crispEdges");
 	          }).call(function (g) {
 	            return g.select(".domain").style("display", "none");
 	          });
@@ -48011,7 +48001,10 @@
 	            return y(d[1]);
 	          }).attr("height", function (d) {
 	            return y(d[0]) - y(d[1]);
-	          }).attr("width", x.bandwidth());
+	          }).attr("width", x.bandwidth()).append("title").text(function (d, i) {
+	            var accountId = this.parentNode.parentNode.__data__.key; // series.key
+	            return accountId + ": " + accounts[accountId].name + "\n" + "$" + formatAmount(d.data[accountId]);
+	          });
 	        })();
 	      } catch (err) {
 	        alert(err.toString());
@@ -48029,7 +48022,12 @@
 	        _react2.default.createElement('div', { ref: function ref(root) {
 	            return _this3.root = root;
 	          },
-	          style: { width: "100%", height: "400px" } })
+	          style: { width: "100%", height: "400px" } }),
+	        _react2.default.createElement(
+	          'p',
+	          null,
+	          JSON.stringify(this.props)
+	        )
 	      );
 	    }
 	  }]);
@@ -48174,8 +48172,8 @@
 	  _createClass(VizHistogram, [{
 	    key: 'handleSubmit',
 	    value: function handleSubmit(d1, d2) {
-	      //this.setState({ d1: d1, d2: d2 });
-	      alert("d1=" + d1.format(_DateInput.DATE_FORMAT_ISO) + ", d2=" + d2.format(_DateInput.DATE_FORMAT_ISO));
+	      this.setState({ d1: d1, d2: d2 });
+	      //alert("d1=" + d1.format(DATE_FORMAT_ISO) + ", d2=" + d2.format(DATE_FORMAT_ISO));
 	    }
 	  }, {
 	    key: 'render',
@@ -48274,7 +48272,7 @@
 	      var _this2 = this;
 
 	      if (!Object.keys(nextProps).every(function (key) {
-	        return nextProps[key] === _this2.props.key;
+	        return nextProps[key] === _this2.props[key];
 	      })) {
 	        this.setState({ pending: true });
 	        this.load(nextProps);
