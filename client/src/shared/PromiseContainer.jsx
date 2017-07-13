@@ -26,8 +26,6 @@ class PromiseContainer extends React.PureComponent {
       .then(values => {
         const resolvedProps = {};
         propKeys.forEach((key, i) => resolvedProps[key] = values[i]);
-        this.props.onResolve &&
-          this.props.onResolve(resolvedProps);
         this.setState({ pending: false, props: resolvedProps });
       })
       .catch(err => {
@@ -56,15 +54,12 @@ class PromiseContainer extends React.PureComponent {
     }
 
     const onlyChild = React.Children.only(this.props.children);
-    return this.props.onResolve
-      ? onlyChild
-      : React.cloneElement(onlyChild, this.state.props);
+    return React.cloneElement(onlyChild, this.state.props);
   }
 }
 
 PromiseContainer.propTypes = {
-  children: React.PropTypes.element.isRequired,
-  onResolve: React.PropTypes.func
+  children: React.PropTypes.element.isRequired
 }
 
 export default PromiseContainer;
