@@ -6,9 +6,14 @@ import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY, DATE_FORMAT_ISO } from './shared/DateInput';
 import { fetchJSON } from './fetch';
 
-//TODO - resize svn height, when transition multiples/stacked
-//TODO - stacked: add total labels on top of each bar
-//TODO - multiples: hide axis/gridlines/totals, add labels atop each rect
+//TODO stacked: add total labels on top of each bar
+//TODO multiples: hide axis/gridlines/totals, add labels atop each rect
+//TODO sort yKeys by stddev
+//TODO handle negative flows
+//TODO separate resize listener, redraw only if actual size changed
+//TODO do not hardcode years in <select><option>..., get the dynamically from server
+//TODO add link to each bar, show to postings details for the month+account
+//TODO overlay line chart of total income
 
 class VizHistogram_Chart extends React.PureComponent {
 
@@ -19,20 +24,28 @@ class VizHistogram_Chart extends React.PureComponent {
 
   componentDidMount() {
     this.redraw();
-    window.addEventListener("resize", this.redraw);
+    //window.addEventListener("resize", this.redraw);
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize", this.redraw);
-    //TODO separate resize listener, redraw only if actual size changed
+    //window.removeEventListener("resize", this.redraw);
   }
 
   componentWillReceiveProps(nextProps) {
     const changed = Object.keys(nextProps).filter(key => this.props[key] !== nextProps[key]);
     if (changed.length == 1 && changed.join() == "mode") {
-      this.transition(nextProps.mode);
+      this.trap(this.transition, nextProps.mode);
     } else {
-      this.redraw();
+      this.trap(this.redraw);
+    }
+  }
+
+  trap(func, ...args) {
+    try {
+      func(...args);
+    } catch (err) {
+      alert(err.toString());
+      console.log(err);
     }
   }
 
@@ -44,156 +57,161 @@ class VizHistogram_Chart extends React.PureComponent {
     }
   }
 
-  transition(mode) {
-    try {
-      const svg = d3.select(this.root).select("svg");
-      svg.transition().duration(750)
-        .selectAll("rect")
-        .attr("y", this.t[mode]);
-    } catch (err) {
-      alert(err.toString());
-      console.log(err);
-    }
-  }
-
   redraw() {
-    try {
-      this.clear();
-      const div = d3.select(this.root);
+    this.clear();
+    const div = d3.select(this.root);
 
-      console.log("VizHistogram_Chart: redraw: mode=" + this.props.mode);
+    console.log("VizHistogram_Chart: redraw: mode=" + this.props.mode);
 
-      const parseDate = d3.timeParse("%Y-%m"),
-            formatDate = d3.timeFormat("%b-%Y"),
-            formatAmount = d3.format(",.2f");
+    const xKeys = [...new Set(
+      this.props.histogram.map(o => o.postingMonth)
+    )].sort();
 
-      const margin = { top: 20, right: 20, bottom: 30, left: 40 },
-            width = div.node().getBoundingClientRect().width - margin.left - margin.right,
-            height = div.node().getBoundingClientRect().height - margin.top - margin.bottom;
+    const yKeys = [...new Set(
+      this.props.histogram.map(o => o.accountId)
+    )].sort();
 
-      const svg = div.append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
-      const g = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    const accounts = Object.assign({}, ...this.props.accounts.map(o => ({
+      [o.accountId]: o
+    })));
 
-      const x = d3.scaleBand()
-        .rangeRound([0, width])
-        .paddingInner(0.2)
-        .paddingOuter(0.1);
+    const data = xKeys.map(postingMonth => {
+      const d = Object.assign(
+        { postingMonth: postingMonth },
+        ...yKeys.map(accountId => ({ [accountId]: 0 })),
+        ...this.props.histogram
+          .filter(o => o.postingMonth == postingMonth)
+          .map(o => ({ [o.accountId]: o.amount }))
+      );
+      d.total = yKeys
+        .map(accountId => d[accountId])
+        .reduce((a, b) => a + b);
+      return d;
+    });
 
-      const y1 = d3.scaleLinear()
-        .rangeRound([height, 0]);
+    const yBands = yKeys.map((accountId, j) => d3.max(data, d => d[accountId]));
+    yBands.reduce((a, b, i) => yBands[i] = a + b);
 
-      const color = d3.scaleOrdinal(d3.schemeCategory20);
+    const yMax1 = d3.max(data, d => d.total);
+    const yMax2 = yBands[yBands.length - 1];
 
-      const xKeys = [...new Set(
-        this.props.histogram.map(entry => entry.postingMonth)
-      )].sort();
 
-      const yKeys = [...new Set(
-        this.props.histogram.map(entry => entry.accountId)
-      )].sort();
-      //TODO: sort by stddev
+    const parseDate = d3.timeParse("%Y-%m"),
+          formatDate = d3.timeFormat("%b-%Y"),
+          formatAmount = d3.format(",.2f");
 
-      const accounts = Object.assign({}, ...this.props.accounts.map(e => ({
-        [e.accountId]: e
-      })));
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 },
+          width = div.node().getBoundingClientRect().width - margin.left - margin.right,
+          h1 = 400 - margin.top - margin.bottom, // stacked
+          h2 = Math.ceil(h1 * yMax2 / yMax1) ; // multiples
 
-      const data = xKeys.map(postingMonth => {
-        const d = Object.assign(
-          { postingMonth: postingMonth },
-          ...yKeys.map(accountId => ({ [accountId]: 0 })),
-          ...this.props.histogram
-            .filter(e => e.postingMonth == postingMonth)
-            .map(e => ({ [e.accountId]: e.amount }))
-        );
-        d.total = yKeys
-          .map(accountId => d[accountId])
-          .reduce((a, b) => a + b);
-        return d;
-      });
+    const svg = div.append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", h1 + margin.top + margin.bottom);
+    const g = svg.append("g").append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      const yOffsets = yKeys.map((accountId, j) => d3.max(data, d => d[accountId]));
-      yOffsets.reduce((a, b, i) => yOffsets[i] = a + b);
+    const x = d3.scaleBand()
+      .rangeRound([0, width])
+      .paddingInner(0.2)
+      .paddingOuter(0.1);
+
+    const y = d3.scaleLinear()
+      .rangeRound([h1, 0]);
+
+    const color = d3.scaleOrdinal(d3.schemeCategory20);
+
+    x.domain(xKeys);
+    y.domain([0, yMax1]).nice();
+
+    g.append("g")
+      .attr("class", "axis axis-x")
+      .attr("transform", "translate(0," + h1 + ")")
+      .call(d3.axisBottom(x))
+      .select(".domain")
+        .style("display", "none");
+
+    g.append("g")
+      .attr("class", "axis axis-y")
+      .call(d3.axisLeft(y));
+
+    g.append("g")
+      .attr("class", "gridline")
+      .call(d3.axisLeft(y)
+        .tickSize(-width)
+        .tickFormat(""))
+      .call(g =>
+        g.selectAll("line")
+          .style("stroke", "lightgrey")
+          .style("stroke-opacity", 0.7)
+          .style("stroke-dasharray", "3,2")
+          .style("shape-rendering", "crispEdges"))
+      .call(g =>
+        g.select(".domain")
+          .style("display", "none"));
+
+    const group = g.append("g")
+      .selectAll("g")
+      .data(d3.stack().keys(yKeys)(data))
+      .enter().append("g")
+        .attr("fill", d => color(d.key));
+
+    const y1 = function(d, i) { return y(d[1]); };
+    const y2 = function(d, i) {
+      const j = this.parentNode.__data__.index;
+      let h = yBands[j];
+      if (j > 0) { h -= yBands[j - 1]; }
       //debugger;
+      //return y(yBands[j] + d[1]);
+      return y(yBands[j] - d[0] + d[1] - h) - (j * 3);
+    };
 
-      x.domain(xKeys);
-      y1.domain([0, d3.max(data, d => d.total)]).nice();
-      //y1.domain([0, yOffsets[yOffsets.length - 1]]).nice();
+    group.selectAll("rect")
+      .data(d => d)
+      .enter().append("rect")
+        .attr("x", d => x(d.data.postingMonth))
+        .attr("y", y1)
+        .attr("height", d => y(d[0]) - y(d[1]))
+        .attr("width", x.bandwidth())
+        .append("title").text(function(d, i) {
+          const accountId = this.parentNode.parentNode.__data__.key; // series.key
+          return accountId + ": " + accounts[accountId].name + "\n" +
+            "$" + formatAmount(d.data[accountId]);
+        });
 
-      //TODO handle negative flows
+    this.transition = function(mode) {
+      const t1 = svg.transition().duration(750);
+      const t2 = t1.transition();
 
-      g.append("g")
-        .attr("class", "axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x))
-        .select(".domain")
-          .style("display", "none");
+      if (mode == "stacked") {
+        svg.transition(t1)
+          .attr("height", h1 + margin.top + margin.bottom);
+        svg.select("g").transition(t1)
+          .attr("transform", "translate(0,0)")
+          .selectAll("rect")
+          .attr("y", y1);
+        svg.select(".gridline").transition(t1).attr("opacity", 1);
+        svg.select(".axis-y").transition(t1).attr("opacity", 1);
+      }
 
-      g.append("g")
-        .attr("class", "axis")
-        .call(d3.axisLeft(y1));
-
-      g.append("g")
-        .attr("class", "gridline")
-        .call(d3.axisLeft(y1)
-          .tickSize(-width)
-          .tickFormat(""))
-        .call(g =>
-          g.selectAll("line")
-            .style("stroke", "lightgrey")
-            .style("stroke-opacity", 0.7)
-            .style("stroke-dasharray", "3,2")
-            .style("shape-rendering", "crispEdges"))
-        .call(g =>
-          g.select(".domain")
-            .style("display", "none"));
-
-      const group = g.append("g")
-        .selectAll("g")
-        .data(d3.stack().keys(yKeys)(data))
-        .enter().append("g")
-          .attr("fill", d => color(d.key));
-
-      this.t = {
-        stacked: function(d, i) { return y1(d[1]); },
-        multiples: function(d, i) {
-          const j = this.parentNode.__data__.index;
-          let h = yOffsets[j];
-          if (j > 0) { h -= yOffsets[j - 1]; }
-          //debugger;
-          //return y1(yOffsets[j] + d[1]);
-          return y1(yOffsets[j] - d[0] + d[1] - h) - (j * 3);
-        }
-      };
-
-      group.selectAll("rect")
-        .data(d => d)
-        .enter().append("rect")
-          .attr("x", d => x(d.data.postingMonth))
-          //.attr("y", d => y1(d[1]))
-          //.attr("y", this.t.multiples)
-          .attr("y", this.t[this.props.mode])
-          .attr("height", d => y1(d[0]) - y1(d[1]))
-          .attr("width", x.bandwidth())
-          .append("title").text(function(d, i) {
-            const accountId = this.parentNode.parentNode.__data__.key; // series.key
-            return accountId + ": " + accounts[accountId].name + "\n" +
-              "$" + formatAmount(d.data[accountId]);
-          });
-
-    } catch (err) {
-      alert(err.toString());
-      console.log(err);
-    }
+      if (mode == "multiples") {
+        svg.transition(t1)
+          .attr("height", h2 + margin.top + margin.bottom);
+        svg.select("g").transition(t1)
+          .attr("transform", "translate(0," + (h2 - h1) + ")")
+          .selectAll("rect")
+          .attr("y", y2);
+        svg.select(".gridline").transition(t1).attr("opacity", 0);
+        svg.select(".axis-y").transition(t1).attr("opacity", 0);
+      }
+    };
   }
 
   render() {
     return (
       <section>
         <div ref={root => this.root = root}
-          style={{ width: "100%", height: "400px" }}>
+          style={{ width: "100%" }}>
         </div>
         <p>
           {JSON.stringify(this.props)}
@@ -250,7 +268,6 @@ class VizHistogram_Form extends React.PureComponent {
   }
 
   render() {
-    //TODO - do not hardcode years, get the dynamically from server
     return (
       <div className="row">
         <div className="col-md-7 col-sm-12">
