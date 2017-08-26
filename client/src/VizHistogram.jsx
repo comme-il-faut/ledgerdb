@@ -6,14 +6,13 @@ import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY, DATE_FORMAT_ISO } from './shared/DateInput';
 import { fetchJSON } from './fetch';
 
-//TODO stacked: add total labels on top of each bar
-//TODO multiples: hide axis/gridlines/totals, add labels atop each rect
 //TODO sort yKeys by stddev
 //TODO handle negative flows
 //TODO separate resize listener, redraw only if actual size changed
 //TODO do not hardcode years in <select><option>..., get the dynamically from server
 //TODO add link to each bar, show to postings details for the month+account
 //TODO overlay line chart of total income
+//TODO preserve multiples state after refresh, or toggle stacked button selected
 
 class VizHistogram_Chart extends React.PureComponent {
 
@@ -91,10 +90,12 @@ class VizHistogram_Chart extends React.PureComponent {
 
     const yBands = yKeys.map((accountId, j) => d3.max(data, d => d[accountId]));
     yBands.reduce((a, b, i) => yBands[i] = a + b);
+    yBands.unshift(0);
 
     const yMax1 = d3.max(data, d => d.total);
     const yMax2 = yBands[yBands.length - 1];
 
+    // 1 = stacked, 2 = multiples
 
     const parseDate = d3.timeParse("%Y-%m"),
           formatDate = d3.timeFormat("%b-%Y"),
@@ -102,12 +103,15 @@ class VizHistogram_Chart extends React.PureComponent {
 
     const margin = { top: 20, right: 20, bottom: 30, left: 40 },
           width = div.node().getBoundingClientRect().width - margin.left - margin.right,
-          h1 = 400 - margin.top - margin.bottom, // stacked
-          h2 = Math.ceil(h1 * yMax2 / yMax1) ; // multiples
+          padding = 20,
+          h1 = 400 - margin.top - margin.bottom,
+          h2 = Math.ceil(h1 * yMax2 / yMax1) + padding * yKeys.length;
 
     const svg = div.append("svg")
       .attr("width", width + margin.left + margin.right)
-      .attr("height", h1 + margin.top + margin.bottom);
+      .attr("height", h1 + margin.top + margin.bottom)
+      .attr("font-size", 10)
+      .attr("font-family", "sans-serif");
     const g = svg.append("g").append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -123,6 +127,12 @@ class VizHistogram_Chart extends React.PureComponent {
 
     x.domain(xKeys);
     y.domain([0, yMax1]).nice();
+
+    const y1 = function(d, i) { return y(d[1]); };
+    const y2 = function(d, i) {
+      const j = this.parentNode.__data__.index;
+      return y(d[1] - d[0] + yBands[j]) - (j * padding);
+    };
 
     g.append("g")
       .attr("class", "axis axis-x")
@@ -153,20 +163,11 @@ class VizHistogram_Chart extends React.PureComponent {
     const group = g.append("g")
       .selectAll("g")
       .data(d3.stack().keys(yKeys)(data))
-      .enter().append("g")
-        .attr("fill", d => color(d.key));
+      .enter().append("g");
 
-    const y1 = function(d, i) { return y(d[1]); };
-    const y2 = function(d, i) {
-      const j = this.parentNode.__data__.index;
-      let h = yBands[j];
-      if (j > 0) { h -= yBands[j - 1]; }
-      //debugger;
-      //return y(yBands[j] + d[1]);
-      return y(yBands[j] - d[0] + d[1] - h) - (j * 3);
-    };
-
-    group.selectAll("rect")
+    group.append("g")
+      .attr("fill", d => color(d.key))
+      .selectAll("rect")
       .data(d => d)
       .enter().append("rect")
         .attr("x", d => x(d.data.postingMonth))
@@ -179,30 +180,51 @@ class VizHistogram_Chart extends React.PureComponent {
             "$" + formatAmount(d.data[accountId]);
         });
 
+    g.append("g")
+      .attr("class", "labels labels-stacked")
+      .attr("text-anchor", "middle")
+      .selectAll("text")
+      .data(data)
+      .enter().append("text")
+        .text(d => "$" + formatAmount(d.total))
+        .attr("x", d => x(d.postingMonth) + x.bandwidth() / 2)
+        .attr("y", d => y(d.total))
+        .attr("dy", "-.3em");
+
+    group.append("g")
+      .attr("class", "labels labels-multiples")
+      .attr("opacity", 0)
+      .attr("text-anchor", "middle")
+      .selectAll("text")
+      .data(d => d)
+      .enter().append("text")
+        .text(d => "$" + formatAmount(d[1] - d[0]))
+        .attr("x", d => x(d.data.postingMonth) + x.bandwidth() / 2)
+        .attr("y", y2)
+        .attr("dy", "-.3em");
+
     this.transition = function(mode) {
       const t1 = svg.transition().duration(750);
       const t2 = t1.transition();
 
       if (mode == "stacked") {
-        svg.transition(t1)
-          .attr("height", h1 + margin.top + margin.bottom);
-        svg.select("g").transition(t1)
-          .attr("transform", "translate(0,0)")
-          .selectAll("rect")
-          .attr("y", y1);
-        svg.select(".gridline").transition(t1).attr("opacity", 1);
-        svg.select(".axis-y").transition(t1).attr("opacity", 1);
+        svg.transition(t1).attr("height", h1 + margin.top + margin.bottom);
+        t1.select("g").attr("transform", "translate(0,0)")
+          .selectAll("rect").attr("y", y1);
+        t1.select(".gridline").attr("opacity", 1);
+        t1.select(".axis-y").attr("opacity", 1);
+        t1.selectAll(".labels-multiples").attr("opacity", 0);
+        t2.select(".labels-stacked").attr("opacity", 1);
       }
 
       if (mode == "multiples") {
-        svg.transition(t1)
-          .attr("height", h2 + margin.top + margin.bottom);
-        svg.select("g").transition(t1)
-          .attr("transform", "translate(0," + (h2 - h1) + ")")
-          .selectAll("rect")
-          .attr("y", y2);
-        svg.select(".gridline").transition(t1).attr("opacity", 0);
-        svg.select(".axis-y").transition(t1).attr("opacity", 0);
+        svg.transition(t1).attr("height", h2 + margin.top + margin.bottom);
+        t1.select("g").attr("transform", "translate(0," + (h2 - h1) + ")")
+          .selectAll("rect").attr("y", y2);
+        t1.select(".gridline").attr("opacity", 0);
+        t1.select(".axis-y").attr("opacity", 0);
+        t1.select(".labels-stacked").attr("opacity", 0);
+        t2.selectAll(".labels-multiples").attr("opacity", 1);
       }
     };
   }

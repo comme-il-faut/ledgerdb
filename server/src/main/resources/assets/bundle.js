@@ -47879,6 +47879,14 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	//TODO sort yKeys by stddev
+	//TODO handle negative flows
+	//TODO separate resize listener, redraw only if actual size changed
+	//TODO do not hardcode years in <select><option>..., get the dynamically from server
+	//TODO add link to each bar, show to postings details for the month+account
+	//TODO overlay line chart of total income
+	//TODO preserve multiples state after refresh, or toggle stacked button selected
+
 	var VizHistogram_Chart = function (_React$PureComponent) {
 	  _inherits(VizHistogram_Chart, _React$PureComponent);
 
@@ -47895,19 +47903,40 @@
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
 	      this.redraw();
-	      window.addEventListener("resize", this.redraw);
+	      //window.addEventListener("resize", this.redraw);
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
 	    value: function componentWillUnmount() {
-	      window.removeEventListener("resize", this.redraw);
-	      //TODO separate resize listener, redraw only if actual size changed
+	      //window.removeEventListener("resize", this.redraw);
 	    }
 	  }, {
 	    key: 'componentWillReceiveProps',
 	    value: function componentWillReceiveProps(nextProps) {
-	      //TODO ???
-	      this.redraw();
+	      var _this2 = this;
+
+	      var changed = Object.keys(nextProps).filter(function (key) {
+	        return _this2.props[key] !== nextProps[key];
+	      });
+	      if (changed.length == 1 && changed.join() == "mode") {
+	        this.trap(this.transition, nextProps.mode);
+	      } else {
+	        this.trap(this.redraw);
+	      }
+	    }
+	  }, {
+	    key: 'trap',
+	    value: function trap(func) {
+	      try {
+	        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	          args[_key - 1] = arguments[_key];
+	        }
+
+	        func.apply(undefined, args);
+	      } catch (err) {
+	        alert(err.toString());
+	        console.log(err);
+	      }
 	    }
 	  }, {
 	    key: 'clear',
@@ -47921,108 +47950,164 @@
 	  }, {
 	    key: 'redraw',
 	    value: function redraw() {
-	      var _this2 = this;
+	      var _this3 = this;
 
-	      try {
-	        (function () {
-	          _this2.clear();
-	          var div = d3.select(_this2.root);
+	      this.clear();
+	      var div = d3.select(this.root);
 
-	          var parseDate = d3.timeParse("%Y-%m"),
-	              formatDate = d3.timeFormat("%b-%Y"),
-	              formatAmount = d3.format(",.2f");
+	      console.log("VizHistogram_Chart: redraw: mode=" + this.props.mode);
 
-	          var margin = { top: 20, right: 20, bottom: 30, left: 40 },
-	              width = div.node().getBoundingClientRect().width - margin.left - margin.right,
-	              height = div.node().getBoundingClientRect().height - margin.top - margin.bottom;
+	      var xKeys = [].concat(_toConsumableArray(new Set(this.props.histogram.map(function (o) {
+	        return o.postingMonth;
+	      })))).sort();
 
-	          var svg = div.append("svg").attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
-	          var g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	      var yKeys = [].concat(_toConsumableArray(new Set(this.props.histogram.map(function (o) {
+	        return o.accountId;
+	      })))).sort();
 
-	          var x = d3.scaleBand().rangeRound([0, width]).paddingInner(0.2);
+	      var accounts = Object.assign.apply(Object, [{}].concat(_toConsumableArray(this.props.accounts.map(function (o) {
+	        return _defineProperty({}, o.accountId, o);
+	      }))));
 
-	          var y = d3.scaleLinear().rangeRound([height, 0]);
+	      var data = xKeys.map(function (postingMonth) {
+	        var d = Object.assign.apply(Object, [{ postingMonth: postingMonth }].concat(_toConsumableArray(yKeys.map(function (accountId) {
+	          return _defineProperty({}, accountId, 0);
+	        })), _toConsumableArray(_this3.props.histogram.filter(function (o) {
+	          return o.postingMonth == postingMonth;
+	        }).map(function (o) {
+	          return _defineProperty({}, o.accountId, o.amount);
+	        }))));
+	        d.total = yKeys.map(function (accountId) {
+	          return d[accountId];
+	        }).reduce(function (a, b) {
+	          return a + b;
+	        });
+	        return d;
+	      });
 
-	          var color = d3.scaleOrdinal(d3.schemeCategory20);
+	      var yBands = yKeys.map(function (accountId, j) {
+	        return d3.max(data, function (d) {
+	          return d[accountId];
+	        });
+	      });
+	      yBands.reduce(function (a, b, i) {
+	        return yBands[i] = a + b;
+	      });
+	      yBands.unshift(0);
 
-	          var xKeys = [].concat(_toConsumableArray(new Set(_this2.props.histogram.map(function (entry) {
-	            return entry.postingMonth;
-	          })))).sort();
+	      var yMax1 = d3.max(data, function (d) {
+	        return d.total;
+	      });
+	      var yMax2 = yBands[yBands.length - 1];
 
-	          var yKeys = [].concat(_toConsumableArray(new Set(_this2.props.histogram.map(function (entry) {
-	            return entry.accountId;
-	          })))).sort();
-	          //TODO: sort by stddev
+	      // 1 = stacked, 2 = multiples
 
-	          var accounts = Object.assign.apply(Object, [{}].concat(_toConsumableArray(_this2.props.accounts.map(function (e) {
-	            return _defineProperty({}, e.accountId, e);
-	          }))));
+	      var parseDate = d3.timeParse("%Y-%m"),
+	          formatDate = d3.timeFormat("%b-%Y"),
+	          formatAmount = d3.format(",.2f");
 
-	          var data = xKeys.map(function (postingMonth) {
-	            var d = Object.assign.apply(Object, [{ postingMonth: postingMonth }].concat(_toConsumableArray(yKeys.map(function (accountId) {
-	              return _defineProperty({}, accountId, 0);
-	            })), _toConsumableArray(_this2.props.histogram.filter(function (e) {
-	              return e.postingMonth == postingMonth;
-	            }).map(function (e) {
-	              return _defineProperty({}, e.accountId, e.amount);
-	            }))));
-	            d.total = yKeys.map(function (accountId) {
-	              return d[accountId];
-	            }).reduce(function (a, b) {
-	              return a + b;
-	            });
-	            return d;
-	          });
+	      var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+	          width = div.node().getBoundingClientRect().width - margin.left - margin.right,
+	          padding = 20,
+	          h1 = 400 - margin.top - margin.bottom,
+	          h2 = Math.ceil(h1 * yMax2 / yMax1) + padding * yKeys.length;
 
-	          x.domain(xKeys);
-	          y.domain([0, d3.max(data, function (d) {
-	            return d.total;
-	          })]).nice();
+	      var svg = div.append("svg").attr("width", width + margin.left + margin.right).attr("height", h1 + margin.top + margin.bottom).attr("font-size", 10).attr("font-family", "sans-serif");
+	      var g = svg.append("g").append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-	          //TODO handle negative flows
+	      var x = d3.scaleBand().rangeRound([0, width]).paddingInner(0.2).paddingOuter(0.1);
 
-	          g.append("g").attr("class", "axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom(x)).select(".domain").style("display", "none");
+	      var y = d3.scaleLinear().rangeRound([h1, 0]);
 
-	          g.append("g").attr("class", "axis").call(d3.axisLeft(y));
+	      var color = d3.scaleOrdinal(d3.schemeCategory20);
 
-	          g.append("g").attr("class", "gridline").call(d3.axisLeft(y).tickSize(-width).tickFormat("")).call(function (g) {
-	            return g.selectAll("line").style("stroke", "lightgrey").style("stroke-opacity", 0.7).style("stroke-dasharray", "3,2").style("shape-rendering", "crispEdges");
-	          }).call(function (g) {
-	            return g.select(".domain").style("display", "none");
-	          });
+	      x.domain(xKeys);
+	      y.domain([0, yMax1]).nice();
 
-	          g.append("g").selectAll("g").data(d3.stack().keys(yKeys)(data)).enter().append("g").attr("fill", function (d) {
-	            return color(d.key);
-	          }).selectAll("rect").data(function (d) {
-	            return d;
-	          }).enter().append("rect").attr("x", function (d) {
-	            return x(d.data.postingMonth);
-	          }).attr("y", function (d) {
-	            return y(d[1]);
-	          }).attr("height", function (d) {
-	            return y(d[0]) - y(d[1]);
-	          }).attr("width", x.bandwidth()).append("title").text(function (d, i) {
-	            var accountId = this.parentNode.parentNode.__data__.key; // series.key
-	            return accountId + ": " + accounts[accountId].name + "\n" + "$" + formatAmount(d.data[accountId]);
-	          });
-	        })();
-	      } catch (err) {
-	        alert(err.toString());
-	        console.log(err);
-	      }
+	      var y1 = function y1(d, i) {
+	        return y(d[1]);
+	      };
+	      var y2 = function y2(d, i) {
+	        var j = this.parentNode.__data__.index;
+	        return y(d[1] - d[0] + yBands[j]) - j * padding;
+	      };
+
+	      g.append("g").attr("class", "axis axis-x").attr("transform", "translate(0," + h1 + ")").call(d3.axisBottom(x)).select(".domain").style("display", "none");
+
+	      g.append("g").attr("class", "axis axis-y").call(d3.axisLeft(y));
+
+	      g.append("g").attr("class", "gridline").call(d3.axisLeft(y).tickSize(-width).tickFormat("")).call(function (g) {
+	        return g.selectAll("line").style("stroke", "lightgrey").style("stroke-opacity", 0.7).style("stroke-dasharray", "3,2").style("shape-rendering", "crispEdges");
+	      }).call(function (g) {
+	        return g.select(".domain").style("display", "none");
+	      });
+
+	      var group = g.append("g").selectAll("g").data(d3.stack().keys(yKeys)(data)).enter().append("g");
+
+	      group.append("g").attr("fill", function (d) {
+	        return color(d.key);
+	      }).selectAll("rect").data(function (d) {
+	        return d;
+	      }).enter().append("rect").attr("x", function (d) {
+	        return x(d.data.postingMonth);
+	      }).attr("y", y1).attr("height", function (d) {
+	        return y(d[0]) - y(d[1]);
+	      }).attr("width", x.bandwidth()).append("title").text(function (d, i) {
+	        var accountId = this.parentNode.parentNode.__data__.key; // series.key
+	        return accountId + ": " + accounts[accountId].name + "\n" + "$" + formatAmount(d.data[accountId]);
+	      });
+
+	      g.append("g").attr("class", "labels labels-stacked").attr("text-anchor", "middle").selectAll("text").data(data).enter().append("text").text(function (d) {
+	        return "$" + formatAmount(d.total);
+	      }).attr("x", function (d) {
+	        return x(d.postingMonth) + x.bandwidth() / 2;
+	      }).attr("y", function (d) {
+	        return y(d.total);
+	      }).attr("dy", "-.3em");
+
+	      group.append("g").attr("class", "labels labels-multiples").attr("opacity", 0).attr("text-anchor", "middle").selectAll("text").data(function (d) {
+	        return d;
+	      }).enter().append("text").text(function (d) {
+	        return "$" + formatAmount(d[1] - d[0]);
+	      }).attr("x", function (d) {
+	        return x(d.data.postingMonth) + x.bandwidth() / 2;
+	      }).attr("y", y2).attr("dy", "-.3em");
+
+	      this.transition = function (mode) {
+	        var t1 = svg.transition().duration(750);
+	        var t2 = t1.transition();
+
+	        if (mode == "stacked") {
+	          svg.transition(t1).attr("height", h1 + margin.top + margin.bottom);
+	          t1.select("g").attr("transform", "translate(0,0)").selectAll("rect").attr("y", y1);
+	          t1.select(".gridline").attr("opacity", 1);
+	          t1.select(".axis-y").attr("opacity", 1);
+	          t1.selectAll(".labels-multiples").attr("opacity", 0);
+	          t2.select(".labels-stacked").attr("opacity", 1);
+	        }
+
+	        if (mode == "multiples") {
+	          svg.transition(t1).attr("height", h2 + margin.top + margin.bottom);
+	          t1.select("g").attr("transform", "translate(0," + (h2 - h1) + ")").selectAll("rect").attr("y", y2);
+	          t1.select(".gridline").attr("opacity", 0);
+	          t1.select(".axis-y").attr("opacity", 0);
+	          t1.select(".labels-stacked").attr("opacity", 0);
+	          t2.selectAll(".labels-multiples").attr("opacity", 1);
+	        }
+	      };
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var _this3 = this;
+	      var _this4 = this;
 
 	      return _react2.default.createElement(
 	        'section',
 	        null,
 	        _react2.default.createElement('div', { ref: function ref(root) {
-	            return _this3.root = root;
+	            return _this4.root = root;
 	          },
-	          style: { width: "100%", height: "400px" } }),
+	          style: { width: "100%" } }),
 	        _react2.default.createElement(
 	          'p',
 	          null,
@@ -48041,40 +48126,61 @@
 	  function VizHistogram_Form(props) {
 	    _classCallCheck(this, VizHistogram_Form);
 
-	    var _this4 = _possibleConstructorReturn(this, (VizHistogram_Form.__proto__ || Object.getPrototypeOf(VizHistogram_Form)).call(this, props));
+	    var _this5 = _possibleConstructorReturn(this, (VizHistogram_Form.__proto__ || Object.getPrototypeOf(VizHistogram_Form)).call(this, props));
 
-	    _this4.d1 = _this4.props.d1;
-	    _this4.d2 = _this4.props.d2;
-	    _this4.state = {
-	      selected: "15m", // XXX must agree
-	      stale: false
+	    _this5.state = {
+	      date: _this5.props.date,
+	      dateStale: false,
+	      mode: _this5.props.mode
 	    };
 
-	    _this4.handleChange = _this4.handleChange.bind(_this4);
-	    _this4.handleSubmit = _this4.handleSubmit.bind(_this4);
-	    return _this4;
+	    _this5.inputModeRefs = {};
+
+	    _this5.setInputModeRef = _this5.setInputModeRef.bind(_this5);
+	    _this5.handleDateChange = _this5.handleDateChange.bind(_this5);
+	    _this5.handleRefresh = _this5.handleRefresh.bind(_this5);
+	    _this5.handleModeChange = _this5.handleModeChange.bind(_this5);
+	    return _this5;
 	  }
 
 	  _createClass(VizHistogram_Form, [{
-	    key: 'handleChange',
-	    value: function handleChange(e) {
-	      var value = e.target.value;
-	      if (value.endsWith("m")) {
-	        this.d1 = (0, _moment2.default)().startOf("month").add(-value.slice(0, -1) + 1, "M");
-	        this.d2 = (0, _moment2.default)().endOf("month");
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var _this6 = this;
+
+	      Object.keys(this.inputModeRefs).forEach(function (key) {
+	        var input = _this6.inputModeRefs[key];
+	        $(input).change(function () {
+	          return _this6.handleModeChange(key);
+	        });
+	      });
+	    }
+
+	    // https://github.com/facebook/react/issues/4533
+
+	  }, {
+	    key: 'setInputModeRef',
+	    value: function setInputModeRef(input) {
+	      if (input) {
+	        this.inputModeRefs[input.value] = input;
 	      }
-	      if (value.startsWith("y")) {
-	        this.d1 = (0, _moment2.default)(value.slice(1) + "-01-01");
-	        this.d2 = (0, _moment2.default)(value.slice(1) + "-12-31");
-	      }
-	      this.setState({ selected: value, stale: true });
 	    }
 	  }, {
-	    key: 'handleSubmit',
-	    value: function handleSubmit(e) {
+	    key: 'handleDateChange',
+	    value: function handleDateChange(e) {
+	      this.setState({ date: e.target.value, dateStale: true });
+	    }
+	  }, {
+	    key: 'handleRefresh',
+	    value: function handleRefresh(e) {
 	      e.preventDefault();
-	      this.setState({ stale: false });
-	      this.props.onSubmit(this.d1, this.d2);
+	      this.setState({ dateStale: false });
+	      this.props.onDateChange(this.state.date);
+	    }
+	  }, {
+	    key: 'handleModeChange',
+	    value: function handleModeChange(mode) {
+	      this.props.onModeChange(mode);
 	    }
 	  }, {
 	    key: 'render',
@@ -48087,10 +48193,10 @@
 	          { className: 'col-md-7 col-sm-12' },
 	          _react2.default.createElement(
 	            'form',
-	            { className: 'form-inline', onSubmit: this.handleSubmit },
+	            { className: 'form-inline', onSubmit: this.handleRefresh },
 	            _react2.default.createElement(
 	              'select',
-	              { value: this.state.selected, className: 'form-control', onChange: this.handleChange },
+	              { value: this.state.date, className: 'form-control', onChange: this.handleDateChange },
 	              _react2.default.createElement(
 	                'option',
 	                { value: '15m' },
@@ -48113,9 +48219,7 @@
 	              { className: 'form-group' },
 	              _react2.default.createElement(
 	                'button',
-	                { type: 'submit',
-	                  className: this.state.stale ? "btn btn-primary" : "btn btn-default"
-	                },
+	                { type: 'submit', className: "btn btn-" + (this.state.dateStale ? "primary" : "default") },
 	                'Refresh'
 	              )
 	            )
@@ -48128,17 +48232,26 @@
 	            'form',
 	            { className: 'form-inline' },
 	            _react2.default.createElement(
-	              'label',
-	              { className: 'radio-inline' },
-	              _react2.default.createElement('input', { type: 'radio', name: 'mode', value: 'multiples' }),
-	              ' Multiples'
-	            ),
-	            '\xA0',
-	            _react2.default.createElement(
-	              'label',
-	              { className: 'radio-inline' },
-	              _react2.default.createElement('input', { type: 'radio', name: 'mode', value: 'stacked' }),
-	              ' Stacked'
+	              'div',
+	              { className: 'btn-group', 'data-toggle': 'buttons' },
+	              _react2.default.createElement(
+	                'label',
+	                { className: "btn btn-default" + (this.state.mode == "multiples" ? " active" : "") },
+	                _react2.default.createElement('input', { type: 'radio', name: 'mode', autoComplete: 'off',
+	                  value: 'multiples',
+	                  ref: this.setInputModeRef
+	                }),
+	                ' Multiples'
+	              ),
+	              _react2.default.createElement(
+	                'label',
+	                { className: "btn btn-default" + (this.state.mode == "stacked" ? " active" : "") },
+	                _react2.default.createElement('input', { type: 'radio', name: 'mode', autoComplete: 'off',
+	                  value: 'stacked',
+	                  ref: this.setInputModeRef
+	                }),
+	                ' Stacked'
+	              )
 	            )
 	          )
 	        )
@@ -48149,75 +48262,91 @@
 	  return VizHistogram_Form;
 	}(_react2.default.PureComponent);
 
-	var VizHistogram = function (_React$PureComponent3) {
-	  _inherits(VizHistogram, _React$PureComponent3);
+	var VizHistogram = function (_React$Component) {
+	  _inherits(VizHistogram, _React$Component);
 
 	  function VizHistogram(props) {
 	    _classCallCheck(this, VizHistogram);
 
-	    var _this5 = _possibleConstructorReturn(this, (VizHistogram.__proto__ || Object.getPrototypeOf(VizHistogram)).call(this, props));
+	    var _this7 = _possibleConstructorReturn(this, (VizHistogram.__proto__ || Object.getPrototypeOf(VizHistogram)).call(this, props));
 
-	    var d1 = (0, _moment2.default)().startOf("month").add(-15 + 1, "M"); //XXX must agree
-	    var d2 = (0, _moment2.default)().endOf("month");
-	    _this5.state = {
-	      accounts: null,
-	      d1: d1,
-	      d2: d2
+	    _this7.accounts = fetch("api/account", {
+	      method: "get",
+	      headers: { "Authorization": sessionStorage.token }
+	    }).then(_fetch.fetchJSON);
+
+	    _this7.state = {
+	      date: "15m",
+	      mode: "stacked"
 	    };
+	    _this7.setDates(_this7.state.date);
 
-	    _this5.handleSubmit = _this5.handleSubmit.bind(_this5);
-	    return _this5;
+	    _this7.handleDateChange = _this7.handleDateChange.bind(_this7);
+	    _this7.handleModeChange = _this7.handleModeChange.bind(_this7);
+	    return _this7;
 	  }
 
 	  _createClass(VizHistogram, [{
-	    key: 'handleSubmit',
-	    value: function handleSubmit(d1, d2) {
-	      this.setState({ d1: d1, d2: d2 });
-	      //alert("d1=" + d1.format(DATE_FORMAT_ISO) + ", d2=" + d2.format(DATE_FORMAT_ISO));
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      document.title = "LedgerDB - Reports - Histogram of Expenses";
+	    }
+	  }, {
+	    key: 'setDates',
+	    value: function setDates(date) {
+	      if (date.endsWith("m")) {
+	        this.d1 = (0, _moment2.default)().startOf("month").add(-date.slice(0, -1) + 1, "M");
+	        this.d2 = (0, _moment2.default)().endOf("month");
+	      }
+	      if (date.startsWith("y")) {
+	        this.d1 = (0, _moment2.default)(date.slice(1) + "-01-01");
+	        this.d2 = (0, _moment2.default)(date.slice(1) + "-12-31");
+	      }
+
+	      var url = "api/posting/flows1" + "?d1=" + this.d1.format(_DateInput.DATE_FORMAT_ISO) + "&d2=" + this.d2.format(_DateInput.DATE_FORMAT_ISO);
+	      this.histogram = fetch(url, {
+	        method: "get",
+	        headers: { "Authorization": sessionStorage.token }
+	      }).then(_fetch.fetchJSON);
+	    }
+	  }, {
+	    key: 'handleDateChange',
+	    value: function handleDateChange(date) {
+	      this.setDates(date);
+	      this.setState({ date: date });
+	    }
+	  }, {
+	    key: 'handleModeChange',
+	    value: function handleModeChange(mode) {
+	      if (this.state.mode != mode) {
+	        this.setState({ mode: mode });
+	      }
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var _this6 = this;
-
-	      var f2 = function f2(url) {
-	        return fetch(url, {
-	          method: "get",
-	          headers: { "Authorization": sessionStorage.token }
-	        }).then(_fetch.fetchJSON);
-	      };
 	      return _react2.default.createElement(
-	        _PromiseContainer2.default,
-	        {
-	          accounts: this.state.accounts || f2("api/account"),
-	          onResolve: function onResolve(resolvedProps) {
-	            return _this6.setState(resolvedProps);
-	          }
-	        },
+	        'div',
+	        null,
+	        _react2.default.createElement(VizHistogram_Form, {
+	          date: this.state.date,
+	          mode: this.state.mode,
+	          onDateChange: this.handleDateChange,
+	          onModeChange: this.handleModeChange
+	        }),
 	        _react2.default.createElement(
-	          'div',
-	          null,
-	          _react2.default.createElement(VizHistogram_Form, {
-	            d1: this.state.d1,
-	            d2: this.state.d2,
-	            onSubmit: this.handleSubmit
-	          }),
-	          _react2.default.createElement(
-	            _PromiseContainer2.default,
-	            {
-	              histogram: f2("api/posting/flows1" + "?d1=" + this.state.d1.format(_DateInput.DATE_FORMAT_ISO) + "&d2=" + this.state.d2.format(_DateInput.DATE_FORMAT_ISO))
-	            },
-	            _react2.default.createElement(VizHistogram_Chart, {
-	              accounts: this.state.accounts
-	            })
-	          )
+	          _PromiseContainer2.default,
+	          { accounts: this.accounts, histogram: this.histogram },
+	          _react2.default.createElement(VizHistogram_Chart, {
+	            mode: this.state.mode
+	          })
 	        )
 	      );
 	    }
 	  }]);
 
 	  return VizHistogram;
-	}(_react2.default.PureComponent);
+	}(_react2.default.Component);
 
 	exports.default = VizHistogram;
 
@@ -48271,7 +48400,10 @@
 	    value: function componentWillReceiveProps(nextProps) {
 	      var _this2 = this;
 
-	      if (!Object.keys(nextProps).every(function (key) {
+	      var propKeys = Object.keys(nextProps).filter(function (key) {
+	        return !PromiseContainer.propTypes.hasOwnProperty(key);
+	      });
+	      if (!propKeys.every(function (key) {
 	        return nextProps[key] === _this2.props[key];
 	      })) {
 	        this.setState({ pending: true });
@@ -48293,7 +48425,6 @@
 	        propKeys.forEach(function (key, i) {
 	          return resolvedProps[key] = values[i];
 	        });
-	        _this3.props.onResolve && _this3.props.onResolve(resolvedProps);
 	        _this3.setState({ pending: false, props: resolvedProps });
 	      }).catch(function (err) {
 	        _this3.setState({ pending: false, err: err });
@@ -48330,7 +48461,7 @@
 	      }
 
 	      var onlyChild = _react2.default.Children.only(this.props.children);
-	      return this.props.onResolve ? onlyChild : _react2.default.cloneElement(onlyChild, this.state.props);
+	      return _react2.default.cloneElement(onlyChild, this.state.props);
 	    }
 	  }]);
 
@@ -48338,8 +48469,7 @@
 	}(_react2.default.PureComponent);
 
 	PromiseContainer.propTypes = {
-	  children: _react2.default.PropTypes.element.isRequired,
-	  onResolve: _react2.default.PropTypes.func
+	  children: _react2.default.PropTypes.element.isRequired
 	};
 
 	exports.default = PromiseContainer;
