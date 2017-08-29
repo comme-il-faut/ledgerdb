@@ -3,6 +3,7 @@ DROP VIEW IF EXISTS v_check_statement_posted;
 CREATE VIEW v_check_statement_posted
 AS
 SELECT
+  s.statement_id,
   pd.posting_detail_id,
   pd.posting_header_id,
   pd.account_id AS posting_account_id,
