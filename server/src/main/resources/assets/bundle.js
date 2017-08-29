@@ -47879,6 +47879,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	//TODO add legend
 	//TODO sort yKeys by stddev
 	//TODO handle negative flows
 	//TODO separate resize listener, redraw only if actual size changed
@@ -47999,8 +48000,8 @@
 	        return d.total;
 	      });
 	      var yMax2 = yBands[yBands.length - 1];
-
 	      // 1 = stacked, 2 = multiples
+
 
 	      var parseDate = d3.timeParse("%Y-%m"),
 	          formatDate = d3.timeFormat("%b-%Y"),
@@ -48012,17 +48013,38 @@
 	          h1 = 400 - margin.top - margin.bottom,
 	          h2 = Math.ceil(h1 * yMax2 / yMax1) + padding * yKeys.length;
 
+	      var color = d3.scaleOrdinal(d3.schemeCategory20);
+
 	      var svg = div.append("svg").attr("width", width + margin.left + margin.right).attr("height", h1 + margin.top + margin.bottom).attr("font-size", 10).attr("font-family", "sans-serif");
 	      var g = svg.append("g").append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-	      var x = d3.scaleBand().rangeRound([0, width]).paddingInner(0.2).paddingOuter(0.1);
-
 	      var y = d3.scaleLinear().rangeRound([h1, 0]);
 
-	      var color = d3.scaleOrdinal(d3.schemeCategory20);
+	      y.domain([0, yMax1]).nice();
+
+	      var legend = g.append("g").attr("text-anchor", "start");
+
+	      var legendY1 = function legendY1(d, i) {
+	        return "translate(0," + (yKeys.length - i - 1) * 17 + ")";
+	      };
+	      var legendY2 = function legendY2(d, i) {
+	        return "translate(0," + (y(yBands[i]) - i * padding - 16) + ")";
+	      };
+
+	      legend.selectAll("g").data(yKeys).enter().append("g").attr("transform", legendY1).call(function (g) {
+	        return g.append("rect").attr("x", width).attr("width", 16).attr("height", 16).attr("fill", color);
+	      }).call(function (g) {
+	        return g.append("text").attr("x", width + 19).attr("y", 8).attr("dy", 3).text(function (accountId) {
+	          return accountId + ": " + accounts[accountId].name;
+	        });
+	      });
+
+	      var legendWidth = legend.node().getBoundingClientRect().width;
+	      legend.attr("transform", "translate(-" + legendWidth + ",0)");
+
+	      var x = d3.scaleBand().rangeRound([0, width - legendWidth - padding]).paddingInner(0.2).paddingOuter(0.1);
 
 	      x.domain(xKeys);
-	      y.domain([0, yMax1]).nice();
 
 	      var y1 = function y1(d, i) {
 	        return y(d[1]);
@@ -48036,7 +48058,7 @@
 
 	      g.append("g").attr("class", "axis axis-y").call(d3.axisLeft(y));
 
-	      g.append("g").attr("class", "gridline").call(d3.axisLeft(y).tickSize(-width).tickFormat("")).call(function (g) {
+	      g.append("g").attr("class", "gridline").call(d3.axisLeft(y).tickSize(-width + legendWidth + padding + x.step() * x.paddingOuter()).tickFormat("")).call(function (g) {
 	        return g.selectAll("line").style("stroke", "lightgrey").style("stroke-opacity", 0.7).style("stroke-dasharray", "3,2").style("shape-rendering", "crispEdges");
 	      }).call(function (g) {
 	        return g.select(".domain").style("display", "none");
@@ -48075,7 +48097,7 @@
 
 	      this.transition = function (mode) {
 	        var t1 = svg.transition().duration(750);
-	        var t2 = t1.transition();
+	        var t2 = t1.transition().duration(250);
 
 	        if (mode == "stacked") {
 	          svg.transition(t1).attr("height", h1 + margin.top + margin.bottom);
@@ -48084,6 +48106,7 @@
 	          t1.select(".axis-y").attr("opacity", 1);
 	          t1.selectAll(".labels-multiples").attr("opacity", 0);
 	          t2.select(".labels-stacked").attr("opacity", 1);
+	          legend.selectAll("g").transition(t1).attr("transform", legendY1);
 	        }
 
 	        if (mode == "multiples") {
@@ -48093,6 +48116,7 @@
 	          t1.select(".axis-y").attr("opacity", 0);
 	          t1.select(".labels-stacked").attr("opacity", 0);
 	          t2.selectAll(".labels-multiples").attr("opacity", 1);
+	          legend.selectAll("g").transition(t1).attr("transform", legendY2);
 	        }
 	      };
 	    }
@@ -48107,12 +48131,7 @@
 	        _react2.default.createElement('div', { ref: function ref(root) {
 	            return _this4.root = root;
 	          },
-	          style: { width: "100%" } }),
-	        _react2.default.createElement(
-	          'p',
-	          null,
-	          JSON.stringify(this.props)
-	        )
+	          style: { width: "100%" } })
 	      );
 	    }
 	  }]);

@@ -94,8 +94,8 @@ class VizHistogram_Chart extends React.PureComponent {
 
     const yMax1 = d3.max(data, d => d.total);
     const yMax2 = yBands[yBands.length - 1];
-
     // 1 = stacked, 2 = multiples
+
 
     const parseDate = d3.timeParse("%Y-%m"),
           formatDate = d3.timeFormat("%b-%Y"),
@@ -107,6 +107,8 @@ class VizHistogram_Chart extends React.PureComponent {
           h1 = 400 - margin.top - margin.bottom,
           h2 = Math.ceil(h1 * yMax2 / yMax1) + padding * yKeys.length;
 
+    const color = d3.scaleOrdinal(d3.schemeCategory20);
+
     const svg = div.append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", h1 + margin.top + margin.bottom)
@@ -115,18 +117,45 @@ class VizHistogram_Chart extends React.PureComponent {
     const g = svg.append("g").append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    const x = d3.scaleBand()
-      .rangeRound([0, width])
-      .paddingInner(0.2)
-      .paddingOuter(0.1);
-
     const y = d3.scaleLinear()
       .rangeRound([h1, 0]);
 
-    const color = d3.scaleOrdinal(d3.schemeCategory20);
+    y.domain([0, yMax1]).nice();
+
+
+    const legend = g.append("g")
+      .attr("text-anchor", "start");
+
+    const legendY1 = (d, i) => "translate(0," + (yKeys.length - i - 1) * 17 + ")";
+    const legendY2 = (d, i) => "translate(0," + (y(yBands[i]) - i * padding - 16) + ")";
+
+    legend.selectAll("g")
+      .data(yKeys)
+      .enter().append("g")
+        .attr("transform", legendY1)
+        .call(g =>
+          g.append("rect")
+            .attr("x", width)
+            .attr("width", 16)
+            .attr("height", 16)
+            .attr("fill", color))
+        .call(g =>
+          g.append("text")
+            .attr("x", width + 19)
+            .attr("y", 8)
+            .attr("dy", 3)
+            .text(accountId => accountId + ": " + accounts[accountId].name));
+
+    const legendWidth = legend.node().getBoundingClientRect().width;
+    legend.attr("transform", "translate(-" + legendWidth + ",0)");
+
+
+    const x = d3.scaleBand()
+      .rangeRound([0, width - legendWidth - padding])
+      .paddingInner(0.2)
+      .paddingOuter(0.1);
 
     x.domain(xKeys);
-    y.domain([0, yMax1]).nice();
 
     const y1 = function(d, i) { return y(d[1]); };
     const y2 = function(d, i) {
@@ -148,7 +177,7 @@ class VizHistogram_Chart extends React.PureComponent {
     g.append("g")
       .attr("class", "gridline")
       .call(d3.axisLeft(y)
-        .tickSize(-width)
+        .tickSize(-width + legendWidth + padding + x.step() * x.paddingOuter())
         .tickFormat(""))
       .call(g =>
         g.selectAll("line")
@@ -203,9 +232,10 @@ class VizHistogram_Chart extends React.PureComponent {
         .attr("y", y2)
         .attr("dy", "-.3em");
 
+
     this.transition = function(mode) {
       const t1 = svg.transition().duration(750);
-      const t2 = t1.transition();
+      const t2 = t1.transition().duration(250);
 
       if (mode == "stacked") {
         svg.transition(t1).attr("height", h1 + margin.top + margin.bottom);
@@ -215,6 +245,7 @@ class VizHistogram_Chart extends React.PureComponent {
         t1.select(".axis-y").attr("opacity", 1);
         t1.selectAll(".labels-multiples").attr("opacity", 0);
         t2.select(".labels-stacked").attr("opacity", 1);
+        legend.selectAll("g").transition(t1).attr("transform", legendY1);
       }
 
       if (mode == "multiples") {
@@ -225,6 +256,7 @@ class VizHistogram_Chart extends React.PureComponent {
         t1.select(".axis-y").attr("opacity", 0);
         t1.select(".labels-stacked").attr("opacity", 0);
         t2.selectAll(".labels-multiples").attr("opacity", 1);
+        legend.selectAll("g").transition(t1).attr("transform", legendY2);
       }
     };
   }
@@ -235,9 +267,11 @@ class VizHistogram_Chart extends React.PureComponent {
         <div ref={root => this.root = root}
           style={{ width: "100%" }}>
         </div>
+        {/*
         <p>
           {JSON.stringify(this.props)}
         </p>
+        */}
       </section>
     );
   }
