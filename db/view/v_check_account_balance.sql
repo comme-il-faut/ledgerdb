@@ -15,4 +15,5 @@ FULL OUTER JOIN v_account_balance v
 WHERE a.amount IS NULL
 OR v.amount IS NULL
 OR v.amount != a.amount
+ORDER BY 1, 2
 ;
