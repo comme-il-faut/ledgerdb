@@ -47879,9 +47879,7 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	//TODO add legend
-	//TODO sort yKeys by stddev
-	//TODO handle negative flows
+	//TODO handle negative net flows
 	//TODO separate resize listener, redraw only if actual size changed
 	//TODO do not hardcode years in <select><option>..., get the dynamically from server
 	//TODO add link to each bar, show to postings details for the month+account
@@ -47964,7 +47962,7 @@
 
 	      var yKeys = [].concat(_toConsumableArray(new Set(this.props.histogram.map(function (o) {
 	        return o.accountId;
-	      })))).sort();
+	      }))));
 
 	      var accounts = Object.assign.apply(Object, [{}].concat(_toConsumableArray(this.props.accounts.map(function (o) {
 	        return _defineProperty({}, o.accountId, o);
@@ -47984,6 +47982,18 @@
 	          return a + b;
 	        });
 	        return d;
+	      });
+
+	      var ySort = {};
+	      yKeys.forEach(function (accountId) {
+	        ySort[accountId] = d3.deviation(data, function (d) {
+	          return d[accountId];
+	        }) / d3.mean(data, function (d) {
+	          return d[accountId];
+	        });
+	      });
+	      yKeys.sort(function (a, b) {
+	        return ySort[a] - ySort[b];
 	      });
 
 	      var yBands = yKeys.map(function (accountId, j) {

@@ -6,8 +6,7 @@ import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY, DATE_FORMAT_ISO } from './shared/DateInput';
 import { fetchJSON } from './fetch';
 
-//TODO sort yKeys by stddev
-//TODO handle negative flows
+//TODO handle negative net flows
 //TODO separate resize listener, redraw only if actual size changed
 //TODO do not hardcode years in <select><option>..., get the dynamically from server
 //TODO add link to each bar, show to postings details for the month+account
@@ -68,7 +67,7 @@ class VizHistogram_Chart extends React.PureComponent {
 
     const yKeys = [...new Set(
       this.props.histogram.map(o => o.accountId)
-    )].sort();
+    )];
 
     const accounts = Object.assign({}, ...this.props.accounts.map(o => ({
       [o.accountId]: o
@@ -87,6 +86,14 @@ class VizHistogram_Chart extends React.PureComponent {
         .reduce((a, b) => a + b);
       return d;
     });
+
+    const ySort = {};
+    yKeys.forEach(accountId => {
+      ySort[accountId]
+        = d3.deviation(data, d => d[accountId])
+        / d3.mean(data, d => d[accountId]);
+    });
+    yKeys.sort((a, b) => ySort[a] - ySort[b]);
 
     const yBands = yKeys.map((accountId, j) => d3.max(data, d => d[accountId]));
     yBands.reduce((a, b, i) => yBands[i] = a + b);
