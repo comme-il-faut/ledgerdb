@@ -24,7 +24,7 @@ ReactDOM.render(
       <IndexRoute component={Dashboard}/>
 
       <Route path="post" component={Post}/>
-      <Route path="postings" component={promisedComponent(Postings)}/>
+      <Route path="postings" component={Postings}/>
       <Route path="recon" component={promisedComponent(Reconciliation)}/>
       <Route path="balance" component={promisedComponent(AccountBalances)}/>
 

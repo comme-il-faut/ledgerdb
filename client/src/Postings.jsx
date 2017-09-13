@@ -1,21 +1,102 @@
 import React from 'react';
 
+import AccountSelect from './shared/AccountSelect';
+import DateInput from './shared/DateInput';
+import PromiseContainer from './shared/PromiseContainer';
 import { fetchJSON } from './fetch';
 import { formatAmount } from './formatters';
 
 class Postings extends React.Component {
 
-  static getInitialPromise() {
-    return fetch('api/posting', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    }).then(fetchJSON);
+  constructor(props) {
+    super(props);
+
+    const resources = ["account_type", "account"];
+    resources.forEach(resource => {
+      const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase());
+      this[key] = 
+        fetch('api/' + resource, {
+          method: 'get',
+          headers: { 'Authorization': sessionStorage.token }
+        }).then(fetchJSON);
+    });
+
   }
 
   componentDidMount() {
     document.title = "LedgerDB - Postings";
   }
 
+  render() {
+    return (
+      <section>
+        <form className="form-horizontal">
+          <div className="form-group">
+            <label htmlFor="q" className="col-sm-3 control-label">Search:</label>
+            <div className="col-sm-9">
+              <div className="input-group">
+                <input id="q" name="q" type="text" className="form-control" />
+                <span className="input-group-btn">
+                  <button type="submit" className="btn btn-default">
+                    <i className="fa fa-search" aria-hidden="true"></i> Search
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="col-sm-3 control-label">By date:</label>
+            <div className="col-sm-9">
+              <div className="pull-left">
+                <small>Start date:</small>
+                <br/>
+                <DateInput id="date1"/>
+              </div>
+              <div className="pull-left">
+                <small>End date:</small>
+                <br/>
+                <DateInput id="date1"/>
+              </div>
+            </div>
+          </div>
+          <div className="form-group">
+            <label className="col-sm-3 control-label">By account:</label>
+            <div className="col-sm-9">
+              <PromiseContainer
+                  accountTypes={this.accountType}
+                  accounts={this.account}>
+                <AccountSelect
+                  className="form-control"
+                  multiple="multiple"
+                  size="15"/>
+              </PromiseContainer>
+            </div>
+          </div>
+          <div className="form-group">
+            <div className="col-sm-offset-3 col-sm-9">
+              <button type="submit" className="btn btn-default">
+                <i className="fa fa-search" aria-hidden="true"></i> Search
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <p>{JSON.stringify(this.props)}</p>
+
+      </section>
+    );
+  }
+
+  /*
+  static getInitialPromise() {
+    return fetch('api/posting', {
+      method: 'get',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchJSON);
+  }
+  */
+
+  /*
   render() {
     const postings = this.props.data;
     if (!postings || !(postings.length > 0)) {
@@ -72,6 +153,7 @@ class Postings extends React.Component {
       </table>
     );
   }
+  */
 
   renderSpan1(posting, content) {
     let props = { key: posting.postingDetailId };

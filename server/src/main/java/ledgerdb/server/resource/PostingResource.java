@@ -203,19 +203,43 @@ public class PostingResource {
     
     @DELETE
     public void doDelete(PostingHeader[] phs) {
-        Session session = sf.openSession();
+        if (phs != null)
+            throw new BadRequestException(); //TODO - update account_balance
+        
+        Session s = sf.openSession();
         Transaction tx = null;
         try {
-            tx = session.beginTransaction();
+            tx = s.beginTransaction();
             
-            Query q1 = session.createQuery("delete from PostingDetail where postingHeader.id = :id");
-            Query q2 = session.createQuery("delete from PostingHeader where id = :id");
+            Query q1 = s.createQuery("delete from PostingDetail where postingHeader.id = :id");
+            Query q2 = s.createQuery("delete from PostingHeader where id = :id");
             
             for (PostingHeader ph : phs) {
                 int id = ph.getId();
+                
                 //ph = session.get(PostingHeader.class, id);
                 //if (ph == null)
                 //    throw new AppException("No such posting header id: " + id);
+                //TODO: compare ph vs db
+                //TODO: delete link from "Postings" page
+                
+                /*
+                long count = (Long)s.createCriteria(AccountBalance.class)
+                        .add(Restrictions.or(
+                                ph.getPostingDetails().stream().map(
+                                        pd -> Restrictions.and(
+                                                Restrictions.eq("accountId", pd.getAccountId()),
+                                                Restrictions.ge("postingDate", ph.getPostingDate()),
+                                                Restrictions.isNotNull("reconciled")
+                                        )
+                                ).toArray(Criterion[]::new)
+                        ))
+                        .setProjection(Projections.rowCount())
+                        .uniqueResult();
+                if (count > 0) {
+                    throw new BadRequestException("Can't post to account with balance marked as reconciled");
+                }
+                */
                 
                 q1.setInteger("id", id);
                 q2.setInteger("id", id);
@@ -230,7 +254,7 @@ public class PostingResource {
             if (tx != null) tx.rollback();
             throw e;
         } finally {
-            session.close();
+            s.close();
         }
     }
     
@@ -240,7 +264,7 @@ public class PostingResource {
             @QueryParam("d1") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d1,
             @QueryParam("d2") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d2) {
         
-        //try { Thread.sleep(2000); } catch (InterruptedException e) {}
+        try { Thread.sleep(2000); } catch (InterruptedException e) {}
         //try { Thread.sleep(160000); } catch (InterruptedException e) {}
         
         String sql

@@ -9,6 +9,8 @@ section {
   margin-bottom: 10px;
 }
 
+td, th { padding: 0.1em 0.5em; }
+
 .form-signin {
   max-width: 330px;
   padding: 15px;
@@ -60,7 +62,7 @@ nav.navbar li > a.active {
 .form-horizontal { max-width: 600px; }
 .form-horizontal select { width: 99%; }
 
-.pull-left { margin-left: 7px; }
+.pull-left { margin-right: 7px; }
 .modal-body { word-wrap: break-word; }
 
 
@@ -123,6 +125,8 @@ form input[type=number] {
   position: absolute;
   bottom: 0;
 }
+tr.le-padded-top > td { padding-top: 7px; }
+tr.le-padded-bottom > td { padding-bottom: 7px; }
 
 /*
 .le-form-inline.form-inline {

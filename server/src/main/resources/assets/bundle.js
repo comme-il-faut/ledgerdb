@@ -82,23 +82,23 @@
 
 	var _Postings2 = _interopRequireDefault(_Postings);
 
-	var _Profile = __webpack_require__(369);
+	var _Profile = __webpack_require__(370);
 
 	var _Profile2 = _interopRequireDefault(_Profile);
 
-	var _Reconciliation = __webpack_require__(371);
+	var _Reconciliation = __webpack_require__(372);
 
 	var _Reconciliation2 = _interopRequireDefault(_Reconciliation);
 
-	var _Reports = __webpack_require__(375);
+	var _Reports = __webpack_require__(376);
 
 	var _Reports2 = _interopRequireDefault(_Reports);
 
-	var _VizFlowsSankey = __webpack_require__(376);
+	var _VizFlowsSankey = __webpack_require__(377);
 
 	var _VizFlowsSankey2 = _interopRequireDefault(_VizFlowsSankey);
 
-	var _VizHistogram = __webpack_require__(377);
+	var _VizHistogram = __webpack_require__(378);
 
 	var _VizHistogram2 = _interopRequireDefault(_VizHistogram);
 
@@ -118,7 +118,7 @@
 	    { path: '/', component: _App2.default },
 	    _react2.default.createElement(_reactRouter.IndexRoute, { component: _Dashboard2.default }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'post', component: _Post2.default }),
-	    _react2.default.createElement(_reactRouter.Route, { path: 'postings', component: (0, _promisedComponent2.default)(_Postings2.default) }),
+	    _react2.default.createElement(_reactRouter.Route, { path: 'postings', component: _Postings2.default }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'recon', component: (0, _promisedComponent2.default)(_Reconciliation2.default) }),
 	    _react2.default.createElement(_reactRouter.Route, { path: 'balance', component: (0, _promisedComponent2.default)(_AccountBalances2.default) }),
 	    _react2.default.createElement(
@@ -45918,6 +45918,18 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _AccountSelect = __webpack_require__(365);
+
+	var _AccountSelect2 = _interopRequireDefault(_AccountSelect);
+
+	var _DateInput = __webpack_require__(366);
+
+	var _DateInput2 = _interopRequireDefault(_DateInput);
+
+	var _PromiseContainer = __webpack_require__(369);
+
+	var _PromiseContainer2 = _interopRequireDefault(_PromiseContainer);
+
 	var _fetch = __webpack_require__(241);
 
 	var _formatters = __webpack_require__(242);
@@ -45933,10 +45945,23 @@
 	var Postings = function (_React$Component) {
 	  _inherits(Postings, _React$Component);
 
-	  function Postings() {
+	  function Postings(props) {
 	    _classCallCheck(this, Postings);
 
-	    return _possibleConstructorReturn(this, (Postings.__proto__ || Object.getPrototypeOf(Postings)).apply(this, arguments));
+	    var _this = _possibleConstructorReturn(this, (Postings.__proto__ || Object.getPrototypeOf(Postings)).call(this, props));
+
+	    var resources = ["account_type", "account"];
+	    resources.forEach(function (resource) {
+	      var key = resource.replace(/_[a-z]/g, function (match) {
+	        return match.charAt(1).toUpperCase();
+	      });
+	      _this[key] = fetch('api/' + resource, {
+	        method: 'get',
+	        headers: { 'Authorization': sessionStorage.token }
+	      }).then(_fetch.fetchJSON);
+	    });
+
+	    return _this;
 	  }
 
 	  _createClass(Postings, [{
@@ -45947,99 +45972,185 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var _this2 = this;
-
-	      var postings = this.props.data;
-	      if (!postings || !(postings.length > 0)) {
-	        return _react2.default.createElement(
+	      return _react2.default.createElement(
+	        'section',
+	        null,
+	        _react2.default.createElement(
+	          'form',
+	          { className: 'form-horizontal' },
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'label',
+	              { htmlFor: 'q', className: 'col-sm-3 control-label' },
+	              'Search:'
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'col-sm-9' },
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'input-group' },
+	                _react2.default.createElement('input', { id: 'q', name: 'q', type: 'text', className: 'form-control' }),
+	                _react2.default.createElement(
+	                  'span',
+	                  { className: 'input-group-btn' },
+	                  _react2.default.createElement(
+	                    'button',
+	                    { type: 'submit', className: 'btn btn-default' },
+	                    _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
+	                    ' Search'
+	                  )
+	                )
+	              )
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'label',
+	              { className: 'col-sm-3 control-label' },
+	              'By date:'
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'col-sm-9' },
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'pull-left' },
+	                _react2.default.createElement(
+	                  'small',
+	                  null,
+	                  'Start date:'
+	                ),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement(_DateInput2.default, { id: 'date1' })
+	              ),
+	              _react2.default.createElement(
+	                'div',
+	                { className: 'pull-left' },
+	                _react2.default.createElement(
+	                  'small',
+	                  null,
+	                  'End date:'
+	                ),
+	                _react2.default.createElement('br', null),
+	                _react2.default.createElement(_DateInput2.default, { id: 'date1' })
+	              )
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'label',
+	              { className: 'col-sm-3 control-label' },
+	              'By account:'
+	            ),
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'col-sm-9' },
+	              _react2.default.createElement(
+	                _PromiseContainer2.default,
+	                {
+	                  accountTypes: this.accountType,
+	                  accounts: this.account },
+	                _react2.default.createElement(_AccountSelect2.default, {
+	                  className: 'form-control',
+	                  multiple: 'multiple',
+	                  size: '15' })
+	              )
+	            )
+	          ),
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'form-group' },
+	            _react2.default.createElement(
+	              'div',
+	              { className: 'col-sm-offset-3 col-sm-9' },
+	              _react2.default.createElement(
+	                'button',
+	                { type: 'submit', className: 'btn btn-default' },
+	                _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
+	                ' Search'
+	              )
+	            )
+	          )
+	        ),
+	        _react2.default.createElement(
 	          'p',
 	          null,
-	          'Thou hast seen nothing yet.'
+	          JSON.stringify(this.props)
+	        )
+	      );
+	    }
+
+	    /*
+	    static getInitialPromise() {
+	      return fetch('api/posting', {
+	        method: 'get',
+	        headers: { 'Authorization': sessionStorage.token }
+	      }).then(fetchJSON);
+	    }
+	    */
+
+	    /*
+	    render() {
+	      const postings = this.props.data;
+	      if (!postings || !(postings.length > 0)) {
+	        return (
+	          <p>Thou hast seen nothing yet.</p>
 	        );
 	      }
-
-	      var entries = [],
-	          entry = [];
-
-	      postings.forEach(function (posting) {
-	        if (entry.length && entry[0].postingHeaderId != posting.postingHeaderId) {
+	        let entries = [], entry = [];
+	        postings.forEach((posting) => {
+	        if (entry.length
+	            && entry[0].postingHeaderId != posting.postingHeaderId) {
 	          entries.push(entry);
 	          entry = [];
 	        }
 	        entry.push(posting);
 	      });
 	      entries.push(entry);
-
-	      var rows = [];
-	      entries.forEach(function (entry) {
-	        rows.push(_react2.default.createElement(
-	          'tr',
-	          { key: entry[0].postingHeaderId },
-	          _react2.default.createElement(
-	            'td',
-	            { className: 'text-nowrap' },
-	            entry[0].postingDate
-	          ),
-	          _react2.default.createElement(
-	            'td',
-	            { className: 'text-nowrap' },
-	            entry.map(function (posting) {
-	              return _this2.renderSpan1(posting, posting.accountName);
-	            })
-	          ),
-	          _react2.default.createElement(
-	            'td',
-	            { className: 'text-nowrap text-right' },
-	            entry.map(function (posting) {
-	              return _this2.renderSpan2(posting, (0, _formatters.formatAmount)(posting.amount));
-	            })
-	          ),
-	          _react2.default.createElement(
-	            'td',
-	            null,
-	            entry[0].description
-	          )
-	        ));
+	        let rows = [];
+	      entries.forEach((entry) => {
+	        rows.push(
+	          <tr key={entry[0].postingHeaderId}>
+	            <td className="text-nowrap">{entry[0].postingDate}</td>
+	            <td className="text-nowrap">
+	              {entry.map((posting) => this.renderSpan1(
+	                posting,
+	                posting.accountName
+	              ))}
+	            </td>
+	            <td className="text-nowrap text-right">
+	              {entry.map((posting) => this.renderSpan2(
+	                posting,
+	                formatAmount(posting.amount)
+	              ))}
+	            </td>
+	            <td>{entry[0].description}</td>
+	          </tr>
+	        );
 	      });
-
-	      return _react2.default.createElement(
-	        'table',
-	        { className: 'table table-striped table-condensed' },
-	        _react2.default.createElement(
-	          'thead',
-	          null,
-	          _react2.default.createElement(
-	            'tr',
-	            null,
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1' },
-	              'Date'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-2' },
-	              'Account'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-1 text-right' },
-	              'Amount'
-	            ),
-	            _react2.default.createElement(
-	              'th',
-	              { className: 'col-md-8' },
-	              'Description'
-	            )
-	          )
-	        ),
-	        _react2.default.createElement(
-	          'tbody',
-	          null,
-	          rows
-	        )
+	        return (
+	        <table className="table table-striped table-condensed">
+	          <thead>
+	            <tr>
+	              <th className="col-md-1">Date</th>
+	              <th className="col-md-2">Account</th>
+	              <th className="col-md-1 text-right">Amount</th>
+	              <th className="col-md-8">Description</th>
+	            </tr>
+	          </thead>
+	          <tbody>{rows}</tbody>
+	        </table>
 	      );
 	    }
+	    */
+
 	  }, {
 	    key: 'renderSpan1',
 	    value: function renderSpan1(posting, content) {
@@ -46065,14 +46176,6 @@
 	        _react2.default.createElement('br', null)
 	      );
 	    }
-	  }], [{
-	    key: 'getInitialPromise',
-	    value: function getInitialPromise() {
-	      return fetch('api/posting', {
-	        method: 'get',
-	        headers: { 'Authorization': sessionStorage.token }
-	      }).then(_fetch.fetchJSON);
-	    }
 	  }]);
 
 	  return Postings;
@@ -46096,7 +46199,131 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _ChangePassword = __webpack_require__(370);
+	var _ProgressBar = __webpack_require__(363);
+
+	var _ProgressBar2 = _interopRequireDefault(_ProgressBar);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var PromiseContainer = function (_React$PureComponent) {
+	  _inherits(PromiseContainer, _React$PureComponent);
+
+	  function PromiseContainer(props) {
+	    _classCallCheck(this, PromiseContainer);
+
+	    var _this = _possibleConstructorReturn(this, (PromiseContainer.__proto__ || Object.getPrototypeOf(PromiseContainer)).call(this, props));
+
+	    _this.state = { pending: true };
+	    return _this;
+	  }
+
+	  _createClass(PromiseContainer, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      this.load(this.props);
+	    }
+	  }, {
+	    key: 'componentWillReceiveProps',
+	    value: function componentWillReceiveProps(nextProps) {
+	      var _this2 = this;
+
+	      var propKeys = Object.keys(nextProps).filter(function (key) {
+	        return !PromiseContainer.propTypes.hasOwnProperty(key);
+	      });
+	      if (!propKeys.every(function (key) {
+	        return nextProps[key] === _this2.props[key];
+	      })) {
+	        this.setState({ pending: true });
+	        this.load(nextProps);
+	      }
+	    }
+	  }, {
+	    key: 'load',
+	    value: function load(props) {
+	      var _this3 = this;
+
+	      var propKeys = Object.keys(props).filter(function (key) {
+	        return !PromiseContainer.propTypes.hasOwnProperty(key);
+	      });
+	      Promise.all(propKeys.map(function (key) {
+	        return Promise.resolve(props[key]);
+	      })).then(function (values) {
+	        var resolvedProps = {};
+	        propKeys.forEach(function (key, i) {
+	          return resolvedProps[key] = values[i];
+	        });
+	        _this3.setState({ pending: false, props: resolvedProps });
+	      }).catch(function (err) {
+	        _this3.setState({ pending: false, err: err });
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      if (this.state.pending) {
+	        return _react2.default.createElement(
+	          'section',
+	          null,
+	          _react2.default.createElement(_ProgressBar2.default, null)
+	        );
+	      }
+
+	      if (this.state.err) {
+	        console.log("Oh sorrow! Error: %o", this.state.err);
+	        return _react2.default.createElement(
+	          'section',
+	          null,
+	          _react2.default.createElement(
+	            'div',
+	            { className: 'alert alert-danger' },
+	            _react2.default.createElement(
+	              'strong',
+	              null,
+	              'Oh sorrow!'
+	            ),
+	            ' ',
+	            this.state.err.toString()
+	          )
+	        );
+	      }
+
+	      var onlyChild = _react2.default.Children.only(this.props.children);
+	      return _react2.default.cloneElement(onlyChild, this.state.props);
+	    }
+	  }]);
+
+	  return PromiseContainer;
+	}(_react2.default.PureComponent);
+
+	PromiseContainer.propTypes = {
+	  children: _react2.default.PropTypes.element.isRequired
+	};
+
+	exports.default = PromiseContainer;
+
+/***/ },
+/* 370 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _ChangePassword = __webpack_require__(371);
 
 	var _ChangePassword2 = _interopRequireDefault(_ChangePassword);
 
@@ -46139,7 +46366,7 @@
 	exports.default = Profile;
 
 /***/ },
-/* 370 */
+/* 371 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46293,7 +46520,7 @@
 	exports.default = PasswordChange;
 
 /***/ },
-/* 371 */
+/* 372 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46314,7 +46541,7 @@
 
 	var _moment2 = _interopRequireDefault(_moment);
 
-	var _Fortune = __webpack_require__(372);
+	var _Fortune = __webpack_require__(373);
 
 	var _Fortune2 = _interopRequireDefault(_Fortune);
 
@@ -46326,11 +46553,11 @@
 
 	var _formatters = __webpack_require__(242);
 
-	var _FormAccountButton = __webpack_require__(373);
+	var _FormAccountButton = __webpack_require__(374);
 
 	var _FormAccountButton2 = _interopRequireDefault(_FormAccountButton);
 
-	var _TableWithCheckboxes = __webpack_require__(374);
+	var _TableWithCheckboxes = __webpack_require__(375);
 
 	var _TableWithCheckboxes2 = _interopRequireDefault(_TableWithCheckboxes);
 
@@ -47059,7 +47286,7 @@
 	exports.default = Reconciliation;
 
 /***/ },
-/* 372 */
+/* 373 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47127,7 +47354,7 @@
 	exports.default = Fortune;
 
 /***/ },
-/* 373 */
+/* 374 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47228,7 +47455,7 @@
 	exports.default = FormAccountButton;
 
 /***/ },
-/* 374 */
+/* 375 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -47386,7 +47613,7 @@
 	exports.default = TableWithCheckboxes;
 
 /***/ },
-/* 375 */
+/* 376 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47481,7 +47708,7 @@
 	exports.default = Reports;
 
 /***/ },
-/* 376 */
+/* 377 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47838,7 +48065,7 @@
 	exports.default = VizFlowsSankey;
 
 /***/ },
-/* 377 */
+/* 378 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47861,7 +48088,7 @@
 
 	var _DateInput2 = _interopRequireDefault(_DateInput);
 
-	var _PromiseContainer = __webpack_require__(378);
+	var _PromiseContainer = __webpack_require__(369);
 
 	var _PromiseContainer2 = _interopRequireDefault(_PromiseContainer);
 
@@ -48026,6 +48253,7 @@
 	      var color = d3.scaleOrdinal(d3.schemeCategory20);
 
 	      var svg = div.append("svg").attr("width", width + margin.left + margin.right).attr("height", h1 + margin.top + margin.bottom).attr("font-size", 10).attr("font-family", "sans-serif");
+	      //const defs = svg.append("defs");
 	      var g = svg.append("g").append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 	      var y = d3.scaleLinear().rangeRound([h1, 0]);
@@ -48064,7 +48292,9 @@
 	        return y(d[1] - d[0] + yBands[j]) - j * padding;
 	      };
 
-	      g.append("g").attr("class", "axis axis-x").attr("transform", "translate(0," + h1 + ")").call(d3.axisBottom(x)).select(".domain").style("display", "none");
+	      g.append("g").attr("class", "axis axis-x").attr("transform", "translate(0," + h1 + ")").call(d3.axisBottom(x).tickSize(0)).call(function (g) {
+	        return g.select(".domain").style("display", "none");
+	      });
 
 	      g.append("g").attr("class", "axis axis-y").call(d3.axisLeft(y));
 
@@ -48378,130 +48608,6 @@
 	}(_react2.default.Component);
 
 	exports.default = VizHistogram;
-
-/***/ },
-/* 378 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(1);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _ProgressBar = __webpack_require__(363);
-
-	var _ProgressBar2 = _interopRequireDefault(_ProgressBar);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var PromiseContainer = function (_React$PureComponent) {
-	  _inherits(PromiseContainer, _React$PureComponent);
-
-	  function PromiseContainer(props) {
-	    _classCallCheck(this, PromiseContainer);
-
-	    var _this = _possibleConstructorReturn(this, (PromiseContainer.__proto__ || Object.getPrototypeOf(PromiseContainer)).call(this, props));
-
-	    _this.state = { pending: true };
-	    return _this;
-	  }
-
-	  _createClass(PromiseContainer, [{
-	    key: 'componentDidMount',
-	    value: function componentDidMount() {
-	      this.load(this.props);
-	    }
-	  }, {
-	    key: 'componentWillReceiveProps',
-	    value: function componentWillReceiveProps(nextProps) {
-	      var _this2 = this;
-
-	      var propKeys = Object.keys(nextProps).filter(function (key) {
-	        return !PromiseContainer.propTypes.hasOwnProperty(key);
-	      });
-	      if (!propKeys.every(function (key) {
-	        return nextProps[key] === _this2.props[key];
-	      })) {
-	        this.setState({ pending: true });
-	        this.load(nextProps);
-	      }
-	    }
-	  }, {
-	    key: 'load',
-	    value: function load(props) {
-	      var _this3 = this;
-
-	      var propKeys = Object.keys(props).filter(function (key) {
-	        return !PromiseContainer.propTypes.hasOwnProperty(key);
-	      });
-	      Promise.all(propKeys.map(function (key) {
-	        return Promise.resolve(props[key]);
-	      })).then(function (values) {
-	        var resolvedProps = {};
-	        propKeys.forEach(function (key, i) {
-	          return resolvedProps[key] = values[i];
-	        });
-	        _this3.setState({ pending: false, props: resolvedProps });
-	      }).catch(function (err) {
-	        _this3.setState({ pending: false, err: err });
-	      });
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      if (this.state.pending) {
-	        return _react2.default.createElement(
-	          'section',
-	          null,
-	          _react2.default.createElement(_ProgressBar2.default, null)
-	        );
-	      }
-
-	      if (this.state.err) {
-	        console.log("Oh sorrow! Error: %o", this.state.err);
-	        return _react2.default.createElement(
-	          'section',
-	          null,
-	          _react2.default.createElement(
-	            'div',
-	            { className: 'alert alert-danger' },
-	            _react2.default.createElement(
-	              'strong',
-	              null,
-	              'Oh sorrow!'
-	            ),
-	            ' ',
-	            this.state.err.toString()
-	          )
-	        );
-	      }
-
-	      var onlyChild = _react2.default.Children.only(this.props.children);
-	      return _react2.default.cloneElement(onlyChild, this.state.props);
-	    }
-	  }]);
-
-	  return PromiseContainer;
-	}(_react2.default.PureComponent);
-
-	PromiseContainer.propTypes = {
-	  children: _react2.default.PropTypes.element.isRequired
-	};
-
-	exports.default = PromiseContainer;
 
 /***/ },
 /* 379 */
