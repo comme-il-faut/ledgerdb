@@ -121,6 +121,7 @@ class VizHistogram_Chart extends React.PureComponent {
       .attr("height", h1 + margin.top + margin.bottom)
       .attr("font-size", 10)
       .attr("font-family", "sans-serif");
+    //const defs = svg.append("defs");
     const g = svg.append("g").append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -173,9 +174,11 @@ class VizHistogram_Chart extends React.PureComponent {
     g.append("g")
       .attr("class", "axis axis-x")
       .attr("transform", "translate(0," + h1 + ")")
-      .call(d3.axisBottom(x))
-      .select(".domain")
-        .style("display", "none");
+      .call(d3.axisBottom(x)
+        .tickSize(0))
+      .call(g =>
+        g.select(".domain")
+          .style("display", "none"));
 
     g.append("g")
       .attr("class", "axis axis-y")
@@ -378,7 +381,7 @@ class VizHistogram extends React.Component {
     this.accounts = fetch("api/account", {
       method: "get",
       headers: { "Authorization": sessionStorage.token }
-    }).then(fetchJSON)
+    }).then(fetchJSON);
 
     this.state = {
       date: "15m",
