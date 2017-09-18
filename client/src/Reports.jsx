@@ -1,5 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { NavLink, Route } from 'react-router-dom';
+
+import VizFlowsSankey from './VizFlowsSankey';
+import VizHistogram from './VizHistogram';
+import promisedComponent from './promisedComponent';
 
 class Reports extends React.PureComponent {
 
@@ -13,18 +17,19 @@ class Reports extends React.PureComponent {
         <div className="col-sm-3 col-md-2 sidebar">
           <ul className="nav nav-sidebar">
             <li>
-              <Link to="/reports/histogram" activeClassName="active">Histogram of Expenses</Link>
+              <NavLink to="/reports/histogram" activeClassName="active">Histogram of Expenses</NavLink>
             </li>
             <li>
               <a href="#">Histogram of Expenses MTD</a>
             </li>
             <li>
-              <Link to="/reports/flows" activeClassName="active">Flow Diagram</Link>
+              <NavLink to="/reports/flows" activeClassName="active">Flow Diagram</NavLink>
             </li>
           </ul>
         </div>
         <div className="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          {this.props.children}
+          <Route path={this.props.match.url + "/histogram"} component={promisedComponent(VizHistogram)}/>
+          <Route path={this.props.match.url + "/flows"} component={promisedComponent(VizFlowsSankey)}/>
         </div>
       </div>
     )

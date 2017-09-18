@@ -1,9 +1,10 @@
+var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: '../server/src/main/resources/assets/',
+    path: path.resolve(__dirname, '../server/src/main/resources/assets/'),
     filename: 'bundle.js'
   },
   module: {
@@ -19,6 +20,6 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['', '.js', '.jsx']
+    extensions: ['.js', '.jsx']
   }
 };

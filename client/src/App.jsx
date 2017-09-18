@@ -1,8 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link, NavLink, Route, Switch } from 'react-router-dom';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
+import AccountBalances from './AccountBalances';
+import Dashboard from './Dashboard';
 import Login from './Login';
+import Post from './Post';
+import Postings from './Postings';
+import Profile from './Profile';
+import Reconciliation from './Reconciliation';
+import Reports from './Reports';
+import promisedComponent from './promisedComponent';
 
 class App extends React.Component {
 
@@ -97,37 +105,37 @@ class App extends React.Component {
           <div id="navbar" className="navbar-collapse collapse">
             <ul className="nav navbar-nav navbar-left">
               <li>
-                <Link to="/post" activeClassName="active">
+                <NavLink to="/post" activeClassName="active">
                   <i className="fa fa-plus" aria-hidden="true"></i> Post
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link to="/postings" activeClassName="active">
+                <NavLink to="/postings" activeClassName="active">
                   <i className="fa fa-search" aria-hidden="true"></i> Postings
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link to="/recon" activeClassName="active">
+                <NavLink to="/recon" activeClassName="active">
                   <i className="fa fa-handshake-o" aria-hidden="true"></i> Reconciliation
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link to="/balance" activeClassName="active">
+                <NavLink to="/balance" activeClassName="active">
                   <i className="fa fa-balance-scale" aria-hidden="true"></i> Balances
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link to="/reports" activeClassName="active">
+                <NavLink to="/reports" activeClassName="active">
                   <i className="fa fa-bar-chart" aria-hidden="true"></i> Reports
-                </Link>
+                </NavLink>
               </li>
             </ul>
             <ul className="nav navbar-nav navbar-right">
               {/*
               <li>
-                <Link to="/admin">
+                <NavLink to="/admin">
                   <i className="fa fa-lock" aria-hidden="true"></i> Administration
-                </Link>
+                </NavLink>
               </li>
               */}
               <li className="dropdown">
@@ -159,12 +167,21 @@ class App extends React.Component {
           transitionEnterTimeout={500}
           transitionLeave={false}
         >
-        {React.cloneElement(this.props.children, { key:
-          /\w*/.exec(this.props.location.pathname)[0]
-        })}
+          <Switch key={/\w*/.exec(location.hash)[0]}>
+            <Route exact path="/" component={Dashboard}/>
+
+            <Route path="/post" component={Post}/>
+            <Route path="/postings" component={Postings}/>
+            <Route path="/recon" component={promisedComponent(Reconciliation)}/>
+            <Route path="/balance" component={promisedComponent(AccountBalances)}/>
+            <Route path="/reports" component={Reports}/>
+
+            {/*<Route path="/admin" component={Admin}/>*/}
+            <Route path="/profile" component={Profile}/>
+          </Switch>
         </ReactCSSTransitionGroup>
       </div>
-    )
+    );
   }
 
 }
