@@ -60,12 +60,31 @@ class App extends React.Component {
           }
         })
         .catch(err => {
+          console.log("Error: %o", err)
           this.setState({ auth: null, err: err });
         });
     }
   }
 
   render() {
+    if (this.state.err) {
+      /*
+      return (
+        <div className="container">
+          <div className="alert alert-danger">
+            <strong>Oh sorrow!</strong> {this.state.err.toString()}
+          </div>
+        </div>
+      );
+      */
+      // TODO try key attr on div container ???
+      return (
+        <div className="container alert alert-danger">
+          <strong>Oh sorrow!</strong> {this.state.err.toString()}
+        </div>
+      );
+    }
+
     if (!this.state.auth) {
       return (
         <div className="container">
@@ -167,7 +186,7 @@ class App extends React.Component {
           transitionEnterTimeout={500}
           transitionLeave={false}
         >
-          <Switch key={/\w*/.exec(location.hash)[0]}>
+          <Switch key={/^\w*/.exec(location.hash.replace(/^\W+/, ""))[0]}>
             <Route exact path="/" component={Dashboard}/>
 
             <Route path="/post" component={Post}/>
