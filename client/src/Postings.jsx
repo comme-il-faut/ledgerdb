@@ -63,8 +63,11 @@ class Postings extends React.Component {
             <label className="col-sm-3 control-label">By account:</label>
             <div className="col-sm-9">
               <PromiseContainer
-                  accountTypes={this.accountType}
-                  accounts={this.account}>
+                wait={false}
+                promises={{
+                  accountTypes: this.accountType,
+                  accounts: this.account
+                }}>
                 <AccountSelect
                   className="form-control"
                   multiple="multiple"

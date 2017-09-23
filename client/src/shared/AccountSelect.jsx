@@ -7,7 +7,7 @@ function AccountSelect(props) {
   return (
     <select {...props2}>
       <option value="" hidden>Choose account...</option>
-      {props.accountTypes.map((accountType) => (
+      {props.hasOwnProperty("accountTypes") ? props.accountTypes.map((accountType) => (
         <optgroup
           key={accountType.accountType}
           label={accountType.mask + " - " + accountType.description}
@@ -23,7 +23,9 @@ function AccountSelect(props) {
             </option>
           ))}
         </optgroup>
-      ))}
+      )) : (
+        <optgroup disabled label="Loading..." className="text-muted"></optgroup>
+      )}
     </select>
   );
 }

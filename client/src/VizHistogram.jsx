@@ -436,7 +436,11 @@ class VizHistogram extends React.Component {
           onDateChange={this.handleDateChange}
           onModeChange={this.handleModeChange}
         />
-        <PromiseContainer accounts={this.accounts} histogram={this.histogram}>
+        <PromiseContainer
+          promises={{
+            accounts: this.accounts,
+            histogram: this.histogram
+          }}>
           <VizHistogram_Chart
             mode={this.state.mode}
           />

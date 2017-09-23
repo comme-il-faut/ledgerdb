@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import ProgressBar from './ProgressBar';
 
@@ -10,19 +11,19 @@ class PromiseContainer extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.load(this.props);
+    this.load(this.props.promises);
   }
 
   componentWillReceiveProps(nextProps) {
-    const propKeys = Object.keys(nextProps).filter(key => !PromiseContainer.propTypes.hasOwnProperty(key));
-    if (!propKeys.every(key => nextProps[key] === this.props[key])) {
+    const propKeys = Object.keys(nextProps.promises);
+    if (!propKeys.every(key => nextProps.promises[key] === this.props.promises[key])) {
       this.setState({ pending: true });
-      this.load(nextProps);
+      this.load(nextProps.promises);
     }
   }
 
   load(props) {
-    const propKeys = Object.keys(props).filter(key => !PromiseContainer.propTypes.hasOwnProperty(key));
+    const propKeys = Object.keys(props);
     Promise.all(propKeys.map(key => Promise.resolve(props[key])))
       .then(values => {
         const resolvedProps = {};
@@ -36,11 +37,16 @@ class PromiseContainer extends React.PureComponent {
 
   render() {
     if (this.state.pending) {
-      return (
-        <section>
-          <ProgressBar/>
-        </section>
-      );
+      if (this.props.wait) {
+        return (
+          <section>
+            <ProgressBar/>
+          </section>
+        );
+      } else {
+        const onlyChild = React.Children.only(this.props.children);
+        return onlyChild;
+      }
     }
 
     if (this.state.err) {
@@ -60,7 +66,14 @@ class PromiseContainer extends React.PureComponent {
 }
 
 PromiseContainer.propTypes = {
-  children: React.PropTypes.element.isRequired
-}
+  children: PropTypes.element.isRequired,
+  promises: PropTypes.object.isRequired,
+  defaults: PropTypes.object,
+  wait: PropTypes.bool
+};
+
+PromiseContainer.defaultProps = {
+  wait: true
+};
 
 export default PromiseContainer;
