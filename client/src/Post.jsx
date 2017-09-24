@@ -98,7 +98,7 @@ class Post extends React.Component {
           <div className="col-sm-offset-3 col-sm-9">
             <button
               type="submit"
-              className={"btn btn-primary btn-lg" + (this.state.running ? " disabled" : "")}
+              className={"btn btn-success" + (this.state.running ? " disabled" : "")}
             >
               <i className="fa fa-plus" aria-hidden="true"></i> Post
             </button>
