@@ -45619,7 +45619,7 @@ var Post = function (_React$Component) {
               'button',
               {
                 type: 'submit',
-                className: "btn btn-primary btn-lg" + (this.state.running ? " disabled" : "")
+                className: "btn btn-success" + (this.state.running ? " disabled" : "")
               },
               _react2.default.createElement('i', { className: 'fa fa-plus', 'aria-hidden': 'true' }),
               ' Post'
@@ -47026,19 +47026,21 @@ var _formatters = __webpack_require__(42);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Postings = function (_React$Component) {
-  _inherits(Postings, _React$Component);
+var PostingsSearchForm = function (_React$Component) {
+  _inherits(PostingsSearchForm, _React$Component);
 
-  function Postings(props) {
-    _classCallCheck(this, Postings);
+  function PostingsSearchForm(props) {
+    _classCallCheck(this, PostingsSearchForm);
 
-    var _this = _possibleConstructorReturn(this, (Postings.__proto__ || Object.getPrototypeOf(Postings)).call(this, props));
+    var _this = _possibleConstructorReturn(this, (PostingsSearchForm.__proto__ || Object.getPrototypeOf(PostingsSearchForm)).call(this, props));
 
     var resources = ["account_type", "account"];
     resources.forEach(function (resource) {
@@ -47051,7 +47053,198 @@ var Postings = function (_React$Component) {
       }).then(_fetch.fetchJSON);
     });
 
+    _this.state = {
+      q: "", // Search query
+      d1: "", // Start date
+      d2: "", // End date
+      a: [] // Account(s)
+    };
+
+    _this.handleChange = _this.handleChange.bind(_this);
+    _this.handleSubmit = _this.handleSubmit.bind(_this);
+    _this.handleClear = _this.handleClear.bind(_this);
     return _this;
+  }
+
+  _createClass(PostingsSearchForm, [{
+    key: 'handleChange',
+    value: function handleChange(e) {
+      if (e.target.type == "select-multiple") {
+        this.setState(_defineProperty({}, e.target.id, Array.from(e.target.selectedOptions).map(function (o) {
+          return o.value;
+        })));
+      } else {
+        this.setState(_defineProperty({}, e.target.id, e.target.value));
+      }
+    }
+  }, {
+    key: 'handleClear',
+    value: function handleClear(e) {
+      e.preventDefault();
+      this.setState({ q: "", d1: "", d2: "", a: [] });
+    }
+  }, {
+    key: 'handleSubmit',
+    value: function handleSubmit(e) {
+      e.preventDefault();
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this2 = this;
+
+      return _react2.default.createElement(
+        'form',
+        { className: 'form-horizontal', onSubmit: this.handleSubmit },
+        _react2.default.createElement(
+          'div',
+          { className: 'form-group' },
+          _react2.default.createElement(
+            'label',
+            { htmlFor: 'q', className: 'col-sm-3 control-label' },
+            'Search:'
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: 'col-sm-9' },
+            _react2.default.createElement(
+              'div',
+              { className: 'input-group' },
+              _react2.default.createElement('input', { id: 'q', name: 'q', type: 'text',
+                className: 'form-control',
+                value: this.state.q,
+                onChange: this.handleChange
+              }),
+              _react2.default.createElement(
+                'span',
+                { className: 'input-group-btn' },
+                _react2.default.createElement(
+                  'button',
+                  { type: 'submit', className: 'btn btn-default' },
+                  _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
+                  ' Search'
+                )
+              )
+            )
+          )
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: 'form-group' },
+          _react2.default.createElement(
+            'label',
+            { className: 'col-sm-3 control-label' },
+            'By date:'
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: 'col-sm-9' },
+            _react2.default.createElement(
+              'div',
+              { className: 'pull-left' },
+              _react2.default.createElement(
+                'small',
+                null,
+                'Start date:'
+              ),
+              _react2.default.createElement('br', null),
+              _react2.default.createElement(_DateInput2.default, { id: 'd1',
+                format: _DateInput.DATE_FORMAT_MDY,
+                value: this.state.d1,
+                onChange: function onChange(date) {
+                  return _this2.setState({ d1: date });
+                }
+              })
+            ),
+            _react2.default.createElement(
+              'div',
+              { className: 'pull-left' },
+              _react2.default.createElement(
+                'small',
+                null,
+                'End date:'
+              ),
+              _react2.default.createElement('br', null),
+              _react2.default.createElement(_DateInput2.default, { id: 'd2',
+                format: _DateInput.DATE_FORMAT_MDY,
+                value: this.state.d2,
+                onChange: function onChange(date) {
+                  return _this2.setState({ d2: date });
+                }
+              })
+            )
+          )
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: 'form-group' },
+          _react2.default.createElement(
+            'label',
+            { className: 'col-sm-3 control-label' },
+            'By account:'
+          ),
+          _react2.default.createElement(
+            'div',
+            { className: 'col-sm-9' },
+            _react2.default.createElement(
+              _PromiseContainer2.default,
+              {
+                wait: false,
+                promises: {
+                  accountTypes: this.accountType,
+                  accounts: this.account
+                } },
+              _react2.default.createElement(_AccountSelect2.default, {
+                className: 'form-control',
+                multiple: 'multiple',
+                size: '15',
+                id: 'a',
+                value: this.state.a,
+                onChange: this.handleChange
+              })
+            )
+          )
+        ),
+        _react2.default.createElement(
+          'div',
+          { className: 'form-group' },
+          _react2.default.createElement(
+            'div',
+            { className: 'col-sm-offset-3 col-sm-9' },
+            _react2.default.createElement(
+              'button',
+              { type: 'submit', className: 'btn btn-primary' },
+              _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
+              ' Search'
+            ),
+            " ",
+            _react2.default.createElement(
+              'button',
+              { type: 'reset', className: 'btn btn-default', onClick: this.handleClear },
+              _react2.default.createElement('i', { className: 'fa fa-eraser', 'aria-hidden': 'true' }),
+              ' Clear'
+            )
+          )
+        ),
+        _react2.default.createElement(
+          'div',
+          null,
+          JSON.stringify(this.state)
+        )
+      );
+    }
+  }]);
+
+  return PostingsSearchForm;
+}(_react2.default.Component);
+
+var Postings = function (_React$Component2) {
+  _inherits(Postings, _React$Component2);
+
+  function Postings(props) {
+    _classCallCheck(this, Postings);
+
+    return _possibleConstructorReturn(this, (Postings.__proto__ || Object.getPrototypeOf(Postings)).call(this, props));
   }
 
   _createClass(Postings, [{
@@ -47065,113 +47258,7 @@ var Postings = function (_React$Component) {
       return _react2.default.createElement(
         'section',
         null,
-        _react2.default.createElement(
-          'form',
-          { className: 'form-horizontal' },
-          _react2.default.createElement(
-            'div',
-            { className: 'form-group' },
-            _react2.default.createElement(
-              'label',
-              { htmlFor: 'q', className: 'col-sm-3 control-label' },
-              'Search:'
-            ),
-            _react2.default.createElement(
-              'div',
-              { className: 'col-sm-9' },
-              _react2.default.createElement(
-                'div',
-                { className: 'input-group' },
-                _react2.default.createElement('input', { id: 'q', name: 'q', type: 'text', className: 'form-control' }),
-                _react2.default.createElement(
-                  'span',
-                  { className: 'input-group-btn' },
-                  _react2.default.createElement(
-                    'button',
-                    { type: 'submit', className: 'btn btn-default' },
-                    _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
-                    ' Search'
-                  )
-                )
-              )
-            )
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'form-group' },
-            _react2.default.createElement(
-              'label',
-              { className: 'col-sm-3 control-label' },
-              'By date:'
-            ),
-            _react2.default.createElement(
-              'div',
-              { className: 'col-sm-9' },
-              _react2.default.createElement(
-                'div',
-                { className: 'pull-left' },
-                _react2.default.createElement(
-                  'small',
-                  null,
-                  'Start date:'
-                ),
-                _react2.default.createElement('br', null),
-                _react2.default.createElement(_DateInput2.default, { id: 'date1' })
-              ),
-              _react2.default.createElement(
-                'div',
-                { className: 'pull-left' },
-                _react2.default.createElement(
-                  'small',
-                  null,
-                  'End date:'
-                ),
-                _react2.default.createElement('br', null),
-                _react2.default.createElement(_DateInput2.default, { id: 'date1' })
-              )
-            )
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'form-group' },
-            _react2.default.createElement(
-              'label',
-              { className: 'col-sm-3 control-label' },
-              'By account:'
-            ),
-            _react2.default.createElement(
-              'div',
-              { className: 'col-sm-9' },
-              _react2.default.createElement(
-                _PromiseContainer2.default,
-                {
-                  wait: false,
-                  promises: {
-                    accountTypes: this.accountType,
-                    accounts: this.account
-                  } },
-                _react2.default.createElement(_AccountSelect2.default, {
-                  className: 'form-control',
-                  multiple: 'multiple',
-                  size: '15' })
-              )
-            )
-          ),
-          _react2.default.createElement(
-            'div',
-            { className: 'form-group' },
-            _react2.default.createElement(
-              'div',
-              { className: 'col-sm-offset-3 col-sm-9' },
-              _react2.default.createElement(
-                'button',
-                { type: 'submit', className: 'btn btn-default' },
-                _react2.default.createElement('i', { className: 'fa fa-search', 'aria-hidden': 'true' }),
-                ' Search'
-              )
-            )
-          )
-        ),
+        _react2.default.createElement(PostingsSearchForm, null),
         _react2.default.createElement(
           'p',
           null,
