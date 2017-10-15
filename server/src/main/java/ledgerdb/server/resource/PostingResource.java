@@ -3,9 +3,12 @@ package ledgerdb.server.resource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.dropwizard.auth.Auth;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
@@ -25,6 +28,7 @@ import ledgerdb.server.auth.User;
 import ledgerdb.server.db.AccountBalance;
 import ledgerdb.server.db.PostingDetail;
 import ledgerdb.server.db.PostingHeader;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -50,9 +54,83 @@ public class PostingResource {
     }
     
     @GET
-    public String doGet() throws SQLException, JsonProcessingException {
-        try (Session s = sf.openSession()) {
-            return s.doReturningWork(con -> {
+    public String doGet(
+            @QueryParam("s") @Pattern(regexp = "^[\\p{Print}]+$") String s,
+            @QueryParam("d1") @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d1,
+            @QueryParam("d2") @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d2,
+            @QueryParam("a") @Pattern(regexp = "^[\\d ]+$") String a)
+            throws SQLException, JsonProcessingException {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+                "select * \n"
+                + "from posting_header ph \n"
+                + "natural join posting_detail pd \n"
+                + "where 1=1 \n");
+        
+        ArrayList<Object> placeholders = new ArrayList<>();
+        
+        //TODO support AND and OR logic
+        if (StringUtils.isNotBlank(s)) {
+            for (String keyword : s.trim().split(" +")) {
+                sb.append("and ph.description like ? escape '!' \n");
+                placeholders.add(keyword
+                        .replace("!", "!!")
+                        .replace("%", "!%")
+                        .replace("_", "!_")
+                        .replace("[", "!["));
+            }
+        }
+        if (StringUtils.isNotBlank(d1)) {
+            //sb.append("and ph.posting_date <= ? \n");
+            //placeholders.add(LocalDate.parse(d1));
+            // org.postgresql.util.PSQLException: Can't infer the SQL type to use for an instance of java.time.LocalDate.
+            sb.append("and ph.posting_date >= to_date(?, 'yyyy-mm-dd') \n");
+            placeholders.add(d1);
+        }
+        if (StringUtils.isNotBlank(d2)) {
+            //sb.append("and ph.posting_date <= ? \n");
+            //placeholders.add(LocalDate.parse(d2));
+            sb.append("and ph.posting_date <= to_date(?, 'yyyy-mm-dd') \n");
+            placeholders.add(d2);
+        }
+        if (StringUtils.isNotBlank(a)) {
+            String[] accounts = a.trim().split(" +");
+            sb.append("and exists ( \n");
+            sb.append("  select 1 from posting_detail \n");
+            sb.append("  where posting_header_id = ph.posting_header_id \n");
+            sb.append("  and account_id in (")
+                    .append(StringUtils.repeat("?", ",", accounts.length))
+                    .append(") \n");
+            sb.append(") \n");
+            for (String account : accounts) {
+                placeholders.add(new Integer(account));
+            }
+        }
+        
+        if (placeholders.isEmpty()) {
+            throw new BadRequestException();
+        }
+        
+        sb.append("order by \n"
+                + "  posting_header_id desc, \n"
+                + "  sign(amount) desc, \n" // debit/positive first, then credit/negative
+                + "  posting_detail_id \n");
+        
+        try (Session session = sf.openSession()) {
+            return session.doReturningWork(con -> {
+                try (PreparedStatement st = con.prepareStatement(sb.toString())) {
+                    for (int i = 0; i < placeholders.size(); i++) {
+                        st.setObject(i + 1, placeholders.get(i));
+                    }
+                    ResultSet rs = st.executeQuery();
+                    return ResponseFormatter.format(rs);
+                }
+            });
+        }
+        /*
+        try (Session session = sf.openSession()) {
+            return session.doReturningWork(con -> {
                 try (Statement st = con.createStatement()) {
                     ResultSet rs = st.executeQuery(
                         "select \n"
@@ -74,6 +152,7 @@ public class PostingResource {
                 }
             });
         }
+        */
     }
     
     @POST

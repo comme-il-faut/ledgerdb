@@ -1,7 +1,10 @@
 import React from 'react';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import moment from 'moment';
 
 import AccountSelect from './shared/AccountSelect';
 import DateInput from './shared/DateInput';
+import Fortune from './shared/Fortune';
 import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY } from './shared/DateInput';
 import { fetchJSON } from './fetch';
@@ -12,18 +15,8 @@ class PostingsSearchForm extends React.Component {
   constructor(props) {
     super(props);
 
-    const resources = ["account_type", "account"];
-    resources.forEach(resource => {
-      const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase());
-      this[key] = 
-        fetch('api/' + resource, {
-          method: 'get',
-          headers: { 'Authorization': sessionStorage.token }
-        }).then(fetchJSON);
-    });
-
     this.state = {
-      q: "",  // Search query
+      s: "",  // Search query
       d1: "", // Start date
       d2: "", // End date
       a: []   // Account(s)
@@ -44,23 +37,45 @@ class PostingsSearchForm extends React.Component {
 
   handleClear(e) {
     e.preventDefault();
-    this.setState({ q: "", d1: "", d2: "", a: [] });
+    this.setState({ s: "", d1: "", d2: "", a: [] });
   }
 
   handleSubmit(e) {
     e.preventDefault();
+
+    const params = {};
+    for (const s of [this.state.s.trim()]) {
+      if (s) params.s = s;
+    }
+    for (const d of ["d1", "d2"]) {
+      const m = moment(this.state[d], DATE_FORMAT_MDY, true); // use strict parsing
+      if (m.isValid()) {
+        params[d] = m.format("YYYY-MM-DD");
+      }
+    }
+    if (this.state.a.length > 0) {
+      params.a = this.state.a.join(" "); // space will be encoded as +
+    }
+
+    const querystring = $.param(params, true).replace(/%20/g, "+");
+    if (querystring.length == 0) {
+      document.getElementById('s').focus();
+    } else {
+      this.props.onSubmit(querystring);
+    }
+
   }
 
   render() {
     return (
       <form className="form-horizontal" onSubmit={this.handleSubmit}>
         <div className="form-group">
-          <label htmlFor="q" className="col-sm-3 control-label">Search:</label>
+          <label htmlFor="s" className="col-sm-3 control-label">Search:</label>
           <div className="col-sm-9">
             <div className="input-group">
-              <input id="q" name="q" type="text"
+              <input id="s" name="s" type="text"
                 className="form-control"
-                value={this.state.q}
+                value={this.state.s}
                 onChange={this.handleChange}
               />
               <span className="input-group-btn">
@@ -100,8 +115,8 @@ class PostingsSearchForm extends React.Component {
             <PromiseContainer
               wait={false}
               promises={{
-                accountTypes: this.accountType,
-                accounts: this.account
+                accountTypes: this.props.accountTypes,
+                accounts: this.props.accounts
               }}>
               <AccountSelect
                 className="form-control"
@@ -125,99 +140,119 @@ class PostingsSearchForm extends React.Component {
             </button>
           </div>
         </div>
-        <div>{JSON.stringify(this.state)}</div>
       </form>
     );
   }
 
 }
 
-class Postings extends React.Component {
+class PostingsSearchResults extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.accounts = {};
+    props.accounts.forEach(a => {
+      this.accounts[a.accountId] = a;
+    });
   }
 
-  componentDidMount() {
-    document.title = "LedgerDB - Postings";
+  getAccountName(accountId) {
+    return this.accounts[accountId] &&
+      this.accounts[accountId].name;
   }
 
   render() {
-    return (
-      <section>
-        <PostingsSearchForm/>
-        <p>{JSON.stringify(this.props)}</p>
-      </section>
-    );
-  }
+    const p = new URLSearchParams(this.props.search);
 
-  /*
-  static getInitialPromise() {
-    return fetch('api/posting', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    }).then(fetchJSON);
-  }
-  */
-
-  /*
-  render() {
-    const postings = this.props.data;
-    if (!postings || !(postings.length > 0)) {
-      return (
-        <p>Thou hast seen nothing yet.</p>
+    const list = [];
+    if (p.has("s")) {
+      list.push(
+        <li key="s">Keywords: {p.get("s")}</li>
+      );
+    }
+    if (p.has("d1")) {
+      list.push(
+        <li key="d1">Start date: {moment(p.get("d1")).format(DATE_FORMAT_MDY)}</li>
+      );
+    }
+    if (p.has("d2")) {
+      list.push(
+        <li key="d2">End date: {moment(p.get("d2")).format(DATE_FORMAT_MDY)}</li>
+      );
+    }
+    if (p.has("a")) {
+      list.push(
+        <li key="a">Accounts:
+          <ul>
+            {p.get("a").split(" ").map(a => (
+              <li key={a}>{a} - {this.getAccountName(a)}</li>
+            ))}
+          </ul>
+        </li>
       );
     }
 
-    let entries = [], entry = [];
-
-    postings.forEach((posting) => {
-      if (entry.length
-          && entry[0].postingHeaderId != posting.postingHeaderId) {
-        entries.push(entry);
-        entry = [];
+    const count = this.props.postings.length;
+    const entries = this.props.postings.reduce((entries, posting, i) => {
+      if (entries.length > 0 &&
+          entries[entries.length - 1][0].postingHeaderId == posting.postingHeaderId) {
+        entries[entries.length - 1].push(posting);
+      } else {
+        entries.push([posting]);
       }
-      entry.push(posting);
-    });
-    entries.push(entry);
+      return entries;
+    }, []);
 
-    let rows = [];
-    entries.forEach((entry) => {
-      rows.push(
-        <tr key={entry[0].postingHeaderId}>
-          <td className="text-nowrap">{entry[0].postingDate}</td>
-          <td className="text-nowrap">
-            {entry.map((posting) => this.renderSpan1(
-              posting,
-              posting.accountName
-            ))}
-          </td>
-          <td className="text-nowrap text-right">
-            {entry.map((posting) => this.renderSpan2(
-              posting,
-              formatAmount(posting.amount)
-            ))}
-          </td>
-          <td>{entry[0].description}</td>
-        </tr>
-      );
-    });
+    const rows = entries.map(entry => (
+      <tr key={entry[0].postingHeaderId}>
+        <td className="text-nowrap">{entry[0].postingDate}</td>
+        <td className="text-nowrap">
+          {entry.map((posting) => this.renderSpan1(
+            posting,
+            this.getAccountName(posting.accountId)
+          ))}
+        </td>
+        <td className="text-nowrap text-right">
+          {entry.map((posting) => this.renderSpan2(
+            posting,
+            formatAmount(posting.amount)
+          ))}
+        </td>
+        <td>{entry[0].description}</td>
+      </tr>
+    ));
 
     return (
-      <table className="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th className="col-md-1">Date</th>
-            <th className="col-md-2">Account</th>
-            <th className="col-md-1 text-right">Amount</th>
-            <th className="col-md-8">Description</th>
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+      <div>
+        <h3>Search Results</h3>
+        <p>Found {count} posting{count == 1 ? "" : "s"}.</p>
+        <ul>{list}</ul>
+        <section>
+          <table className="table table-striped table-condensed">
+            <thead>
+              <tr>
+                <th className="col-md-1">Date</th>
+                <th className="col-md-2">Account</th>
+                <th className="col-md-1 text-right">Amount</th>
+                <th className="col-md-8">Description</th>
+              </tr>
+            </thead>
+            <tbody>{rows}</tbody>
+          </table>
+        </section>
+        <hr/>
+        <Fortune
+          style={{
+            whiteSpace: "pre-wrap",
+            float: "right",
+            marginTop: '30px',
+            fontSize: '0.8em'
+          }}
+        />
+      </div>
     );
   }
-  */
 
   renderSpan1(posting, content) {
     let props = { key: posting.postingDetailId };
@@ -239,6 +274,95 @@ class Postings extends React.Component {
         {content}
         <br/>
       </span>
+    );
+  }
+
+}
+
+class Postings extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    //TODO - one-liner util fetch helper function
+    const resources = ["account_type", "account"];
+    resources.forEach(resource => {
+      const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase()) + "s";
+      this[key] = 
+        fetch('api/' + resource, {
+          method: 'get',
+          headers: { 'Authorization': sessionStorage.token }
+        }).then(fetchJSON);
+    });
+
+    this.handleSubmit = this.handleSubmit.bind(this);
+
+    const querystring = props.location.search;
+    if (querystring) {
+      this.search(querystring);
+    }
+  }
+
+  componentDidMount() {
+    if (!this.props.location.search) {
+      document.title = "LedgerDB - Postings";
+    } else {
+      document.title = "LedgerDB - Postings - Search Results";
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const querystring = nextProps.location.search;
+    if (querystring && querystring != this.props.location.search) {
+      this.search(querystring);
+    }
+  }
+
+  handleSubmit(querystring) {
+    this.props.history.push(this.props.location.pathname + "?" + querystring);
+  }
+
+  search(querystring) {
+    const url = 'api/posting' +
+      (querystring.startsWith("?")
+        ? querystring
+        : "?" + querystring);
+    this.postings = fetch(url, {
+      method: 'get',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchJSON);
+  }
+
+  render() {
+    let content;
+    if (!this.props.location.search) {
+      content = (
+        <PostingsSearchForm
+          accountTypes={this.accountTypes}
+          accounts={this.accounts}
+          onSubmit={this.handleSubmit}
+        />
+      );
+    } else {
+      content = (
+        <PromiseContainer promises={{
+          accounts: this.accounts,
+          postings: this.postings
+        }}>
+          <PostingsSearchResults
+            search={this.props.location.search}
+          />
+        </PromiseContainer>
+      );
+    }
+    return (
+      <ReactCSSTransitionGroup
+        component="div"
+        transitionName="transition-fade"
+        transitionEnterTimeout={500}
+        transitionLeave={false}
+      >{content}
+      </ReactCSSTransitionGroup>
     );
   }
 }
