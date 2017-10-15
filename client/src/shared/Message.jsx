@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 class Message extends React.PureComponent {
   constructor(props) {
@@ -71,7 +72,7 @@ class Message extends React.PureComponent {
 }
 
 Message.propTypes = {
-  //message: React.PropTypes.any // string or Error
+  //message: PropTypes.any // string or Error
   message: (props, propName, componentName) => {
     if (propName != "message")
       return new Error(

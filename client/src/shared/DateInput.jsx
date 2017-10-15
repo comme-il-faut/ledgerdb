@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Pikaday from 'pikaday';
 import moment from 'moment';
 
@@ -109,9 +110,9 @@ class DateInput extends React.PureComponent {
 }
 
 DateInput.propTypes = {
-  format: React.PropTypes.string.isRequired,
-  id: React.PropTypes.string,
-  onChange: React.PropTypes.func
+  format: PropTypes.string.isRequired,
+  id: PropTypes.string,
+  onChange: PropTypes.func
 };
 
 DateInput.defaultProps = {

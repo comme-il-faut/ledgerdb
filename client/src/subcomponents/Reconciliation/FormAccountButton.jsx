@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import AccountSelect from '../../shared/AccountSelect';
 
@@ -47,10 +48,10 @@ class FormAccountButton extends React.Component {
 }
 
 FormAccountButton.propTypes = {
-  accountTypes: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  accounts:     React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-  onSubmit:     React.PropTypes.func.isRequired,
-  loading:      React.PropTypes.bool
+  accountTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  accounts:     PropTypes.arrayOf(PropTypes.object).isRequired,
+  onSubmit:     PropTypes.func.isRequired,
+  loading:      PropTypes.bool
 };
 
 FormAccountButton.defaultProps = {

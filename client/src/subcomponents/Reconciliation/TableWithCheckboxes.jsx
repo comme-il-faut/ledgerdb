@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 class TableWithCheckboxes extends React.Component {
   constructor(props) {
@@ -94,11 +95,11 @@ TableWithCheckboxes.defaultProps = {
 };
 
 TableWithCheckboxes.propTypes = {
-  head:     React.PropTypes.element.isRequired,
-  rows:     React.PropTypes.arrayOf(React.PropTypes.element).isRequired,
-  onSubmit: React.PropTypes.func.isRequired,
-  button:   React.PropTypes.element,
-  loading:  React.PropTypes.bool
+  head:     PropTypes.element.isRequired,
+  rows:     PropTypes.arrayOf(PropTypes.element).isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  button:   PropTypes.element,
+  loading:  PropTypes.bool
 };
 
 export default TableWithCheckboxes;
