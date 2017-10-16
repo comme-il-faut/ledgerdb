@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, NavLink, Route, Switch } from 'react-router-dom';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import AccountBalances from './AccountBalances';
 import Dashboard from './Dashboard';
+import FadeIn from './shared/FadeIn';
 import Login from './Login';
 import Post from './Post';
 import Postings from './Postings';
@@ -180,12 +180,7 @@ class App extends React.Component {
           </div>
           </div>
         </nav>
-        <ReactCSSTransitionGroup
-          component="div"
-          transitionName="transition-fade"
-          transitionEnterTimeout={500}
-          transitionLeave={false}
-        >
+        <FadeIn transitionName="transition-fade" timeout={500}>
           <Switch key={/^\w*/.exec(location.hash.replace(/^\W+/, ""))[0]}>
             <Route exact path="/" component={Dashboard}/>
 
@@ -198,7 +193,7 @@ class App extends React.Component {
             {/*<Route path="/admin" component={Admin}/>*/}
             <Route path="/profile" component={Profile}/>
           </Switch>
-        </ReactCSSTransitionGroup>
+        </FadeIn>
       </div>
     );
   }

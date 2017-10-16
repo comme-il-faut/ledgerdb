@@ -1,9 +1,9 @@
 import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import moment from 'moment';
 
 import AccountSelect from './shared/AccountSelect';
 import DateInput from './shared/DateInput';
+import FadeIn from './shared/FadeIn';
 import Fortune from './shared/Fortune';
 import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY } from './shared/DateInput';
@@ -356,13 +356,9 @@ class Postings extends React.Component {
       );
     }
     return (
-      <ReactCSSTransitionGroup
-        component="div"
-        transitionName="transition-fade"
-        transitionEnterTimeout={500}
-        transitionLeave={false}
-      >{content}
-      </ReactCSSTransitionGroup>
+      <FadeIn transitionName="transition-fade" timeout={500}>
+        {content}
+      </FadeIn>
     );
   }
 }
