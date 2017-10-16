@@ -26,7 +26,6 @@
     "pikaday": "^1.6.1",
     "prop-types": "^15.6.0",
     "react": "^16.0.0",
-    "react-addons-css-transition-group": "^15.6.2",
     "react-dom": "^16.0.0",
     "react-router-dom": "^4.2.2"
   },
