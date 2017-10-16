@@ -15,8 +15,16 @@ export function fetchCheck(res) {
   }
 }
 
-export function fetchJSON(res) {
-  return Promise.resolve(res)
-    .then(fetchCheck)
-    .then(res => res.json());
+export function fetchJSON(arg) {
+  if (typeof(arg) === "object" && arg.constructor.name === "Response") {
+    //console.log("fetchJSON: " + arg.url);
+    return Promise.resolve(arg)
+      .then(fetchCheck)
+      .then(res => res.json());
+  } else if (typeof(arg) === "string") {
+    return fetch(arg, {
+      method: 'get',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchJSON);
+  }
 }

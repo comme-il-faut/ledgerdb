@@ -4,6 +4,7 @@ import moment from 'moment';
 import AccountSelect from './shared/AccountSelect';
 import DateInput from './shared/DateInput';
 import Message from './shared/Message';
+import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY } from './shared/DateInput';
 import { fetchJSON } from './fetch';
 
@@ -27,30 +28,13 @@ class Post extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleClear = this.handleClear.bind(this);
+
+    this.accountTypes = fetchJSON("api/account_type");
+    this.accounts = fetchJSON("api/account");
   }
 
   componentDidMount() {
     document.title = "LedgerDB - Post";
-
-    let resources = ["account_type", "account"];
-    resources.forEach(resource => {
-      const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase());
-      fetch('api/' + resource, {
-        method: 'get',
-        headers: { 'Authorization': sessionStorage.token }
-      })
-        .then(fetchJSON)
-        .then(json => {
-          let state = {};
-          state[key] = json;
-          this.setState(state);
-        })
-        .catch(err => {
-          let state = { message: err };
-          state[key] = [];
-          this.setState(state);
-        });
-    });
   }
 
   componentDidUpdate() {
@@ -134,14 +118,19 @@ class Post extends React.Component {
 
   renderSelect(id) {
     return (
+      <PromiseContainer
+        wait={false}
+        promises={{
+          accountTypes: this.accountTypes,
+          accounts: this.accounts
+        }}>
       <AccountSelect
-        accountTypes={this.state.accountType}
-        accounts={this.state.account}
         className="form-control"
         id={id}
         value={this.state.input[id]}
         onChange={this.handleChange}
       />
+      </PromiseContainer>
     );
   }
 
