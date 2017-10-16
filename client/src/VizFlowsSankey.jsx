@@ -2,6 +2,7 @@ import React from 'react';
 import moment from 'moment';
 
 import DateInput from './shared/DateInput';
+import PromiseContainer from './shared/PromiseContainer';
 //import d3 from './subcomponents/VizFlowsSankey/d3';
 import { DATE_FORMAT_MDY, DATE_FORMAT_ISO } from './shared/DateInput';
 import { fetchJSON } from './fetch';
@@ -228,13 +229,6 @@ class VizFlowsSankeyChart extends React.PureComponent {
 
 class VizFlowsSankey extends React.PureComponent {
 
-  static getInitialPromise() {
-    return fetch('api/account', {
-      method: 'get',
-      headers: { 'Authorization': sessionStorage.token }
-    }).then(fetchJSON);
-  }
-
   constructor(props) {
     super(props);
 
@@ -244,6 +238,8 @@ class VizFlowsSankey extends React.PureComponent {
       d1: this.d1,
       d2: this.d2
     };
+
+    this.accounts = fetchJSON('api/account');
 
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -298,11 +294,12 @@ class VizFlowsSankey extends React.PureComponent {
             </div>
           </form>
         </div>
-        <VizFlowsSankeyChart
-          accounts={this.props.data}
-          d1={ moment(this.state.d1, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO) }
-          d2={ moment(this.state.d2, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO) }
-        />
+        <PromiseContainer promises={{accounts: this.accounts}}>
+          <VizFlowsSankeyChart
+            d1={ moment(this.state.d1, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO) }
+            d2={ moment(this.state.d2, DATE_FORMAT_MDY).format(DATE_FORMAT_ISO) }
+          />
+        </PromiseContainer>
       </div>
     );
   }

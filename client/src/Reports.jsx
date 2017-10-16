@@ -28,8 +28,8 @@ class Reports extends React.PureComponent {
           </ul>
         </div>
         <div className="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <Route path={this.props.match.url + "/histogram"} component={promisedComponent(VizHistogram)}/>
-          <Route path={this.props.match.url + "/flows"} component={promisedComponent(VizFlowsSankey)}/>
+          <Route path={this.props.match.url + "/histogram"} component={VizHistogram}/>
+          <Route path={this.props.match.url + "/flows"} component={VizFlowsSankey}/>
         </div>
       </div>
     )
