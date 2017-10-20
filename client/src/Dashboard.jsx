@@ -1,5 +1,6 @@
 import React from 'react';
 
+import Fortune from './shared/Fortune';
 import ProgressBar from './shared/ProgressBar';
 
 class Dashboard extends React.PureComponent {
@@ -18,7 +19,7 @@ class Dashboard extends React.PureComponent {
     */
     return (
       <div>
-        <ProgressBar/>
+        <Fortune/>
       </div>
     );
   }
