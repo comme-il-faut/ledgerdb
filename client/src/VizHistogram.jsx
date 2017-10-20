@@ -9,9 +9,9 @@ import { fetchJSON } from './fetch';
 //TODO handle negative net flows
 //TODO separate resize listener, redraw only if actual size changed
 //TODO do not hardcode years in <select><option>..., get the dynamically from server
-//TODO add link to each bar, show to postings details for the month+account
 //TODO overlay line chart of total income
 //TODO preserve multiples state after refresh, or toggle stacked button selected
+//TODO query string for date=?&mode=? to (a) click on link to postings, (b) click browser back button
 
 class VizHistogram_Chart extends React.PureComponent {
 
@@ -73,7 +73,7 @@ class VizHistogram_Chart extends React.PureComponent {
       [o.accountId]: o
     })));
 
-    const data = xKeys.map(postingMonth => {
+    const data1 = xKeys.map(postingMonth => {
       const d = Object.assign(
         { postingMonth: postingMonth },
         ...yKeys.map(accountId => ({ [accountId]: 0 })),
@@ -90,16 +90,16 @@ class VizHistogram_Chart extends React.PureComponent {
     const ySort = {};
     yKeys.forEach(accountId => {
       ySort[accountId]
-        = d3.deviation(data, d => d[accountId])
-        / d3.mean(data, d => d[accountId]);
+        = d3.deviation(data1, d => d[accountId])
+        / d3.mean(data1, d => d[accountId]);
     });
     yKeys.sort((a, b) => ySort[a] - ySort[b]);
 
-    const yBands = yKeys.map((accountId, j) => d3.max(data, d => d[accountId]));
+    const yBands = yKeys.map((accountId, j) => d3.max(data1, d => d[accountId]));
     yBands.reduce((a, b, i) => yBands[i] = a + b);
     yBands.unshift(0);
 
-    const yMax1 = d3.max(data, d => d.total);
+    const yMax1 = d3.max(data1, d => d.total);
     const yMax2 = yBands[yBands.length - 1];
     // 1 = stacked, 2 = multiples
 
@@ -116,12 +116,34 @@ class VizHistogram_Chart extends React.PureComponent {
 
     const color = d3.scaleOrdinal(d3.schemeCategory20);
 
+    /*
+    svg
+      g - for transition stacked/multiples
+        g - for margin
+          g id="legend"
+            ...g transform=translate
+              rect
+              text
+          g class="axis axis-x"
+          g class="axis axis-y"
+          g class="gridline"
+          g id="groups"
+            g id="group-1234", where 1234 is accountId
+              ...g fill="..."
+                 ...rect...
+              g class="labels labels-multiple"
+                ...text
+          g class="labels labels-stacked"
+            ...text
+    */
+
     const svg = div.append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", h1 + margin.top + margin.bottom)
       .attr("font-size", 10)
       .attr("font-family", "sans-serif");
     //const defs = svg.append("defs");
+
     const g = svg.append("g").append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -132,6 +154,7 @@ class VizHistogram_Chart extends React.PureComponent {
 
 
     const legend = g.append("g")
+      .attr("id", "legend")
       .attr("text-anchor", "start");
 
     const legendY1 = (d, i) => "translate(0," + (yKeys.length - i - 1) * 17 + ")";
@@ -167,7 +190,7 @@ class VizHistogram_Chart extends React.PureComponent {
 
     const y1 = function(d, i) { return y(d[1]); };
     const y2 = function(d, i) {
-      const j = this.parentNode.__data__.index;
+      const j = this.__data__.series.index;
       return y(d[1] - d[0] + yBands[j]) - (j * padding);
     };
 
@@ -199,22 +222,40 @@ class VizHistogram_Chart extends React.PureComponent {
         g.select(".domain")
           .style("display", "none"));
 
-    const group = g.append("g")
-      .selectAll("g")
-      .data(d3.stack().keys(yKeys)(data))
-      .enter().append("g");
+    const data2 = d3.stack().keys(yKeys)(data1);
+    data2.forEach(series => {
+      series.forEach(point => {
+        point.series = series;
+      });
+    });
 
-    group.append("g")
+    const groups = g.append("g")
+      .attr("id", "groups")
+      .selectAll("g")
+      .data(data2)
+      .enter().append("g")
+        .attr("id", d => "group-" + d.key);
+
+    const href = function(d) {
+      const accountId = this.__data__.series.key;
+      const d1 = d.data.postingMonth + "-01";
+      const d2 = moment(d1).add(1, "M").add(-1, "d").format(DATE_FORMAT_ISO);
+      return "#/postings?a=" + accountId + "&d1=" + d1 + "&d2=" + d2;
+    };
+
+    groups.append("g")
       .attr("fill", d => color(d.key))
-      .selectAll("rect")
+      .selectAll("a")
       .data(d => d)
-      .enter().append("rect")
+      .enter().append("a")
+        .attr("xlink:href", href)
+      .append("rect")
         .attr("x", d => x(d.data.postingMonth))
         .attr("y", y1)
         .attr("height", d => y(d[0]) - y(d[1]))
         .attr("width", x.bandwidth())
         .append("title").text(function(d, i) {
-          const accountId = this.parentNode.parentNode.__data__.key; // series.key
+          const accountId = this.__data__.series.key;
           return accountId + ": " + accounts[accountId].name + "\n" +
             "$" + formatAmount(d.data[accountId]);
         });
@@ -223,20 +264,22 @@ class VizHistogram_Chart extends React.PureComponent {
       .attr("class", "labels labels-stacked")
       .attr("text-anchor", "middle")
       .selectAll("text")
-      .data(data)
+      .data(data1)
       .enter().append("text")
         .text(d => "$" + formatAmount(d.total))
         .attr("x", d => x(d.postingMonth) + x.bandwidth() / 2)
         .attr("y", d => y(d.total))
         .attr("dy", "-.3em");
 
-    group.append("g")
+    groups.append("g")
       .attr("class", "labels labels-multiples")
       .attr("opacity", 0)
       .attr("text-anchor", "middle")
-      .selectAll("text")
+      .selectAll("a")
       .data(d => d)
-      .enter().append("text")
+      .enter().append("a")
+        .attr("xlink:href", href)
+      .append("text")
         .text(d => "$" + formatAmount(d[1] - d[0]))
         .attr("x", d => x(d.data.postingMonth) + x.bandwidth() / 2)
         .attr("y", y2)
@@ -261,6 +304,7 @@ class VizHistogram_Chart extends React.PureComponent {
       if (mode == "multiples") {
         svg.transition(t1).attr("height", h2 + margin.top + margin.bottom);
         t1.select("g").attr("transform", "translate(0," + (h2 - h1) + ")")
+          .select("#groups")
           .selectAll("rect").attr("y", y2);
         t1.select(".gridline").attr("opacity", 0);
         t1.select(".axis-y").attr("opacity", 0);
