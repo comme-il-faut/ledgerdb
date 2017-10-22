@@ -74,11 +74,11 @@ public class PostingResource {
         if (StringUtils.isNotBlank(s)) {
             for (String keyword : s.trim().split(" +")) {
                 sb.append("and ph.description like ? escape '!' \n");
-                placeholders.add(keyword
+                placeholders.add("%" + keyword
                         .replace("!", "!!")
                         .replace("%", "!%")
                         .replace("_", "!_")
-                        .replace("[", "!["));
+                        .replace("[", "![") + "%");
             }
         }
         if (StringUtils.isNotBlank(d1)) {
