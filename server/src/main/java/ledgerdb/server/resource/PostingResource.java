@@ -18,8 +18,10 @@ import javax.validation.constraints.Pattern;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -54,7 +56,7 @@ public class PostingResource {
     }
     
     @GET
-    public String doGet(
+    public String doSearch(
             @QueryParam("s") @Pattern(regexp = "^[\\p{Print}]+$") String s,
             @QueryParam("d1") @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d1,
             @QueryParam("d2") @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d2,
@@ -113,6 +115,7 @@ public class PostingResource {
         }
         
         sb.append("order by \n"
+                + "  posting_date desc, \n"
                 + "  posting_header_id desc, \n"
                 + "  sign(amount) desc, \n" // debit/positive first, then credit/negative
                 + "  posting_detail_id \n");
@@ -128,31 +131,6 @@ public class PostingResource {
                 }
             });
         }
-        /*
-        try (Session session = sf.openSession()) {
-            return session.doReturningWork(con -> {
-                try (Statement st = con.createStatement()) {
-                    ResultSet rs = st.executeQuery(
-                        "select \n"
-                        + "  s.*, \n"
-                        + "  a.name as account_name \n"
-                        + "from ( \n"
-                        + "  select * \n"
-                        + "  from posting_header \n"
-                        + "  natural join posting_detail \n"
-                        + ") s \n"
-                        + "join account a \n"
-                        + "  on a.account_id = s.account_id \n"
-                        + "order by \n"
-                        + "  posting_header_id desc, \n"
-                        + "  sign(amount) desc, \n" // debit/positive first, then credit/negative
-                        + "  posting_detail_id \n"
-                    );
-                    return ResponseFormatter.format(rs);
-                }
-            });
-        }
-        */
     }
     
     @POST
@@ -175,6 +153,22 @@ public class PostingResource {
             s.close();
         }
         return ph;
+    }
+    
+    private static boolean checkAccountBalanceIfClosed(Session s, PostingHeader ph) {
+        long count = (Long)s.createCriteria(AccountBalance.class)
+                .add(Restrictions.or(
+                        ph.getPostingDetails().stream().map(
+                                pd -> Restrictions.and(
+                                        Restrictions.eq("accountId", pd.getAccountId()),
+                                        Restrictions.ge("postingDate", ph.getPostingDate()),
+                                        Restrictions.isNotNull("reconciled") // not reconciled
+                                )
+                        ).toArray(Criterion[]::new)
+                ))
+                .setProjection(Projections.rowCount())
+                .uniqueResult();
+        return count > 0;
     }
     
     void postPostings(PostingHeader ph, Session s) {
@@ -203,19 +197,7 @@ public class PostingResource {
         }
         
         // check account balances are not closed (i.e., not reconciled)
-        long count = (Long)s.createCriteria(AccountBalance.class)
-                .add(Restrictions.or(
-                        ph.getPostingDetails().stream().map(
-                                pd -> Restrictions.and(
-                                        Restrictions.eq("accountId", pd.getAccountId()),
-                                        Restrictions.ge("postingDate", ph.getPostingDate()),
-                                        Restrictions.isNotNull("reconciled")
-                                )
-                        ).toArray(Criterion[]::new)
-                ))
-                .setProjection(Projections.rowCount())
-                .uniqueResult();
-        if (count > 0) {
+        if (checkAccountBalanceIfClosed(s, ph)) {
             throw new BadRequestException("Can't post to account with balance marked as reconciled");
         }
 
@@ -235,7 +217,7 @@ public class PostingResource {
             if (pd.getStatementId() != null) {
                 q1.setParameter("id", pd.getStatementId());
                 q1.setParameter("accountId", pd.getAccountId());
-                count = q1.executeUpdate();
+                int count = q1.executeUpdate();
                 if (count != 1)
                     throw new BadRequestException(
                             "Failed to link posting detail to statement id " +
@@ -280,52 +262,75 @@ public class PostingResource {
         });
     }
     
+    @GET
+    @Path("{postingHeaderId}")
+    public PostingHeader doGet(@PathParam("postingHeaderId") int postingHeaderId) {
+        try (Session s = sf.openSession()) {
+            Query q = s.createQuery(
+                    "from PostingHeader as ph"
+                    + " join fetch ph.details"
+                    + " where ph.id = " + postingHeaderId);
+            PostingHeader ph = (PostingHeader)q.uniqueResult();
+            if (ph == null)
+                throw new NotFoundException();
+            return ph;
+        }
+    }
+    
     @DELETE
-    public void doDelete(PostingHeader[] phs) {
-        if (phs != null)
-            throw new BadRequestException(); //TODO - update account_balance
-        
+    @Path("{postingHeaderId}")
+    public void doDelete(@PathParam("postingHeaderId") int postingHeaderId) {
         Session s = sf.openSession();
         Transaction tx = null;
         try {
             tx = s.beginTransaction();
             
-            Query q1 = s.createQuery("delete from PostingDetail where postingHeader.id = :id");
-            Query q2 = s.createQuery("delete from PostingHeader where id = :id");
+            PostingHeader ph = s.get(PostingHeader.class, postingHeaderId);
+            if (ph == null)
+                throw new NotFoundException();
             
-            for (PostingHeader ph : phs) {
-                int id = ph.getId();
-                
-                //ph = session.get(PostingHeader.class, id);
-                //if (ph == null)
-                //    throw new AppException("No such posting header id: " + id);
-                //TODO: compare ph vs db
-                //TODO: delete link from "Postings" page
-                
-                /*
-                long count = (Long)s.createCriteria(AccountBalance.class)
-                        .add(Restrictions.or(
-                                ph.getPostingDetails().stream().map(
-                                        pd -> Restrictions.and(
-                                                Restrictions.eq("accountId", pd.getAccountId()),
-                                                Restrictions.ge("postingDate", ph.getPostingDate()),
-                                                Restrictions.isNotNull("reconciled")
-                                        )
-                                ).toArray(Criterion[]::new)
-                        ))
-                        .setProjection(Projections.rowCount())
-                        .uniqueResult();
-                if (count > 0) {
-                    throw new BadRequestException("Can't post to account with balance marked as reconciled");
+            if (checkAccountBalanceIfClosed(s, ph))
+                throw new BadRequestException("Can't delete from account with balance marked as reconciled");
+            
+            // update statement(s)
+            
+            Query q1 = s.createQuery(
+                    "update Statement"
+                    + " set posted = false"
+                    + " where id = :id"
+                    + " and accountId = :accountId"
+                    + " and posted = true"
+            );
+            for (PostingDetail pd : ph.getPostingDetails()) {
+                if (pd.getStatementId() != null) {
+                    q1.setParameter("id", pd.getStatementId());
+                    q1.setParameter("accountId", pd.getAccountId());
+                    q1.executeUpdate();
                 }
-                */
-                
-                q1.setInteger("id", id);
-                q2.setInteger("id", id);
-                
-                q1.executeUpdate();
-                q2.executeUpdate();
             }
+            
+            // update account balances
+            
+            Query q2 = s.createQuery(
+                    "update AccountBalance"
+                    + " set amount = amount - :amount, reconciled = null"
+                    + " where accountId = :accountId"
+                    + " and postingDate >= :postingDate"
+            );
+            ph.getPostingDetails().forEach(pd -> {
+                q2.setParameter("accountId", pd.getAccountId());
+                q2.setParameter("postingDate", ph.getPostingDate());
+                q2.setParameter("amount", pd.getAmount());
+                q2.executeUpdate();
+                s.flush();
+            });
+            
+            Query q3 = s.createQuery("delete from PostingDetail where postingHeader.id = :id");
+            Query q4 = s.createQuery("delete from PostingHeader where id = :id");
+            q3.setInteger("id", postingHeaderId);
+            q4.setInteger("id", postingHeaderId);
+            q3.executeUpdate();
+            q4.executeUpdate();
             
             tx.commit();
             tx = null;
@@ -343,7 +348,7 @@ public class PostingResource {
             @QueryParam("d1") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d1,
             @QueryParam("d2") @NotNull @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$") String d2) {
         
-        try { Thread.sleep(2000); } catch (InterruptedException e) {}
+        //try { Thread.sleep(2000); } catch (InterruptedException e) {}
         //try { Thread.sleep(160000); } catch (InterruptedException e) {}
         
         String sql

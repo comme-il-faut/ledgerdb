@@ -121,6 +121,12 @@ form input[type=number] {
   cursor: default;
 }
 
+tr .le-table-row-control { visibility: hidden; }
+tr:hover .le-table-row-control {
+  visibility: inherit;
+  transition: color 200ms ease-in;
+}
+
 .le-bottom-align {
   position: absolute;
   bottom: 0;

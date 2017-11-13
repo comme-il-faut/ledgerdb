@@ -5,12 +5,13 @@ import AccountSelect from './shared/AccountSelect';
 import DateInput from './shared/DateInput';
 import FadeIn from './shared/FadeIn';
 import Fortune from './shared/Fortune';
+import Message from './shared/Message';
 import PromiseContainer from './shared/PromiseContainer';
 import { DATE_FORMAT_MDY } from './shared/DateInput';
-import { fetchJSON } from './fetch';
-import { formatAmount } from './formatters';
+import { fetchCheck, fetchJSON } from './fetch';
+import { formatAmount, formatDate } from './formatters';
 
-class PostingsSearchForm extends React.Component {
+class PostingsSearchForm extends React.PureComponent {
 
   constructor(props) {
     super(props);
@@ -25,6 +26,10 @@ class PostingsSearchForm extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleClear = this.handleClear.bind(this);
+  }
+
+  componentDidMount() {
+    document.title = "LedgerDB - Postings";
   }
 
   handleChange(e) {
@@ -146,7 +151,7 @@ class PostingsSearchForm extends React.Component {
 
 }
 
-class PostingsSearchResults extends React.Component {
+class PostingsSearchResults extends React.PureComponent {
 
   constructor(props) {
     super(props);
@@ -155,11 +160,54 @@ class PostingsSearchResults extends React.Component {
     props.accounts.forEach(a => {
       this.accounts[a.accountId] = a;
     });
+
+    this.state = {
+      postings: props.postings,
+      postingsToDelete: new Set(),
+      err: null
+    };
+  }
+
+  componentDidMount() {
+    document.title = "LedgerDB - Postings - Search Results";
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.postings.length != this.state.postings.length ||
+        !nextProps.postings.every((posting, i) =>
+          posting.postingHeaderId ===
+            this.state.postings[i].postingHeaderId)) {
+      this.setState({postings: nextProps.postings});
+    }
   }
 
   getAccountName(accountId) {
     return this.accounts[accountId] &&
       this.accounts[accountId].name;
+  }
+
+  handleDelete(entry, e) {
+    e.preventDefault();
+    const postingHeaderId = entry[0].postingHeaderId;
+    this.setState(prevState => ({
+      postingsToDelete: new Set([
+        ...prevState.postingsToDelete,
+        postingHeaderId
+      ])
+    }));
+    fetch('api/posting/' + postingHeaderId, {
+      method: 'DELETE',
+      headers: { 'Authorization': sessionStorage.token }
+    }).then(fetchCheck).then(res => {
+      this.setState(prevState => ({
+        postings: prevState.postings.filter(
+          posting => posting.postingHeaderId != postingHeaderId
+        ),
+        postingsToDelete: new Set([...prevState.postingsToDelete].filter(
+          postingHeaderId => postingHeaderId != postingHeaderId
+        ))
+      }));
+    }).catch(err => this.setState({ err: err }));
   }
 
   render() {
@@ -193,8 +241,8 @@ class PostingsSearchResults extends React.Component {
       );
     }
 
-    const count = this.props.postings.length;
-    const entries = this.props.postings.reduce((entries, posting, i) => {
+    const count = this.state.postings.length;
+    const entries = this.state.postings.reduce((entries, posting, i) => {
       if (entries.length > 0 &&
           entries[entries.length - 1][0].postingHeaderId == posting.postingHeaderId) {
         entries[entries.length - 1].push(posting);
@@ -206,7 +254,7 @@ class PostingsSearchResults extends React.Component {
 
     const rows = entries.map(entry => (
       <tr key={entry[0].postingHeaderId}>
-        <td className="text-nowrap">{entry[0].postingDate}</td>
+        <td className="text-nowrap">{formatDate(entry[0].postingDate)}</td>
         <td className="text-nowrap">
           {entry.map((posting) => this.renderSpan1(
             posting,
@@ -220,12 +268,34 @@ class PostingsSearchResults extends React.Component {
           ))}
         </td>
         <td>{entry[0].description}</td>
+        <td className="text-nowrap text-right">
+          <span className="le-table-row-control">
+            {this.state.postingsToDelete.has(entry[0].postingHeaderId) ? (
+              <a href="#"
+                className="btn btn-default disabled"
+                role="button"
+                aria-label="Delete"
+              >
+                <i className="fa fa-spinner fa-pulse fa-fw" aria-hidden="true" title="Delete"></i>
+              </a>
+            ) : (
+              <a href="#" onClick={this.handleDelete.bind(this, entry)}
+                className="btn btn-default"
+                role="button"
+                aria-label="Delete"
+              >
+                <i className="fa fa-trash-o fa-fw" aria-hidden="true" title="Delete"></i>
+              </a>
+            )}
+          </span>
+        </td>
       </tr>
     ));
 
     return (
       <div>
         <h3>Search Results</h3>
+        <Message message={this.state.err}/>
         <p>Found {count} posting{count == 1 ? "" : "s"}.</p>
         <ul>{list}</ul>
         <section>
@@ -234,8 +304,9 @@ class PostingsSearchResults extends React.Component {
               <tr>
                 <th className="col-md-1">Date</th>
                 <th className="col-md-2">Account</th>
-                <th className="col-md-1 text-right">Amount</th>
-                <th className="col-md-8">Description</th>
+                <th className="col-md-1">Amount</th>
+                <th className="col-md-7">Description</th>
+                <th className="col-md-1"> </th>
               </tr>
             </thead>
             <tbody>{rows}</tbody>
@@ -279,35 +350,19 @@ class PostingsSearchResults extends React.Component {
 
 }
 
-class Postings extends React.Component {
+class Postings extends React.PureComponent {
 
   constructor(props) {
     super(props);
 
-    //TODO - one-liner util fetch helper function
-    const resources = ["account_type", "account"];
-    resources.forEach(resource => {
-      const key = resource.replace(/_[a-z]/g, match => match.charAt(1).toUpperCase()) + "s";
-      this[key] = 
-        fetch('api/' + resource, {
-          method: 'get',
-          headers: { 'Authorization': sessionStorage.token }
-        }).then(fetchJSON);
-    });
+    this.accountTypes = fetchJSON("api/account_type");
+    this.accounts = fetchJSON("api/account");
 
     this.handleSubmit = this.handleSubmit.bind(this);
 
     const querystring = props.location.search;
     if (querystring) {
       this.search(querystring);
-    }
-  }
-
-  componentDidMount() {
-    if (!this.props.location.search) {
-      document.title = "LedgerDB - Postings";
-    } else {
-      document.title = "LedgerDB - Postings - Search Results";
     }
   }
 
